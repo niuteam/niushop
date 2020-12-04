@@ -26,7 +26,7 @@ NIUSHOP开源商城B2C单商户V4,功能强大，安全便捷，框架成熟稳�
 
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0731/095424_ac477fe3_6569472.png "fuwuqi.png")
 
-### 商城特色:fire:
+### 商城特色:
 强大的营销功能模块，丰富的行业模板和装修组件，快速搭建最适合自己的电商平台，轻松获客、裂变。开启电商运营之路。
 
 1. &nbsp;<img src="https://images.gitee.com/uploads/images/2020/0724/121556_a96bd648_6569472.png"/>&nbsp;&nbsp;ThinkPhp6 + LayUi + ElementUi,学习维护成本低<br/>

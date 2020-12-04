@@ -1,0 +1,109 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-progress-wrap {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		min-height: 120px;
+	}
+	
+	.ns-progress-point {
+		flex-grow: 1;
+	}
+	
+	.ns-progress-point-pic {
+		display: inline-block;
+		width: 30px;
+		height: 30px;
+		line-height: 30px;
+		text-align: center;
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+	
+	.ns-progress-point-pic img {
+		max-width: 100%;
+		max-height: 100%;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">微信公众号使用流程</span>
+	</div>
+	<div class="layui-card-body">
+		<ul class="ns-progress-wrap">
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WECHAT_IMG/flow/register.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">注册微信公众号</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WECHAT_IMG/flow/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WECHAT_IMG/config_info.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">配置微信链接</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WECHAT_IMG/flow/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WECHAT_IMG/flow/public_number.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">配置相关域名</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WECHAT_IMG/flow/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WECHAT_IMG/flow/edition.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">配置微信秘钥</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WECHAT_IMG/flow/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WECHAT_IMG/flow/complete.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">配置微信模板消息</p>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">微信公众号入口</span>
+	</div>
+	<div class="layui-card-body">
+		<div class="site_list ns-item-block-parent ns-item-five">
+			{foreach $setting_arr as $key => $val}
+			<a class="ns-item-block ns-item-block-hover-a" href="{$val.url}">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="WECHAT_IMG/{$val.img}">
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$val.title}</div>
+						<p class="ns-item-content-desc">{$val.content}</p>
+					</div>
+				</div>
+			</a>
+			{/foreach}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+{/block}

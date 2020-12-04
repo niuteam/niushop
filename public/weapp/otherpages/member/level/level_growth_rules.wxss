@@ -1,0 +1,6 @@
+page{background-color:#fff}.grow-explain{padding:30rpx;margin-top:30rpx}.grow-explain .explain-title{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;line-height:1;margin-bottom:40rpx}.grow-explain .explain-title image{margin:0 20rpx;width:54rpx;height:18rpx}.grow-explain .explain-tr{display:-webkit-box;display:-webkit-flex;display:flex}.grow-explain .explain-th{padding:10rpx 30rpx;-webkit-box-flex:1;-webkit-flex:1;flex:1;background-color:#f6f1e4}.grow-explain .explain-th ~ .explain-th{border-left:4rpx solid #fff}.grow-explain .explain-td{padding:10rpx 30rpx;height:60rpx;line-height:60rpx;-webkit-box-flex:1;-webkit-flex:1;flex:1;background-color:#fcfbf7}.grow-explain .explain-td ~ .explain-td{border-left:4rpx solid #fff}.grow-value,
+.acquisition-grow{padding:0 30rpx 30rpx}.grow-value .title,
+.acquisition-grow .title{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center}.grow-value .title image,
+.acquisition-grow .title image{width:30rpx;height:30rpx;margin-right:10rpx}.grow-value .content,
+.acquisition-grow .content{font-size:24rpx;margin-left:40rpx}.grow-value .content text,
+.acquisition-grow .content text{display:block}

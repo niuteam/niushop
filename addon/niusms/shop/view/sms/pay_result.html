@@ -1,0 +1,57 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+	.success{}
+	.error{}
+	.pay-wrap{
+		text-align: center;
+	}
+
+	.pay-wrap .pay-icon {
+	}
+	.pay-wrap .pay-icon img{
+
+	}
+	.pay-wrap .pay-text {
+		font-size: 16px;
+		margin: 10px 0;
+	}
+
+	.pay-wrap .pay-money {
+		font-size: 20px;
+	}
+
+	.pay-wrap .pay-footer {
+		margin-top: 30px;
+	}
+	.ns-form{
+		margin-top: 250px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+
+	{notempty name="$order_info"}
+	<div class="pay-wrap">
+		{if $order_info.order_status == 1}
+		<div class="pay-icon"><img src="NIU_SMS_IMG/pay_success.png"/></div>
+		<div class="pay-text">支付成功</div>
+		{else/}
+		<div class="pay-icon"><img src="NIU_SMS_IMG/pay_error.png"/></div>
+		<div class="pay-text">支付失败</div>
+		{/if}
+		<div class="pay-money ns-text-color">支付金额：￥{$order_info.pay_money}</div>
+		<div class="pay-footer">
+			<button class="layui-btn layui-btn-primary" onclick="location.href=ns.url('niusms://shop/sms/index')">返回</button>
+		</div>
+	</div>
+	{else/}
+	<p class="error">支付失败</p>
+	{/notempty}
+
+</div>
+{/block}
+{block name="script"}
+{/block}

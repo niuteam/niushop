@@ -1,0 +1,139 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .ns-discount { display: flex; justify-content: space-between; height: 34px; line-height: 34px; padding: 5px 15px; background-color: #F6FBFD; border: 1px dashed #BCE8F1; }
+	.layui-table-view {
+		margin-top: 0;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label">优惠券名称：</label>
+        <div class="layui-input-inline">{$coupon_type_info.coupon_name}</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">优惠券类型：</label>
+        <div class="layui-input-inline">{if $coupon_type_info.type == 'reward'} 满减 {else /} 折扣 {/if}</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">{if $coupon_type_info.type == 'reward'} 优惠券面额 {else /} 优惠券折扣 {/if}：</label>
+        <div class="layui-input-inline">{if $coupon_type_info.type == 'reward'} ￥ {$coupon_type_info.money} {else /} {$coupon_type_info.discount} 折 {/if}</div>
+    </div>
+
+    {if $coupon_type_info.type == 'discount'}
+    {if $coupon_type_info.discount_limit != 0}
+    <div class="layui-form-item">
+        <label class="layui-form-label">最多优惠：</label>
+        <div class="layui-input-inline">￥ {$coupon_type_info.discount_limit}</div>
+    </div>
+    {/if}
+    {/if}
+    <div class="layui-form-item">
+        <label class="layui-form-label">发放数量：</label>
+        <div class="layui-input-inline">{$coupon_type_info.count} 张</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">最大领取数量：</label>
+        <div class="layui-input-inline">{$coupon_type_info.max_fetch} 张</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">满多少元可以使用：</label>
+        <div class="layui-input-inline">{$coupon_type_info.at_least} 元</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label img-upload-lable">优惠券图片：</label>
+        <div class="layui-input-inline img-upload">
+            <input type="hidden" class="layui-input" name="image" value="{$coupon_type_info.image}" />
+            <div class="upload-img-block icon">
+                <div class="upload-img-box" id="couponImg">
+                    {if condition="$coupon_type_info.image"}
+                    <img layer-src src="{:img($coupon_type_info.image)}" />
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">有效期：</label>
+        <div class="layui-input-inline">
+            {if $coupon_type_info.validity_type == 0}
+                {:date('Y-m-d H:i:s',$coupon_type_info.end_time)}
+            {else /}
+                领取之日起 {$coupon_type_info.fixed_term} 天有效
+            {/if}
+        </div>
+    </div>
+
+    {if $coupon_type_info.goods_type == 1}
+    <div class="layui-form-item">
+        <label class="layui-form-label"><span class="required">*</span>活动商品：</label>
+        <div class="layui-input-inline">
+            全部商品参与
+        </div>
+    </div>
+    {else /}
+    <div class="layui-form-item goods_list">
+        <label class="layui-form-label">活动商品：</label>
+        <div class="layui-input-block">
+
+            <table id="selected_sku_list"></table>
+        </div>
+    </div>
+    {/if}
+
+    <div class="ns-form-row">
+        <button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+    </div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+
+    var goods_list = {:json_encode($coupon_type_info.goods_list, JSON_UNESCAPED_UNICODE)};
+
+    layui.use('form', function() {
+        var table,
+            form = layui.form;
+
+        table = new Table({
+            elem: '#selected_sku_list',
+            cols: [
+                [{
+                    field: 'goods_name',
+                    title: '商品名称',
+                    unresize: 'false',
+                    width: '60%'
+                }, {
+                    field: 'price',
+                    title: '商品价格(元)',
+                    unresize: 'false',
+                    align: 'right',
+                    width: '20%',
+                    templet: function(data) {
+                        return '￥' + data.price;
+                    }
+                }, {
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    align: 'center',
+                    width: '20%'
+                }],
+            ],
+            data: goods_list
+        });
+    });
+
+    function back() {
+        location.href = ns.url("coupon://shop/coupon/lists");
+    }
+</script>
+{/block}

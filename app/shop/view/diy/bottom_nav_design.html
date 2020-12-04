@@ -1,0 +1,58 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/color_picker/css/colorpicker.css" />
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/bottom_nav_design.css" />
+{/block}
+{block name="main"}
+<div id="bottomNav" class="layui-form">
+	
+	<div class="preview">
+		
+		<div class="preview-head">
+			<span>底部导航</span>
+		</div>
+		
+		<div class="preview-block">
+			<ul v-show="data.list.length>0" v-bind:style="{ backgroundColor : data.backgroundColor }">
+				<li v-for="(item,index) in data.list" v-on:mouseover="mouseOver(index)" v-on:mouseout="mouseOut()">
+					<div v-show="data.type == 1 || data.type == 2">
+						<img v-bind:src="(selected == index ? (item.selectedIconPath? changeImgUrl(item.selectedIconPath) : 'STATIC_EXT/diyview/img/crack_figure.png') :  (item.iconPath? changeImgUrl(item.iconPath) : 'STATIC_EXT/diyview/img/crack_figure.png') )"/>
+					</div>
+					<span v-bind:style="{ fontSize : ( data.fontSize + 'px'), color : (selected == index ? data.textHoverColor :  data.textColor ) }" v-show="data.type == 1 || data.type == 3">{{ item.text }}</span>
+				</li>
+			</ul>
+		</div>
+		<div class="custom-save">
+			<button class="layui-btn save ns-bg-color">保存</button>
+		</div>
+	</div>
+	
+	<div class="edit-attribute">
+		<bottom-menu></bottom-menu>
+	</div>
+
+</div>
+
+{if condition="$bottom_nav_info"}
+<input type="hidden" id="info" value='{$bottom_nav_info}' />
+{/if}
+{/block}
+{block name="script"}
+<script>
+	var STATICIMG = 'STATIC_IMG';
+	 var STATICEXT = 'STATIC_EXT';
+	var post = 'shop';
+	{if condition="$bottom_nav_info"}
+		var bottomNavInfo = JSON.parse($("#info").val().toString());
+	{else/}
+		var bottomNavInfo = null;
+	{/if}
+</script>
+<script src="STATIC_JS/vue.js"></script>
+<script src="STATIC_EXT/color_picker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/jquerycolorpicker/js/paigusu.min.js"></script>
+<script src="STATIC_EXT/diyview/js/ddsort.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+<script src="STATIC_EXT/diyview/js/shop_bottom_nav.js"></script>
+{/block}

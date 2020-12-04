@@ -1,0 +1,1 @@
+<view><view data-event-opts="{{[['tap',[['change']]]]}}" class="{{['weui-switch',(checked)?'weui-switch-on':'',(checked)?'color-base-border':'']}}" bindtap="__e"><view class="{{['bgview',(checked)?'color-base-bg':'']}}"></view><view class="spotview"></view></view></view>

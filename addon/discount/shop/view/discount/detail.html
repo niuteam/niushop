@@ -1,0 +1,91 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-table-view {margin-top: 15px;}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-detail-card ns-tips">
+	<div class="ns-detail-con">
+		<p class="ns-detail-line">
+			<span class="ns-goods-name">{$discount_info.discount_name}</span>
+			<span class="ns-text-color">（{if condition="$discount_info.status == 0"}未开始{/if}{if condition="$discount_info.status == 1"}进行中{/if}{if
+				condition="$discount_info.status == 2"}已结束{/if}{if condition="$discount_info.status == -1"}已关闭{/if}）</span>
+		</p>
+		<p class="ns-detail-line">活动时间：{:date('Y-m-d H:i:s', $discount_info.start_time)} — {:date('Y-m-d H:i:s', $discount_info.end_time)}</p>
+		<p class="ns-detail-line">
+			备注：{$discount_info.remark}
+		</p>
+	</div>
+</div>
+
+<input type="hidden" name="discount_id" id="" value="{$discount_info.discount_id}" />
+
+<!-- 列表 -->
+<table id="goods_list" lay-filter="goods_list"></table>
+
+<!-- 商品 -->
+<script type="text/html" id="sku_name">
+	<div class="ns-table-title">
+	    <div class="ns-title-pic">
+		    <img layer-src src="{{ns.img(d.sku_image,'small')}}">
+	    </div>
+	    <div class="ns-title-content">
+		    <p class="ns-multi-line-hiding">{{d.sku_name}}</p>
+	    </div>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var discount_id = $('input[name = discount_id]').val();
+		var table = new Table({
+			elem: '#goods_list',
+			url: ns.url("discount://shop/discount/detail?discount_id=" + discount_id),
+			parseData: function(res) {
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.message, //解析提示文本
+					"count": res.data.length, //解析数据长度
+					"data": res.data //解析数据列表
+				};
+			},
+			cols: [
+				[{
+					field: 'sku_name',
+					title: '商品名称',
+					unresize: 'false',
+					templet: '#sku_name',
+					width: '40%'
+				}, {
+					field: 'price',
+					title: '商品价格',
+					unresize: 'false',
+					width: '20%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.price;
+					}
+				}, {
+					field: 'discount_price',
+					title: '商品折扣价',
+					unresize: 'false',
+					width: '20%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.discount_price;
+					}
+				}, {
+					field: 'discount_rate',
+					title: '折扣率（%）',
+					unresize: 'false',
+					width: '20%',
+					align: 'right'
+				}]
+			],
+			page: false
+		});
+	});
+</script>
+{/block}

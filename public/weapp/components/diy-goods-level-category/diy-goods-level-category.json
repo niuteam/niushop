@@ -1,0 +1,14 @@
+{
+  "component": true,
+  "usingComponents": {
+    "diy-goods-level-one-first": "/components/diy-goods-level-category/diy-goods-level-one-first",
+    "diy-goods-level-one-second": "/components/diy-goods-level-category/diy-goods-level-one-second",
+    "diy-goods-level-one-third": "/components/diy-goods-level-category/diy-goods-level-one-third",
+    "diy-goods-level-two-first": "/components/diy-goods-level-category/diy-goods-level-two-first",
+    "diy-goods-level-two-second": "/components/diy-goods-level-category/diy-goods-level-two-second",
+    "diy-goods-level-two-third": "/components/diy-goods-level-category/diy-goods-level-two-third",
+    "diy-goods-level-three-first": "/components/diy-goods-level-category/diy-goods-level-three-first",
+    "diy-goods-level-three-second": "/components/diy-goods-level-category/diy-goods-level-three-second",
+    "diy-goods-level-three-third": "/components/diy-goods-level-category/diy-goods-level-three-third"
+  }
+}

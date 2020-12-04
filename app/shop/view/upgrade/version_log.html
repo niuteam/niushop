@@ -1,0 +1,210 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/upgrade/version_log.css" />
+{/block}
+{block name="main"}
+<script type="text/html" id="log_block">
+    <div class="log-block">
+        <div class="log-content-block">
+            <div class="log-content">
+                {{#  if(d.count === 0){ }}
+                暂无数据
+                {{#  }else{ }}
+                <div class="log-step-text">
+                    <ul class="layui-timeline">
+                        {{#  layui.each(d.list, function(index, item){ }}
+                        <li class="layui-timeline-item">
+                            <div class="layui-timeline-axis ns-log-version-date">{{ item.format_time }}</div>
+                            <i class="layui-icon open layui-timeline-axis ns-bg-color"  style="display:{{# if(item.isclose){ }}block {{#  }else{ }}none {{#  } }}" onclick="showHidebtn($(this))" data-index="{{index}}">&#xe61a;</i>
+                            <i class="layui-icon close layui-timeline-axis ns-bg-color" style="display:{{# if(item.isclose){ }}none {{#  }else{ }}block {{#  } }}" onclick="showHidebtn($(this))" data-index="{{index}}">&#xe619;</i>
+                            <div class="log-body look_text" onclick="showHide($(this))" data-index="{{index}}">{{# if(item.isclose){ }}点击查看完整更新日志{{#  }else{ }}点击收起 {{#  } }}</div>
+						   
+							<div class="site_list ns-item-block-parent ns-item-five look" style="display:{{# if(item.isclose){ }}none{{#  }else{ }}flex {{#  } }}">
+								{{#  layui.each(item.list, function(item_index, item_item){ }}
+								<div class="ns-item-block ns-item-block-hover">
+									<div class="ns-item-block-wrap">
+										<div class="ns-item-pic">
+											{{#  if (item_item.sku_image) {  }}
+											<img src="{{ ns.img(item_item.sku_image) }}" />
+											{{#  } else {  }}
+											<img src="SHOP_IMG/upgrade_default.png" />
+											{{#  }  }}
+										</div>
+										<div class="ns-item-con">
+											<div class="ns-item-content-title">
+												{{ item_item.goods_name }}
+											</div>
+											<p class="ns-item-content-desc">版本号：{{ item_item.version_name }}</p>
+											<p class="ns-item-content-desc ns-line-hiding" title="发布时间：{{ ns.time_to_date(item_item.create_time) }}">发布时间：{{ ns.time_to_date(item_item.create_time) }}</p>
+										</div>
+									</div>
+									{{#  var str = JSON.stringify(item_item)}}
+									<a class="ns-text-color ns-item-block-btn" onclick='changeDesc({{str}})'>更新内容</a>
+									<!-- <div class="title ns-prompt-block">
+										<div class="ns-prompt">
+											<span class="ns-text-color">更新内容</span>
+											<div class="ns-prompt-box">
+												<div class="ns-prompt-con">
+													{{ item_item.version_desc }}
+												</div>
+											</div>
+										</div>
+									</div> -->
+								</div>
+								{{#  }); }}
+							</div>
+							
+							<!-- <div class="look" style="display:{{# if(item.isclose){ }}none{{#  }else{ }}block {{#  } }}">
+                                {{#  layui.each(item.list, function(item_index, item_item){ }}
+                                <div class="layui-timeline-content layui-text log-body">
+                                    <h3 class="log-step-text-title">{{ item_item.goods_name }}</h3>
+                                    <div class="log-step-text-content">
+                                        版本号：{{ item_item.version_name }}
+                                    </div>
+                                    <div class="log-step-text-content">
+                                        发布时间：{{ ns.time_to_date(item_item.create_time) }}
+                                    </div>
+                                    <div class="log-detail">
+                                        <div>{{ item_item.version_desc }}</div>
+                                    </div>
+                                </div>
+                                {{#  }); }}
+                            </div> -->
+
+                        </li>
+                        {{#  }); }}
+                        <li class="layui-timeline-item load-more">
+                            <div class="layui-timeline-axis ns-log-version-date"></div>
+                            <img src="SHOP_IMG/version_load_more.png" class="load-more-img"/>
+                            <div class="layui-timeline-content layui-text log-body">
+                                <h3 class="log-step-text-title" onclick="LoadingData()">
+                                    {{# if(d.is_end == 1){ }}
+                                    已经加载到底了
+                                    {{# }else{ }}
+                                    加载更多
+                                    {{# } }}
+                                </h3>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                {{#  } }}
+            </div>
+        </div>
+    </div>
+</script>
+
+<div id="log_detail"></div>
+
+<div id="page"></div>
+
+{/block}
+{block name="script"}
+<script>
+    var logData = {};
+    var page = 0;
+    var page_size = 14;
+    var is_end = false;
+
+    function LoadingData(){
+        if(is_end) return false;
+        page ++;
+        $.ajax({
+            type: "post",
+            dataType: 'JSON',
+            url: ns.url("shop/upgrade/versionlog"),
+            async: true,
+            data:{
+                page:page,
+                page_size:page_size
+            },
+            success: function(res) {
+                if(res.data.page_count == page){
+                    is_end = true;
+                }
+                renderLogData(res);//调用函数
+            }
+        });
+    }
+
+    function renderLogData(res){
+        var new_list = res.data.list;
+        if(page > 1){
+            var old_list = logData.list; //logData.data不存在
+            // console.log(old_list) //打印数据
+            //如果上一页的最后一条和新数据的第一条是属于同一天的要进行数据合并
+            if(old_list[old_list.length - 1]['create_time'] === new_list[0]['time']){
+                var first = new_list.shift();
+
+                for(var i in first['list']){
+                    old_list[old_list.length - 1]['create_time'].push(first['list'][i]);
+                }
+            }
+            for(var i in new_list){
+                old_list.push(new_list[i]);
+            }
+        }else{
+            for(var i in res.data.data){
+                res.data.data[i].isclose = 0
+            }
+            logData = res.data;
+        }
+        logData.is_end = is_end;
+        layui.use(['form', 'laytpl'], function() {
+            var laytpl = layui.laytpl;
+            laytpl($("#log_block").html()).render(logData, function(html) {
+                $("#log_detail").html(html);
+            });
+        });
+    }
+    function renderLogDataStatus(res){
+        logData.list[res].isclose = logData.list[res].isclose ? 0 :1
+        layui.use(['form', 'laytpl'], function() {
+            var laytpl = layui.laytpl;
+            laytpl($("#log_block").html()).render(logData, function(html) {
+                $("#log_detail").html(html);
+            });
+        });
+    }
+    function showHide(val){
+        val.siblings('.look').slideToggle(function(){
+            val.text( $(this).is(":visible") ? "点击收起" : "点击查看完整更新日志" );
+
+            if($(this).is(":visible") ){
+                val.siblings('.close').show()
+                val.siblings('.open').hide()
+
+            }else{
+                val.siblings('.open').show()
+                val.siblings('.close').hide()
+
+            }
+            renderLogDataStatus(val.data('index'))
+        })
+    }
+    function showHidebtn(val){
+        val.siblings('.look').slideToggle(function(){
+            val.hide()
+            if($(this).is(":visible") ){
+                val.siblings('.close').show()
+            }else{
+                val.siblings('.open').show()
+            }
+            val.siblings('.look_text').text( $(this).is(":visible") ? "点击收起" : "点击查看完整更新日志" );
+            renderLogDataStatus(val.data('index'))
+        })
+    }
+    $(function(){
+        LoadingData();
+    })
+	
+	function changeDesc(data) {
+		layer.open({
+			type: 1,
+			title: "更新内容",
+			area: ['500px', '300px'],
+			content: data.version_desc //这里content是一个普通的String
+		});
+	}
+</script>
+{/block}

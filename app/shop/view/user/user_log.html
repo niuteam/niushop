@@ -1,0 +1,162 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>通过选择操作用户及操作内容，进行筛选用户。</li>
+			<li>可以对用户日志进行批量删除。</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<div class="layui-form">
+		<div class="layui-input-inline ns-lem-min">
+			<select name="uid" lay-filter="uid">
+				<option value="">请选择操作用户</option>
+				{foreach $user_list as $user_list_k => $user_list_v}
+				<option value="{$user_list_v.uid}">{$user_list_v.username}</option>
+				{/foreach}
+			</select>
+		</div>
+
+		<div class="layui-input-inline">
+			<input type="text" id="search_keys" name="search_keys" placeholder="请输入操作记录" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="useLog_info" lay-filter="useLog_info"></table>
+
+<!-- 批量删除 -->
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var table,
+			form = layui.form;
+		form.render();
+
+		table = new Table({
+			elem: '#useLog_info',
+			url: ns.url("shop/user/userLog"),
+			cols: [
+				[{
+					width: "3%",
+					type: 'checkbox',
+					templet: '#id',
+					unresize: 'false'
+				},
+				{
+					unresize: 'false',
+					field: 'username',
+					title: '操作者',
+				}, {
+					field: 'action_name',
+					unresize: 'false',
+					title: '操作记录',
+				}, {
+					field: 'ip',
+					unresize: 'false',
+					title: '操作IP地址',
+				}, {
+					field: 'create_time',
+					unresize: 'false',
+					title: '操作时间',
+					templet: function(data) {
+						return ns.time_to_date(data.create_time); //创建时间转换方法
+					}
+				}]
+			],
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+		
+		// 删除
+		function deleteUserLog(id) {
+			layer.confirm('确定要删除该操作日志吗?', function() {
+				$.ajax({
+					dataType: 'JSON',
+					type: 'POST',
+					url: ns.url("shop/user/deleteUserLog"),
+					data: {id},
+					success: function(res) {
+						layer.msg(res.message);
+
+						if (res.code == 0)
+							table.reload();
+						else
+							repeat_flag = false;
+					}
+				});
+			});
+		}
+		
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function(obj) {
+		
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].id);
+					deleteUserLog(id_array.toString());
+					break;
+			}
+		});
+		
+		/**
+		 * 批量操作
+		 */
+		table.toolbar(function(obj) {
+		
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].id);
+					deleteUserLog(id_array.toString());
+					break;
+			}
+		});
+		
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+</script>
+{/block}

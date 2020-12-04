@@ -1,0 +1,125 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .no-content-tip{
+        text-align:center;
+        padding:20px 0px;
+    }
+</style>
+{/block}
+{block name="main"}
+{if condition="!empty($upgrade_log_info)"}
+<div class="ns-single-filter-box">
+    <button class="layui-btn ns-bg-color" id="recovery_btn">一键回滚</button>
+</div>
+<div class="index-box">
+    <div class="index-content">
+        <div class="system-function">
+            <table class="layui-table">
+                <colgroup>
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="40%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>主体</th>
+                    <th>操作</th>
+                    <th>升级前版本</th>
+                    <th>升级后版本</th>
+                    <th>升级内容</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="$upgrade_log_info.version_info" id="item"}
+                <tr>
+                    <td>{$item.goods_name}</td>
+                    <td>{$item.action_name}</td>
+                    <td>{$item.current_version_name}</td>
+                    <td>{$item.latest_version_name}</td>
+                    <td>
+                        <a href="javascript:;" onclick="showScripts(this)" data-data='{:json_encode($item.scripts)}'>查看升级内容</a>
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{else/}
+<div class="no-content-tip">暂无可回滚内容</div>
+{/if}
+
+{/block}
+{block name="script"}
+<script type="text/html" id="upgrade_desc">
+    <div><span>更新版本数：{{d.length}}</span></div>
+    <table class="layui-table" lay-skin="lg">
+        <colgroup>
+            <col width="20%">
+            <col width="80%">
+        </colgroup>
+        <thead>
+        <tr>
+            <th>版本号</th>
+            <th>更新说明</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#  layui.each(d, function(index, item){  }}
+        <tr>
+            <td>{{item.version_name}}</td>
+            <td>{{item.description}}</td>
+        </tr>
+        {{#  })  }}
+        </tbody>
+    </table>
+</script>
+<script>
+    var laytpl;
+
+    layui.use(['laytpl'], function() {
+        laytpl = layui.laytpl;
+    })
+
+    function showScripts(e) {
+        var scripts = $(e).data('data');
+        var uploadHtml = $("#upgrade_desc").html();
+        laytpl(uploadHtml).render(scripts, function(html) {
+            layer.open({
+                type: 1,
+                title: '更新说明',
+                area: ['700px', '500px'],
+                content: html
+            });
+        })
+    }
+
+    $("#recovery_btn").click(function(){
+        var confirm_index = layer.confirm('确定要回滚吗？', ['确定', '取消'], function(){
+            layer.close(confirm_index);
+            var load_index = layer.load(1, {
+                shade: [0.1,'#fff'] //0.1透明度的白色背景
+            });
+            $.ajax({
+                type:'post',
+                url : ns.url("shop/upgrade/recovery"),
+                dataType : 'json',
+                success:function(res){
+                    if(res.code >= 0){
+                        layer.msg('回滚成功', function(index, layero){
+                            window.location.reload();
+                        })
+                    }else{
+                        layer.msg('回滚失败，错误信息为：' + res.message);
+                    }
+                    layer.close(load_index);
+                }
+            })
+        })
+    })
+</script>
+{/block}

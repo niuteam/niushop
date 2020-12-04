@@ -1,0 +1,341 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-discount { display: flex; justify-content: space-between; height: 34px; line-height: 34px; padding: 5px 15px; background-color: #F6FBFD; border: 1px dashed #BCE8F1; }
+	.manjian-rule {}
+	.manjian-rule .level-head{display: flex;justify-content: space-between;background: #eee;padding: 0 10px;margin-bottom: 15px;}
+	.manjian-rule .title { color: #454545;font-weight: 600; }
+	.manjian-rule .wrap .layui-form-label { width: 140px; }
+	.manjian-rule .wrap .layui-form-label + .layui-input-block { margin-left: 140px }
+	.manjian-rule .wrap .layui-form-checkbox[lay-skin=primary] {margin-top: 0}
+	.manjian-rule .wrap .discount-cont {padding-left: 28px;min-height: 36px}
+	.manjian-rule .discount-item .ns-word-aux {margin-left: 0}
+	.layui-form-item .layui-input-inline.end-time{float: none;}
+	.layui-table-body{max-height: 480px !important;}
+	.goods-title{display: flex;align-items: center;}
+	.goods-title .goods-img{display: flex;align-items: center;justify-content: center;width: 55px;height: 55px;margin-right: 5px;}
+	.goods-title .goods-img img{max-height: 100%;max-width: 100%;}
+	.goods-title .goods-name{flex: 1;line-height: 1.6;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>满减活动包括店铺所有商品，活动时间不能和已有活动重叠</li>
+			<li>每添加一个规则都需点击确定规则设置按钮，生成一条规则，提交之后才可成功添加</li>
+			<li>点击确定规则设置按钮生成的规则都有一个删除按钮，如不需要该条规则点击删除按钮即可删除</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>活动名称：</label>
+		<div class="layui-input-block">
+			<input type="text" name="manjian_name" lay-verify="required|len" value="{$manjian_info.manjian_name}" placeholder="请输入活动名称" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+		<div class="ns-word-aux">
+			<p>活动名称最多为25个字符</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>活动时间：</label>
+		<div class="layui-inline">
+			<div class="layui-input-inline ns-len-mid">
+				<input type="text" {if condition="$manjian_info.status == 1"}disabled {/if} value="{:date('Y-m-d H:i:s', $manjian_info.start_time)}" class="layui-input" name="start_time" lay-verify="required" id="start_time" autocomplete="off" readonly>
+				<i class="ns-calendar"></i>
+			</div>
+			<span class="layui-form-mid">-</span>
+			<div class="layui-input-inline ns-len-mid end-time">
+				<input type="text" {if condition="$manjian_info.status == 1"}disabled {/if} value="{:date('Y-m-d H:i:s', $manjian_info.end_time)}" class="layui-input" name="end_time" lay-verify="required|times" id="end_time" autocomplete="off" readonly>
+				<i class="ns-calendar"></i>
+			</div>
+		</div>
+		{if condition="$manjian_info.status == 1"}
+		<div class="ns-word-aux">
+			<p>活动进行中时间不可更改</p>
+		</div>
+		{/if}
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>条件类型：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="type" lay-filter="type" value="0" title="满N元" {if $manjian_info.type == 0}checked{/if}>
+			<input type="radio" name="type" lay-filter="type" value="1" title="满N件" {if $manjian_info.type == 1}checked{/if}>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-form manjian-rule">
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>优惠设置：</label>
+
+				<div class="layui-input-block discount-level">
+					{foreach name="$manjian_info.rule" item="vo" index="k"}
+					<div class="level-item">
+						<div class="level-head">
+							<label class="title">活动层级{$k}：</label>
+							{if $k > 1}<a href="javascript:;" class="ns-text-color" onclick="deleteLevel(this)">删除</a>{/if}
+						</div>
+						<div class="wrap">
+							<div class="condition">
+								<label class="layui-form-label"><span class="required">*</span>优惠门槛：</label>
+								<div class="layui-input-block">
+									<div class="type-0 {if $manjian_info.type != 0}layui-hide{/if}">
+										<div class="layui-form-mid">满</div>
+										<div class="layui-input-inline ns-len-short">
+											<input type="number" name="money" value="{:sprintf('%.2f',$vo.limit)}" lay-verify="manjian_money" placeholder="" autocomplete="off" class="layui-input ns-len-short">
+										</div>
+										<div class="layui-form-mid">元</div>
+									</div>
+									<div class="type-1 {if $manjian_info.type != 1}layui-hide{/if}">
+										<div class="layui-form-mid">满</div>
+										<div class="layui-input-inline ns-len-short">
+											<input type="number" name="num" value="{:number_format($vo.limit)}" lay-verify="manjian_num" placeholder="" autocomplete="off" class="layui-input ns-len-short">
+										</div>
+										<div class="layui-form-mid">件</div>
+									</div>
+								</div>
+							</div>
+							<div class="content">
+								<label class="layui-form-label"><span class="required">*</span>优惠内容：</label>
+								<div class="layui-input-block">
+									<div class="discount-item discount-money">
+										<div>
+											<input type="checkbox" name="discount_type" value="discount_money" class="ns-input-checkbox" lay-skin="primary" {if isset($vo.discount_money)}checked{/if}><span>订单金额优惠</span>
+										</div>
+										<div class="discount-cont  {if !isset($vo.discount_money)}layui-hide{/if}">
+											<div class="layui-form-mid">减</div>
+											<div class="layui-input-inline ns-len-short">
+												<input type="number" value="{if isset($vo.discount_money)}{$vo.discount_money}{/if}" placeholder="" autocomplete="off" class="layui-input ns-len-short">
+											</div>
+											<div class="layui-form-mid">元</div>
+										</div>
+									</div>
+									<div class="discount-item">
+										<div>
+											<input type="checkbox" name="" value="free_shipping" class="ns-input-checkbox" lay-skin="primary" {if isset($vo.free_shipping)}checked{/if}><span>包邮</span>
+										</div>
+										<div class="ns-word-aux" style="margin-left: 28px;margin-top: 0">
+											<p>仅参与该活动的商品包邮，非整单包邮</p>
+										</div>
+									</div>
+									<div class="discount-item point">
+										<div>
+											<input type="checkbox" name="discount_type" value="point" class="ns-input-checkbox" lay-skin="primary" {if isset($vo.point)}checked{/if}><span>送积分</span>
+										</div>
+										<div class="discount-cont {if !isset($vo.point)}layui-hide{/if}">
+											<div class="layui-form-mid">送</div>
+											<div class="layui-input-inline ns-len-short">
+												<input type="number" name="" value="{if isset($vo.point)}{$vo.point}{/if}" placeholder="" autocomplete="off" class="layui-input ns-len-short">
+											</div>
+											<div class="layui-form-mid">积分</div>
+										</div>
+									</div>
+									<div class="discount-item coupon">
+										<div>
+											<input type="checkbox" name="discount_type" value="coupon" class="ns-input-checkbox" lay-skin="primary" {if isset($vo.coupon)}checked{/if}><span>送优惠券</span>
+										</div>
+										<div class="discount-cont {if !isset($vo.coupon)}layui-hide{/if}">
+											<div><a href="javascript:;" class="ns-text-color select-coupon">选择优惠券</a></div>
+											<div class="ns-word-aux">
+												<p>请确认优惠券数量是否充足，优惠券数量不足将导致赠送失败</p>
+											</div>
+											<div>
+												<table class="layui-table" lay-skin="nob">
+												  	<colgroup>
+													    <col width="30%">
+													    <col width="50%">
+													    <col width="20%">
+												  	</colgroup>
+											  		<thead>
+													    <tr>
+													      	<th>优惠券</th>
+													      	<th>优惠内容</th>
+													      	<th style="text-align:center;">操作</th>
+													    </tr> 
+												  	</thead>
+												  	<tbody>
+												  		{if isset($vo.coupon) && isset($vo.coupon_data) && !empty($vo.coupon_data)}
+												  		<tr data-coupon="{$vo.coupon}">
+															<td>{$vo.coupon_data.coupon_name }</td>
+															{if $vo.coupon_data.at_least > 0 }
+													  			<td>满{$vo.coupon_data.at_least }{$vo.coupon_data.type == 'discount' ? '打'. $vo.coupon_data.discount .'折' : '减' . $vo.coupon_data.money }</td>
+													  		{else/}
+													  			<td>无门槛，{$vo.coupon_data.type == 'discount' ? '打'. $vo.coupon_data.discount .'折' : '减' . $vo.coupon_data.money }</td>
+													  		{/if}
+													  		<td style="text-align:center;"><a href="javascript:;" onclick="deleteCoupon(this)" class="ns-text-color">删除</a></td>
+											  			</tr>
+											  			{/if}
+												  	</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					{/foreach}
+				</div>
+
+				<label class="layui-form-label"></label>
+				<div class="layui-input-block">
+					<button class="layui-btn ns-bg-color" onclick="addDiscountLevel()">添加活动层级</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- <div class="layui-form-item">
+		<div class="layui-form">
+			<div class="layui-form-item">
+				<label class="layui-form-label">满减规则：</label>
+
+				<div class="ns-discount-box">
+				</div>
+				
+				<div class="layui-input-block ns-form-row">
+					<span class="layui-form-mid">单笔订单满</span>
+					<div class="layui-input-inline">
+						<input type="number" class="layui-input ns-len-short" id="money" lay-verify="num" autocomplete="off">
+					</div>
+					<span class="layui-form-mid">元，立减现金</span>
+					<div class="layui-input-inline">
+						<input type="number" class="layui-input ns-len-short" id="discount_money" lay-verify="num" autocomplete="off">
+					</div>
+					<span class="layui-form-mid">元</span>
+				</div>
+				
+				<div class="ns-word-aux">
+					<p>价格不能小于0，可保留两位小数</p>
+				</div>
+			</div>
+
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" onclick="submitRule()">确定规则设置</button>
+			</div>
+		</div>
+	</div> -->
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>活动商品：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="manjian_type" lay-filter="manjian_type" value="1" title="全部商品参与" {if $manjian_info.manjian_type == 1} checked {/if}>
+			<input type="radio" name="manjian_type" lay-filter="manjian_type" value="2" title="指定商品参与" {if $manjian_info.manjian_type == 2} checked {/if}>
+		</div>
+	</div>
+
+	{if $manjian_info.manjian_type == 1}
+	<div class="layui-form-item goods_list" style="display:none">
+	{else /}
+	<div class="layui-form-item goods_list">
+	{/if}
+		<label class="layui-form-label"></label>
+		<div class="layui-input-block">
+			<!-- <table class="layui-table" id="goods" lay-skin="line" lay-size="lg">
+
+				<thead>
+				<tr>
+					<th>商品名称</th>
+					<th>商品价格(元)</th>
+					<th>库存</th>
+					<th>编辑</th>
+				</tr>
+				</thead>
+				<tbody>
+				{if empty($manjian_info.goods_list)}
+				<tr>
+					<td class="ns-goods-null" colspan="3">
+						<div class="goods-null">该活动还未选择商品</div>
+					</td>
+				</tr>
+				{else /}
+				{foreach $manjian_info.goods_list as $v}
+				<tr data-sku_id="{$v.goods_id}">
+					<td>{$v.goods_name}</td>
+					<td>{$v.price}</td>
+					<td>{$v.goods_stock}</td>
+					<td><button class="layui-btn" onclick="delRule(this)">删除</button></td>
+				</tr>
+				{/foreach}
+				{/if}
+				</tbody>
+			</table> -->
+			<table id="selected_sku_list"></table>
+
+			<button class="layui-btn ns-bg-color" onclick="addGoods()">选择商品</button>
+		</div>
+	</div>
+	<input type="hidden" name="goods_ids">
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">备注：</label>
+		<div class="layui-input-block">
+			<textarea name="remark" class="layui-textarea ns-len-long">{$manjian_info.remark}</textarea>
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+	
+	<input type="hidden" name="manjian_id" value="{$manjian_info.manjian_id}" />
+	<input type="hidden" name="rule_json" value='{$manjian_info.rule_json}' id="rule_json" />
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" onclick="delGoods({{d.goods_id}})">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+var goods_list = {:json_encode($manjian_info.goods_list, JSON_UNESCAPED_UNICODE)};
+</script>
+<script type="text/javascript" src="MANJIAN_JS/edit.js"></script>
+
+<!-- 优惠券 -->
+<script type="text/html" id="couponList">
+	<div class="gift-box">
+		<div class="ns-single-filter-box">
+			<div class="layui-form">
+				<div class="layui-input-inline">
+					<input type="text" name="coupon_name" placeholder="请输入优惠券名称" class="layui-input ns-len-mid">
+					<button type="button" class="layui-btn layui-btn-primary" lay-filter="coupon-search" lay-submit>
+						<i class="layui-icon">&#xe615;</i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<table id="coupon_list" lay-filter="coupon_list"></table>
+	</div>
+</script>
+
+<!-- 优惠券-名称 -->
+<script type="text/html" id="couponName">
+	<div class="ns-table-tuwen-box">
+		<div class="ns-font-box">
+			<p class="ns-multi-line-hiding">{{d.coupon_name}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- 优惠券-操作 -->
+<script type="text/html" id="couponOperation">
+	{{# if($.inArray(d.coupon_type_id, coupon_list) != -1){ }}
+	<p title="该优惠券已参加积分兑换活动">已添加</p>
+	{{# }else{ }}
+	<a class="layui-btn" lay-event="add">添加</a>
+	{{# } }}
+</script>
+{/block}
+{/block}

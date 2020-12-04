@@ -1,0 +1,108 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>编辑时，用户组不可以修改。</li>
+			<li>编辑时，用户组不能为空。</li>
+			<li>当用户状态为锁定时，不能登录。</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户名：</label>
+		<div class="layui-input-inline">
+			<input name="username" value="{$edit_user_info.username}" type="text" disabled class="layui-input ns-len-long" autocomplete="off">
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户组：</label>
+		<div class="layui-input-inline ns-len-mid">
+			<select name="group_id" lay-verify="groupid">
+				<option value="">请选择用户组</option>
+				{foreach $group_list as $group_list_k => $group_list_v}
+				<option value="{$group_list_v.group_id}" {if $edit_user_info.group_id==$group_list_v.group_id}selected{/if}>{$group_list_v.group_name} </option> 
+				{/foreach}
+			</select> 
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户状态：</label>
+		<div class="layui-input-inline">
+			<input type="checkbox" name="status" value="1" lay-skin="switch" {if condition="$edit_user_info.status == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="ns-word-aux">关闭后，用户将被锁定，无法登录</div>
+	<!-- 表单操作 -->
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+	
+	<!-- 隐藏域 -->
+	<input value="{$edit_user_info.uid}" type="hidden" class="user_id" name="uid" />
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+		
+		form.on('submit(save)', function(data) {
+			
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				dataType: 'JSON',
+				type: 'POST',
+				url: ns.url("shop/user/editUser"),
+				data: data.field,
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/user/user")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						})
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+		
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			groupid: function(value) {
+				if (value == 0) {
+					return '请选择用户组!';
+				}
+			}
+		});
+	});
+	
+	function back() {
+		location.href = ns.url("shop/user/user");
+	}
+</script>
+{/block}

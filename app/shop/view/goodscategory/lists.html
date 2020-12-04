@@ -1,0 +1,346 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.goods-category-list .layui-table td {
+		border-left: 0;
+		border-right: 0;
+	}
+	.goods-category-list .layui-table .switch {
+		font-size: 16px;
+		cursor: pointer;
+		width: 12px;
+		line-height: 1;
+		display: inline-block;
+		text-align: center;
+		vertical-align: middle;
+	}
+	.goods-category-list .layui-table img {width: 40px;}
+	/* 分类样式 */
+	.table_div{
+		color:#666
+	}
+	.table_head{
+		display: flex;
+		font-weight: bold;
+		background-color: #F7F7F7;
+	}
+	.table_head li{
+		height: 40px;
+		line-height: 40px;
+		border: 0;
+		border-bottom: 1px solid #e6e6e6;
+		padding: 9px 15px;
+		font-size: 14px;
+		
+	}
+	.table_head li:first-child{
+		padding-right: 0;
+		
+	}
+	.table_tr{
+		display: flex;
+		border-bottom: 1px solid #e6e6e6;
+		cursor: move;
+	}
+	.table_tr .table_td{
+		position: relative;
+		padding: 11px 15px 8px;
+		min-height: 30px;
+		line-height: 33px;
+		font-size: 14px;
+	}
+	.table_tr .table_td span{
+		cursor: pointer;
+	}
+	.table_tr .table_td span>img{
+		width:12px;
+		height:12px
+	}
+	.table_tr .table_td span>img.rotate{
+		transform:rotate(90deg);
+	}
+	.table_tr .table_td .ns-img-box{
+		width:30px;
+		height:30px;
+		line-height: 30px;
+	}
+	.table_tr .table_td:first-child{
+		padding-right:0
+	}
+	.table_tr .ns-table-btn {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+	.table_tr .layui-btn {
+	    display: flex;
+	    justify-content: center;
+	    align-items: center;
+	    height: 23px;
+	    border-radius: 50px;
+	    background-color: transparent;
+	    color: #FF6A00;
+	    text-align: center;
+	    padding: 2px 8px 2px 0;
+	    margin: 5px 0 5px 5px;
+	    position: relative;
+	}
+	.table_two_div{
+		display: none;
+	}
+	.table_three{
+		display: none;
+	}
+	.empty_switch{
+		display: inline-block;
+		width:25px
+	}
+	.js-switch{display: inline-block;height:30px;width:30px;text-align: center;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>商城添加商品的时候需要选择对应的商品分类,用户可以根据商品分类搜索商品。</li>
+			<li>点击商品分类名前“+”符号，显示当前商品分类的下级分类。</li>
+			<li>商品属性是前台搜索分类查询商品之后可以通过商品的属性进行进一步搜索。</li>
+			<li>商品分类如果不显示会导致小程序、h5没有该分类以及该分类下的所有商品</li>
+			<li>可通过拖拽进行分类排序</li>
+		</ul>
+	</div>
+</div>
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="addCategory()">添加商品分类</button>
+</div>
+
+<div class="goods-category-list">
+	<div class="table_div" >
+		<ul class="table_head">
+			<li class="" style="width:30px"></li>
+			<li class="" style="flex:6">分类名称</li>
+			<li class="" style="flex:2">图片</li>
+			<!-- <li class="" style="flex:2">排序</li> -->
+			<li class="" style="flex:2">是否显示</li>
+			<li class="" style="flex:2">操作</li>
+		</ul>
+		<div  class="table_body">
+			{if condition="$list"}
+			{foreach name="$list" item="vo" key="index"}
+			<div class="table_one" data-index="{$index}" data-sort="{$vo['sort']}" data-cateid="{$vo['category_id']}">
+				<div class="table_tr">
+					<div class="table_td" style="width:30px">
+						{notempty name="$vo['child_list']"}
+						<span class="switch ns-text-color js-switch" data-category-id="{$vo['category_id']}" data-level="{$vo['level']}" data-open="0">
+							+
+						</span>
+					
+						{/notempty}
+					</div>
+					<div class="table_td" style="flex:6">{$vo['category_name']}</div>
+					<div class="table_td" style="flex:2">
+						{notempty name="$vo['image']"}
+						<div class="ns-img-box">
+							<img layer-src src="{:img($vo['image'])}"/>
+						</div>
+						{/notempty}
+					</div>
+					<!-- <div class="table_td" style="flex:2">
+						<input type="number" class="layui-input ns-len-short" value="{$vo['sort']}" onchange="editSort('{$vo.category_id}')" id="category_sort{$vo.category_id}">
+					</div> -->
+					<div class="table_td" style="flex:2">
+						{if $vo['is_show'] == 0} 显示 {else /} 不显示 {/if}
+					</div>
+					<div class="table_td" style="flex:2">
+						<div class="ns-table-btn">
+							<a class="layui-btn" href="{:addon_url('shop/goodscategory/editcategory',['category_id'=>$vo['category_id']])}">编辑</a>
+							<a class="layui-btn" href="javascript:deleteCategory({$vo['category_id']});">删除</a>
+						</div>
+					</div>
+				</div>
+				{notempty name="$vo['child_list']"}
+					<div class="table_two_div">
+					{foreach name="$vo['child_list']" item="second"}
+					<div class="table_two" data-index="{$index}" data-sort="{$second['sort']}" data-cateid="{$second['category_id']}">
+					<div class="table_tr">
+						<div class="table_td" style="width:30px">
+							
+						</div>
+						<div class="table_td" style="flex:6">
+							{notempty name="$second['child_list']"}
+							<span class="switch ns-text-color js-switch" data-category-id="{$second['category_id']}" data-level="{$second['level']}" data-open="0" style="padding-right: 15px;">
+								+
+							</span>
+							{else /}
+							<span class="switch ns-text-color empty_switch" >  </span>
+							{/notempty}
+							<span>{$second['category_name']}</span>
+						</div>
+						<div class="table_td" style="flex:2">
+							{notempty name="$second['image']"}
+							<div class="ns-img-box">
+								<img layer-src src="{:img($second['image'])}"/>
+							</div>
+							{/notempty}
+						</div>
+						<!-- <div class="table_td" style="flex:2">
+							<input type="number" class="layui-input ns-len-short" value="{$second['sort']}" onchange="editSort('{$second.category_id}')" id="category_sort{$second.category_id}">
+						</div> -->
+						<div class="table_td" style="flex:2">
+							{if $second['is_show'] == 0} 显示 {else /} 不显示 {/if}
+						</div>
+						<div class="table_td" style="flex:2">
+							<div class="ns-table-btn">
+								<a class="layui-btn" href="{:addon_url('shop/goodscategory/editcategory',['category_id'=>$second['category_id']])}">编辑</a>
+								<a class="layui-btn" href="javascript:deleteCategory({$second['category_id']});">删除</a>
+							</div>
+						</div>
+					</div>
+					{notempty name="$second['child_list']"}
+						
+					<div class="table_three">
+						{foreach name="$second['child_list']" item="third"}
+						<div class="table_tr" data-sort="{$third['sort']}" data-cateid="{$third['category_id']}">
+							<div class="table_td" style="width:30px">
+								
+							</div>
+							<div class="table_td" style="flex:6">
+								<span style="padding-left: 80px;">{$third['category_name']}</span>
+							</div>
+							<div class="table_td" style="flex:2">
+								{notempty name="$third['image']"}
+								<div class="ns-img-box">
+									<img layer-src src="{:img($third['image'])}"/>
+								</div>
+								{/notempty}
+							</div>
+							<!-- <div class="table_td" style="flex:2">
+								<input type="number" class="layui-input ns-len-short" value="{$second['sort']}" onchange="editSort('{$second.category_id}')" id="category_sort{$second.category_id}">
+							</div> -->
+							<div class="table_td" style="flex:2">
+								{if $third['is_show'] == 0} 显示 {else /} 不显示 {/if}
+							</div>
+							<div class="table_td" style="flex:2">
+								<div class="ns-table-btn">
+									<a class="layui-btn" href="{:addon_url('shop/goodscategory/editcategory',['category_id'=>$third['category_id']])}">编辑</a>
+									<a class="layui-btn" href="javascript:deleteCategory({$third['category_id']});">删除</a>
+								</div>
+							</div>
+						</div>
+						{/foreach}
+						
+					</div>
+					{/notempty}
+					</div>
+					{/foreach}
+					</div>
+				{/notempty}
+			</div>
+			
+			{/foreach}
+			{else/}
+			<div class="table_tr">
+				<div class="table_td" style="flex:1;text-align: center;">暂无数据</div>
+			</div>
+			{/if}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_EXT/diyview/js/ddsort.js"></script>
+<script>
+var tempPos = '';
+bindDragSort('.table_body' ,'.table_one');
+bindDragSort('.table_two_div' ,'.table_two');
+bindDragSort('.table_three' ,'.table_tr');
+function bindDragSort(paremtElem,childElem){
+	$(paremtElem ).DDSort({
+	    target: childElem,
+	    floatStyle: {
+	        'border': '1px solid #ccc',
+	        'background-color': '#fff'
+	    },
+		down:function(e){
+			tempPos = $(this).data('sort');
+		},
+		up:function(e){
+			var index = $(this).index(),self = $(this);
+			if(index != tempPos){
+				var temparr = [];
+				$(childElem).each(function(index,item){
+					var tempObj = {};
+					tempObj.category_id = item.getAttribute('data-cateid');
+					tempObj.sort = index;
+					temparr.push(tempObj)
+				})
+				setTimeout(function(){
+					$.ajax({
+						url: ns.url("shop/goodscategory/modifySort"),
+						data: {category_sort_array : JSON.stringify(temparr)},
+						dataType: 'JSON',
+						type: 'POST',
+						async: false,
+						success: function (res) {
+							self.data('sort',index)
+							layer.msg(res.message);
+						}
+					});
+				},100);
+			}
+			
+		}
+	});
+}
+
+$(function () {
+	loadImgMagnify();  //图片放大
+
+	//展开收齐点击事件
+	$(".js-switch").click(function () {
+		var category_id = $(this).attr("data-category-id");
+		var level = $(this).attr("data-level");
+		var open = parseInt($(this).attr("data-open").toString());
+		if(open){
+			$(".goods-category-list .layui-table tr[data-category-id-"+ level+"='" + category_id + "']").hide();
+			// $(this).children("img").removeClass('rotate');
+			$(this).text("+");
+			if(level == 1) $(this).parents('.table_tr').siblings('.table_two_div').hide();
+			else if(level == 2) $(this).parents('.table_tr').siblings('.table_three').hide();
+			
+		}else{
+			$(".goods-category-list .layui-table tr[data-category-id-"+ level+"='" + category_id + "']").show();
+			$(this).text("-");
+			// $(this).children("img").addClass('rotate');
+			if(level == 1) $(this).parents('.table_tr').siblings('.table_two_div').show();
+			else if(level == 2) $(this).parents('.table_tr').siblings('.table_three').show();
+			
+		}
+		$(this).attr("data-open", (open ? 0 : 1));
+		
+	});
+});
+
+function deleteCategory(category_id) {
+	
+	layer.confirm('子级分类也会删除，请谨慎操作', function() {
+		$.ajax({
+			url: ns.url("shop/goodscategory/deleteCategory"),
+			data: {category_id : category_id},
+			dataType: 'JSON',
+			type: 'POST',
+			async: false,
+			success: function (res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					location.reload();
+				}
+			}
+		});
+	});
+}
+function addCategory() {
+	location.href = ns.url("shop/goodscategory/addcategory");
+}
+</script>
+{/block}

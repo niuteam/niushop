@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "ns-progress": "/components/ns-progress/ns-progress",
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "to-top": "/components/toTop/toTop"
+  }
+}

@@ -1,0 +1,908 @@
+<!-- 订单物流发货 -->
+<style>
+    .delivery-box {
+        padding: 20px; /*border-bottom:1px solid #e6e6e6;*/
+    }
+
+    .layui-table-body {
+        overflow: unset;
+    }
+
+    .delivery-content {
+        padding: 7px 0 !important;
+    }
+
+    .layui-table-view {
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-delivery .layui-table { /*margin-bottom: 30px;*/
+    }
+
+    .layui-form .order_goods_list thead th, .layui-form #order_goods_list tbody tr {
+        border-bottom: 1px solid #E6E6E6;
+    }
+
+    .layui-form .order_goods_list thead th {
+        background-color: #F5F5F5;
+        line-height: 30px;
+    }
+
+    #order_goods_list_box, #order_goods_list_box1 {
+        overflow: hidden;
+    }
+
+    #order_goods_list_box table, #order_goods_list_box1 table {
+        margin: 0;
+    }
+
+    #order_goods_list_box table:nth-of-type(2), #order_goods_list_box1 table:nth-of-type(2) {
+        display: block;
+        overflow: auto;
+        max-height: 300px;
+    }
+
+    .order-delivery .ns-input-text {
+        height: auto;
+        min-height: 34px;
+    }
+
+    .table-height {
+        height: 200px;
+        overflow: auto;
+    }
+    .edit-delivery-box table{
+        margin: 0;
+    }
+    .edit-delivery-box table:last-of-type{
+        display: block;
+        height: 430px;
+        overflow: auto;
+    }
+</style>
+<!--发送订单弹出框-->
+<script type="text/html" id="order_delivery_html">
+    <div class="order-delivery">
+        <div class="layui-form">
+            <div class="layui-form-item" style="display:none;">
+                <div class="layui-form-mid layui-word-aux delivery-content">
+                    待发货<span class="delivery-count">0</span>，已选<span class="deliveryed_count">0</span>
+                </div>
+            </div>
+
+            <input type="hidden" name="type" value="manual">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">收货地址：</label>
+                <div class="layui-input-block">
+                    <p class="ns-input-text ns-len-long"> {{ d.order_info.full_address }}{{ d.order_info.address }}</p>
+                </div>
+            </div>
+
+            <div class="layui-form-item delivery-type">
+                <label class="layui-form-label">发货方式：</label>
+                <div class="layui-input-block">
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="1" title="物流发货" checked>
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="0" title=无需物流>
+                </div>
+            </div>
+
+            <div class="express-type">
+                <div class="layui-form-item logistics-company">
+                    <label class="layui-form-label">物流公司：</label>
+                    <div class="layui-input-block ns-len-mid">
+                        <select name="express_company_id" lay-search lay-filter="express_company">
+                            <option value="">请选择物流公司</option>
+                            {{# layui.each(d.express_company, function(index, item){ }}
+                            <option value="{{ item.company_id }}">{{ item.company_name }}</option>
+                            {{# }); }}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item express-number">
+                    <label class="layui-form-label">快递单号：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="delivery_no" placeholder="" autocomplete="off" class="layui-input ns-len-mid">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ns-form-row">
+                <button type="button" class="layui-btn" lay-submit id="button_delivery_order" lay-filter="button_delivery_order" style="display:none;">保存</button>
+            </div>
+
+            <div id="order_goods_list_box">
+                <table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line" lay-filter="order_goods_list">
+                    <colgroup>
+                        <col width="5%">
+                        <col width="38%">
+                        <col width="15%">
+                        <col width="27%">
+                        <col width="15%">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" lay-skin="primary" lay-filter="selectAllTop"/></th>
+                        <th>商品名称</th>
+                        <th>数量</th>
+                        <th>物流单号</th>
+                        <th>物流状态</th>
+                    </tr>
+                    </thead>
+                </table>
+                <table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line" lay-filter="order_goods_list">
+                    <colgroup>
+                        <col width="5%">
+                        <col width="38%">
+                        <col width="15%">
+                        <col width="27%">
+                        <col width="15%">
+                    </colgroup>
+                    <tbody>
+                    {{# layui.each(d.order_goods_list, function(index, item){ }}
+                    <tr>
+                        <td><input type="checkbox" lay-skin="primary" class="order_goods_id" lay-filter="select{{ item.order_goods_id }}" value="{{ item.order_goods_id }}" {{# if(item.delivery_status !=0){ }} disabled {{# } }}/></td>
+                        <td>{{ item.sku_name }}</td>
+                        <td>{{ item.num }}</td>
+                        <td>{{ item.delivery_no }}</td>
+                        <td>{{ item.delivery_status_name }}</td>
+                    </tr>
+                    {{# }); }}
+                    {{# if(d.order_goods_list.length === 0){ }}
+                    <tr>
+                        <td colspan="5" align="center">无数据</td>
+                    </tr>
+                    {{# } }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 批量订单发货 -->
+<script type="text/html" id="order_batch_delivery_html">
+    <div class="order-delivery">
+        <div class="layui-form">
+
+            <input type="hidden" name="type" value="manual">
+            {if addon_is_exit('electronicsheet',$user_info.site_id) == 1}
+            <div class="layui-form-item">
+                <label class="layui-form-label">发货类型：</label>
+                <div class="layui-input-inline">
+                    <input type="radio" lay-filter="delivery_mode" name="type" value="electronicsheet" title="电子面单" checked>
+                    <input type="radio" lay-filter="delivery_mode" name="type" value="manual" title="手动发货">
+                </div>
+            </div>
+            <input type="hidden" name="sheet_exists" value="1">
+            {else/}
+            <input type="hidden" name="sheet_exists" value="2">
+            {/if}
+
+            <div class="layui-form-item {if addon_is_exit('electronicsheet',$user_info.site_id) == 1} layui-hide {/if} delivery-type">
+                <label class="layui-form-label">发货方式：</label>
+                <div class="layui-input-inline">
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="1" title="物流发货" checked>
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="0" title=无需物流>
+                </div>
+            </div>
+
+            {if addon_is_exit('electronicsheet',$user_info.site_id) == 1}
+            <div class="layui-form-item express-mode">
+                <label class="layui-form-label">面单模版：</label>
+                <div class="layui-input-block ns-len-mid">
+                    <select name="template_id" lay-search lay-filter="express_company">
+                        <option value="">请选择面单模版</option>
+                    </select>
+                </div>
+            </div>
+            {/if}
+
+            <div class="express-type">
+                <div class="layui-form-item logistics-company {if addon_is_exit('electronicsheet',$user_info.site_id) == 1}layui-hide{/if}">
+                    <label class="layui-form-label">物流公司：</label>
+                    <div class="layui-input-block ns-len-mid">
+                        <select name="express_company_id" lay-search lay-filter="express_company">
+                            <option value="">请选择物流公司</option>
+                            {{# layui.each(d.express_company, function(index, item){ }}
+                            <option value="{{ item.company_id }}">{{ item.company_name }}</option>
+                            {{# }); }}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ns-form-row">
+                <button type="button" class="layui-btn" lay-submit id="button_delivery_order" lay-filter="button_delivery_order" style="display:none;">保存</button>
+            </div>
+
+            <div id="order_goods_list_box">
+                <table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line">
+                    <colgroup>
+                        <col>
+                        <col width="30%">
+                        <col width="50%">
+                        <col width="20%">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>订单号</th>
+                        <th>收货地址</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                </table>
+
+                <table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line">
+                    <colgroup>
+                        <col width="">
+                        <col width="30%">
+                        <col width="50%">
+                        <col width="20%">
+                    </colgroup>
+                    <tbody>
+                    {{# layui.each(d.order_goods_list, function(index, item){ }}
+                    <tr>
+                        <td></td>
+                        <td>{{ item.order_no }}</td>
+                        <td>{{ item.full_address }}</td>
+                        <td><a href="javascript:;" class="ns-text-color goods-item-remove" data-order-id="{{item.order_id}}">删除</a></td>
+                    </tr>
+                    {{# }); }}
+                    {{# if(d.order_goods_list.length === 0){ }}
+                    <tr>
+                        <td colspan="3" align="center">无数据</td>
+                    </tr>
+                    {{# } }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 修改物流单号 -->
+<script type="text/html" id="order_edit_delivery">
+    <div class="edit-delivery-box layui-form">
+        <table class="layui-table">
+            <colgroup>
+                <col width="30%">
+                <col width="30%">
+                <col width="40%">
+            </colgroup>
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>物流公司</th>
+                <th>快递单号</th>
+            </tr>
+            </thead>
+        </table>
+        <table class="layui-table">
+            <colgroup>
+                <col width="30%">
+                <col width="30%">
+                <col width="40%">
+            </colgroup>
+            <tbody>
+            {{#for(var i = 0; i < d.editDeliveryData.length; i++){ }}
+            <tr>
+                <td>{{d.editDeliveryData[i].id}}</td>
+                <td>
+                    <select>
+                        {{#for(var j = 0; j < d.express_company.length; j++){ }}
+                            {{# if(d.express_company[j].company_id == d.editDeliveryData[i].express_company_id){ }}
+                            <option selected value="{{d.express_company[j].company_id}}">{{d.express_company[j].company_name}}</option>
+                            {{# }else{ }}
+                            <option value="{{d.express_company[j].company_id}}">{{d.express_company[j].company_name}}</option>
+                            {{# } }}
+                        {{# } }}
+                    </select>
+                </td>
+                <td>
+                    <input type="text"  class="layui-input" value="{{d.editDeliveryData[i].delivery_no}}">
+                </td>
+            </tr>
+            {{# } }}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script>
+    /**
+     * 订单发货
+     */
+    var submitting = false;
+
+    function orderDelivery(order_id) {
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/order/getOrderInfo"),
+            async: true,
+            dataType: 'json',
+            data: {
+                "order_id": order_id
+            },
+            success: function (res) {
+                if (res.code == 0) {
+                    var product_arr = [];
+                    layui.use(['table', 'form', 'laytpl'], function () {
+                        var laytpl = layui.laytpl, table = layui.table, form = layui.form;
+                        form.render();
+                        //获取模板
+                        var getTpl = $("#order_delivery_html").html();
+                        //渲染模板
+                        var data = {order_info: res.data};
+                        //查询订单信息
+                        $.ajax({
+                            type: "post",
+                            url: ns.url("shop/express/getShopExpressCompanyList"),
+                            dataType: 'json',
+                            async: false,
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    data.express_company = res.data;
+                                }
+                            }
+                        });
+                        //订单项
+                        $.ajax({
+                            type: "post",
+                            url: ns.url("shop/order/getOrderGoodsList"),
+                            dataType: 'json',
+                            async: false,
+                            data: {
+                                "order_id": order_id
+                            },
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    data.order_goods_list = res.data;
+                                }
+                            }
+                        });
+                        laytpl(getTpl).render(data, function (html) {
+                            layer.open({
+                                type: 1,
+                                shadeClose: true,
+                                shade: 0.3,
+                                fixed: false,
+                                scrollbar: false,
+                                title: "订单发货",
+                                area: '800px',
+                                btn: ['保存'],
+                                yes: function (index, layero) {
+                                    $("#button_delivery_order").click();
+                                },
+                                content: html,
+                                cancel: function (index, layero) {
+                                    //右上角关闭回调
+                                    layer.close(index);
+                                    //return false 开启该代码可禁止点击该按钮关闭
+                                },
+                                success: function (layero, index) {
+                                    form.render();
+                                    form.on('radio(delivery_type)', function (data) {
+                                        if (data.value == 1) {
+                                            $(".express-type").show();
+                                        } else {
+                                            $(".express-type").hide();
+                                        }
+
+                                    });
+
+                                    form.on('submit(button_delivery_order)', function (data) {
+                                        var express_company_id = data.field.express_company_id;
+                                        var template_id = data.field.template_id;
+
+                                        if (data.field.delivery_type == 1 && express_company_id <= 0) {
+                                            layer.msg('请选择物流公司', {time: 2000, icon: 5});
+                                            return;
+                                        }
+
+                                        var order_goods_id_array = [];
+                                        $(".order_goods_id").each(function (i) {
+                                            var checked = $(this).prop("checked");
+                                            if (checked) {
+                                                order_goods_id_array.push($(this).val());
+                                            }
+                                        });
+                                        if (order_goods_id_array == "") {
+                                            layer.msg('请选择发货商品', {time: 2000, icon: 5});
+                                            return;
+                                        }
+                                        var order_goods_ids = order_goods_id_array.toString();
+                                        if (data.field.delivery_no == "" && data.field.delivery_type == 1) {
+                                            layer.msg('物流单号不能为空', {time: 2000, icon: 5});
+                                            return;
+                                        }
+                                        data.field.order_goods_ids = order_goods_ids;
+
+                                        if (submitting) {
+                                            return false;
+                                        }
+                                        submitting = true;
+                                        $.ajax({
+                                            type: "post",
+                                            url: '{:addon_url("shop/order/delivery")}',
+                                            async: true,
+                                            dataType: 'json',
+                                            data: data.field,
+                                            success: function (res) {
+                                                layer.msg(res.message, {}, function () {
+                                                    if (res.code == 0) {
+                                                        location.reload();
+                                                    } else {
+                                                        submitting = false;
+                                                    }
+                                                });
+
+                                            }
+                                        })
+                                    });
+
+                                    /**
+                                     * 监听全选
+                                     */
+                                    form.on('checkbox(selectAllTop)', function (data) {
+                                        if (data.elem.checked) {
+                                            $("tr .order_goods_id:checkbox").each(function () {
+                                                if ($(this).attr("disabled") == undefined) {
+                                                    $(this).prop("checked", true);
+                                                }
+                                            });
+                                        } else {
+                                            $("tr .order_goods_id:checkbox").each(function () {
+                                                $(this).prop("checked", false);
+                                            });
+                                        }
+                                        form.render();
+                                    });
+
+                                    /**
+                                     * 监听每一行的复选框
+                                     */
+                                    var len = $("tbody .order_goods_id").length;
+
+                                    for (var i = 0; i < len; i++) {
+                                        var num = $(".order_goods_id").eq(i).val();
+
+                                        form.on('checkbox(select' + num + ')', function (data) {
+                                            if ($("tbody .order_goods_id:checked").length == len) {
+                                                $("input[lay-filter='selectAllTop']").prop("checked", true);
+                                            } else {
+                                                $("input[lay-filter='selectAllTop']").prop("checked", false);
+                                            }
+
+                                            form.render();
+                                        });
+                                    }
+
+                                    //复选框选中
+                                    table.on('checkbox(order_goods)', function (obj) {
+                                        if (obj.type == "all") {
+                                            var data = table.checkStatus('product_table');
+                                            var checkbox_data = data.data;
+                                            product_arr = [];
+                                            if (obj.checked) {
+                                                $.each(checkbox_data, function (index, itemobj) {
+                                                    product_arr.push(itemobj.order_goods_id);
+                                                })
+
+                                            }
+                                        } else {
+                                            if (obj.checked) {
+                                                // if(index != -1){
+                                                product_arr.push(obj.data.order_goods_id);
+                                                // }
+                                            } else {
+                                                var index = $.inArray(obj.data.order_goods_id, product_arr);
+                                                product_arr.splice(index, 1);
+                                            }
+                                        }
+
+                                        $(".deliveryed_count").text(product_arr.length);
+                                    });
+
+                                }
+
+                            });
+                        })
+                    })
+                }
+            }
+        })
+
+    }
+
+    /**
+     * 批量发货
+     */
+    var batchSubmitting = false;
+
+    function orderBatchDelivery(order_data) {
+        layui.use(['table', 'form', 'laytpl'], function () {
+            var laytpl = layui.laytpl, table = layui.table, form = layui.form;
+            form.render();
+            //获取模板
+            var getTpl = $("#order_batch_delivery_html").html();
+            //渲染模板
+            var data = {order_goods_list: order_data};
+
+            //查询订单信息
+            $.ajax({
+                type: "post",
+                url: ns.url("shop/express/getShopExpressCompanyList"),
+                dataType: 'json',
+                async: false,
+                success: function (res) {
+                    if (res.code == 0) {
+                        data.express_company = res.data;
+                    }
+                }
+            });
+
+            laytpl(getTpl).render(data, function (html) {
+                layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    shade: 0.3,
+                    fixed: false,
+                    scrollbar: false,
+                    title: "订单发货",
+                    area: '800px',
+                    btn: ['保存'],
+                    yes: function (index, layero) {
+                        $("#button_delivery_order").click();
+                    },
+                    content: html,
+                    cancel: function (index, layero) {
+                        //右上角关闭回调
+                        layer.close(index);
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    },
+                    success: function (layero, index) {
+
+                        var sheetExists = $("input[name='sheet_exists']").val();
+
+                        var deliveryModeIdent = "";
+                        if (sheetExists == 1) {
+                            expressTemplate();
+                            deliveryModeIdent = "electronicsheet";
+                        } else if (sheetExists == 2) {
+                            deliveryModeIdent = "manual";
+                        }
+
+                        $("#order_goods_list_box").html(tableContentChange(sheetExists));
+
+                        form.render();
+                        form.on('radio(delivery_type)', function (data) {
+                            if (data.value == 1) {
+                                $("#order_goods_list_box").html(tableContentChange(2));
+                                $(".express-type").show();
+                            } else {
+                                $("#order_goods_list_box").html(tableContentChange(1));
+                                $(".express-type").hide();
+                            }
+
+                        });
+
+                        form.on('radio(delivery_mode)', function (data) {
+                            deliveryModeIdent = data.value;
+                            if (data.value == "electronicsheet") {
+                                $(".express-mode").removeClass("layui-hide");
+                                $(".express-number").addClass("layui-hide");
+                                $(".delivery-type").addClass("layui-hide");
+                                $(".logistics-company").addClass("layui-hide");
+                                $("#order_goods_list_box").html(tableContentChange(1))
+                            } else if (data.value == "manual") {
+                                $(".express-mode").addClass("layui-hide");
+                                $(".express-number").removeClass("layui-hide");
+                                $(".logistics-company").removeClass("layui-hide");
+                                $(".delivery-type").removeClass("layui-hide");
+                                $("#order_goods_list_box").html(tableContentChange(2))
+                            }
+                        });
+
+                        $("body").on("click", ".order_goods_list:eq(1) .goods-item-remove", function () {
+
+                            $(this).parents("tr").remove();
+                            var orderId = $(this).attr("data-order-id");
+
+                            //数组的删除
+                            Array.prototype.remove = function (val) {
+                                var index = this.indexOf(val);
+                                if (index > -1) {
+                                    this.splice(index, 1);
+                                }
+                            };
+
+                            Array.prototype.indexOf = function (val) {
+                                for (var i = 0; i < this.length; i++) {
+                                    if (this[i].order_id == val) return i;
+                                }
+                                return -1;
+                            };
+
+                            data.order_goods_list.remove(orderId);
+
+                            var html = '<tr>';
+                            html += '<td colspan="5" align="center">无数据</td>';
+                            html += '</tr>';
+
+                            if (!$(".order_goods_list:eq(1) tbody").text().trim()) {
+                                $(".order_goods_list:eq(1) tbody").html(html)
+                            }
+                        });
+
+                        form.on('submit(button_delivery_order)', function (data) {
+                            var express_company_id = data.field.express_company_id;
+                            var template_id = data.field.template_id;
+                            if (template_id <= 0 && deliveryModeIdent == "electronicsheet") {
+                                layer.msg('请选择面单模版', {time: 2000, icon: 5});
+                                return;
+                            }
+
+                            if (data.field.delivery_type == 1 && express_company_id <= 0 && deliveryModeIdent == "manual") {
+                                layer.msg('请选择物流公司', {time: 2000, icon: 5});
+                                return;
+                            }
+
+                            var order_list = [];
+                            for (var orderItem = 0; orderItem < $(".order_goods_list:eq(1) tbody tr").length; orderItem++) {
+                                var json = {order_id: '', delivery_no: ''};
+                                json.order_id = $(".order_goods_list:eq(1) tbody tr").eq(orderItem).find(".goods-item-remove").attr("data-order-id");
+                                if ($(".order_goods_list:eq(1) tbody tr").eq(orderItem).find("input").length) {
+                                    json.delivery_no = $(".order_goods_list:eq(1) tbody tr").eq(orderItem).find("input").val();
+                                }
+                                order_list.push(json);
+                            }
+
+                            data.field.order_list = order_list;
+
+                            if (batchSubmitting) {
+                                return false;
+                            }
+
+                            batchSubmitting = true;
+                            $.ajax({
+                                type: "post",
+                                url: '{:addon_url("shop/delivery/batchdelivery")}',
+                                async: true,
+                                dataType: 'json',
+                                data: data.field,
+                                success: function (res) {
+                                    layer.msg(res.message, {}, function () {
+                                        if (res.code == 0) {
+                                            location.reload();
+                                        } else {
+                                            batchSubmitting = false;
+                                        }
+                                    });
+
+                                }
+                            })
+                        });
+
+                        form.verify({
+                            required: function (value, item) { //value：表单的值、item：表单的DOM对象
+                                if (!value) {
+                                    return '物流单号为空';
+                                }
+                            }
+                        });
+
+                        function tableContentChange(type) {
+
+                            var html = '<table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line">';
+                            html += '<colgroup>';
+                            if (type == 2) {
+                                html += '<col width="20%">';
+                                html += '<col width="40%">';
+                                html += '<col width="20%">';
+                                html += '<col width="20%">';
+                            } else if (type == 1) {
+                                html += '<col>';
+                                html += '<col width="30%">';
+                                html += '<col width="50%">';
+                                html += '<col width="20%">';
+                            }
+                            html += '</colgroup>';
+
+                            html += '<thead>';
+                            if (type == 2) {
+                                html += '<tr>';
+                                html += '<th>订单号</th>';
+                                html += '<th>收货地址</th>';
+                                html += '<th>物流单号</th>';
+                                html += '<th>操作</th>';
+                                html += '</tr>';
+                            } else if (type == 1) {
+                                html += '<tr>';
+                                html += '<th></th>';
+                                html += '<th>订单号</th>';
+                                html += '<th>收货地址</th>';
+                                html += '<th>操作</th>';
+                                html += '</tr>';
+                            }
+                            html += '</thead>';
+                            html += '</table>';
+
+                            html += '<table class="layui-table order_goods_list" lay-filter="order_goods" lay-skin="line">';
+                            html += '<colgroup>';
+                            if (type == 2) {
+                                html += '<col width="20%">';
+                                html += '<col width="40%">';
+                                html += '<col width="20%">';
+                                html += '<col width="20%">';
+                            } else if (type == 1) {
+                                html += '<col>';
+                                html += '<col width="30%">';
+                                html += '<col width="50%">';
+                                html += '<col width="20%">';
+                            }
+                            html += '</colgroup>';
+                            html += '<tbody>';
+                            if (data.order_goods_list.length > 0) {
+                                for (var i = 0; i < data.order_goods_list.length; i++) {
+                                    if (type == 2) {
+                                        html += '<tr>';
+                                        html += `<td>${data.order_goods_list[i].order_no}</td>`;
+                                        html += `<td>${data.order_goods_list[i].full_address}</td>`;
+                                        html += `<td><input lay-verify="required" class="layui-input" type="number"></td>`;
+                                        html += `<td><a href="javascript:;" class="ns-text-color goods-item-remove" data-order-id="${data.order_goods_list[i].order_id}">删除</a></td>`;
+                                        html += '</tr>';
+                                    } else if (type == 1) {
+                                        html += '<tr>';
+                                        html += `<td></td>`;
+                                        html += `<td>${data.order_goods_list[i].order_no}</td>`;
+                                        html += `<td>${data.order_goods_list[i].full_address}</td>`;
+                                        html += `<td><a href="javascript:;" class="ns-text-color goods-item-remove" data-order-id="${data.order_goods_list[i].order_id}">删除</a></td>`;
+                                        html += '</tr>';
+                                    }
+                                }
+                            } else {
+                                html += '<tr>';
+                                html += `<td colspan="4" align="center">无数据</td>`;
+                                html += '</tr>';
+                            }
+                            html += '</tbody>';
+
+                            html += '</table>';
+
+                            return html;
+                        }
+                    }
+
+                });
+            })
+        })
+    }
+
+    /**
+     * 电子面单模版
+     */
+    function expressTemplate() {
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/delivery/getexpresselectronicsheetlist"),
+            dataType: 'json',
+            success(res) {
+                if (res.code >= 0) {
+                    var templateList = res.data;
+                    var html = '';
+                    html += '<select name="template_id" lay-search lay-filter="express_company">';
+                    html += '<option value="">请选择面单模版</option>';
+                    for (var i = 0; i < templateList.length; i++) {
+                        html += '<option value=' + templateList[i].id + '>' + templateList[i].template_name + '</option>';
+                    }
+                    html += '</select>';
+                    $(".express-mode div").html(html);
+                    form.render();
+                }
+            }
+        })
+    }
+
+    /**
+     * 修改物流单号
+     */
+    function editDelivery(order_id) {
+        var data = {};
+        //物流信息
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/delivery/getOrderDelivery"),
+            data:{order_id:order_id},
+            dataType: 'json',
+            async: false,
+            success:function(res) {
+                if (res.code >= 0) {
+                    data.editDeliveryData = res.data;
+                }else{
+                    layer.msg(layer.msg(res))
+                }
+            }
+        });
+
+        //物流公司
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/express/getShopExpressCompanyList"),
+            dataType: 'json',
+            async: false,
+            success: function (res) {
+                if (res.code == 0) {
+                    data.express_company = res.data;
+                }
+            }
+        });
+
+        var submitIdent = false;
+
+        laytpl($("#order_edit_delivery").html()).render(data, function(html) {
+            layer.open({
+                title: '修改物流单号',
+                skin: 'layer-tips-class',
+                type: 1,
+                btn:['保存','取消'],
+                area: ['800px', '600px'],
+                content: html,
+                yes: function () {
+                    var submitArr = [];
+                    var nullIdent = false;
+                    if (submitIdent){
+                        submitIdent = true;
+                        layer.msg("请勿重复保存");
+                        return false;
+                    }
+                    $(".edit-delivery-box tbody tr").each(function (index,item) {
+                        var arr = {};
+                        if (!$(item).find("td").eq(1).find("select option:selected").val()){
+                            layer.msg("物流公司不能为空");
+                            nullIdent = true;
+                            return false;
+                        }
+                        if (!$(item).find("td").eq(2).find("input").val()){
+                            layer.msg("物流单号不能为空");
+                            nullIdent = true;
+                            return false;
+                        }
+                        arr.express_company_id = $(item).find("td").eq(1).find("select option:selected").val();
+                        arr.id = $(item).find("td").eq(0).text();
+                        arr.delivery_no = $(item).find("td").eq(2).find("input").val();
+                        submitArr.push(arr);
+                        nullIdent = false;
+                    });
+
+                    if (nullIdent){
+                        return false;
+                    }
+                    submitArr = JSON.stringify(submitArr);
+
+                    $.ajax({
+                        type: "post",
+                        url: ns.url("shop/delivery/editOrderDelivery"),
+                        dataType: 'json',
+                        data:{delivery_json: submitArr},
+                        success: function (res) {
+                            submitIdent = false;
+                            if (res.code == 0) {
+                                location.reload();
+                            }else{
+                                layer.msg(res.message);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        form.render();
+    }
+
+
+</script>

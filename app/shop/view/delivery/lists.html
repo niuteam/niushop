@@ -1,0 +1,614 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/delivery_lists.css"/>
+<style>
+    .ns-table-tab .layui-tab-content {padding-top: 0;}
+	.layui-layer-content {line-height: 30px;}
+</style>
+{/block}
+{block name="main"}
+<!-- 筛选 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title"></h2>
+        <form class="layui-colla-content layui-form layui-show"  lay-filter="order_list">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">搜索方式：</label>
+                    <div class="layui-input-inline">
+                        <select name="order_label" >
+                            {foreach $order_label_list as $k => $label_val}
+                            <option value="{$k}">{$label_val}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <input type="text" name="search" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">下单时间：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+                        <i class="ns-calendar"></i>
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+                        <i class="ns-calendar"></i>
+                    </div>
+                    <button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(7, this);return false;">近7天</button>
+                    <button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(30, this);return false;">近30天</button>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">订单来源：</label>
+                    <div class="layui-input-inline">
+                        <select name="order_from">
+                            <option value="">全部</option>
+                            {foreach $order_from_list as $order_from_k => $order_from_v}
+                            <option value="{$order_from_k}">{$order_from_v['name']}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="ns-form-row">
+                <button class="layui-btn ns-bg-color" id="btn_search" lay-submit lay-filter="btn_search">筛选</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="layui-tab ns-table-tab" lay-filter="order_tab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="">全部订单</li>
+    </ul>
+    <div class="layui-tab-content">
+		<div class="order-operation" style="display: none">
+			<div class="layui-form order-operation-btn all-selected-checkbox">
+				<div class="order-operation-all-btn">
+					<input type="checkbox" name="" lay-skin="primary" lay-filter="allCheckbox">
+					<input type="hidden" name="allOrderId">
+				</div>
+				<div class="btn-box">
+					<span class="btn-deliver">批量发货</span>
+					<span class="btn-dispatch-bill">打印发货单</span>
+					{if addon_is_exit('electronicsheet',$user_info.site_id) == 1}
+					<span class="btn-express-sheet">打印电子面单</span>
+					{/if}
+				</div>
+			</div>
+		</div>
+        <!-- 列表 -->
+        <div id="delivery_list"></div>
+    </div>
+</div>
+
+<div class="order-operation" style="display: none">
+	<div class="layui-form order-operation-btn all-selected-checkbox">
+		<div class="order-operation-all-btn">
+			<input type="checkbox" name="" lay-skin="primary" lay-filter="allCheckbox">
+			<input type="hidden" name="allOrderId">
+		</div>
+		<div class="btn-box">
+			<span class="btn-deliver">批量发货</span>
+			<span class="btn-dispatch-bill">打印发货单</span>
+			{if addon_is_exit('electronicsheet',$user_info.site_id) == 1}
+			<span class="btn-express-sheet">打印电子面单</span>
+			{/if}
+		</div>
+	</div>
+	<div id="delivery_page"></div>
+</div>
+
+<div id="order_operation"></div>
+{/block}
+{block name="script"}
+<script src="SHOP_JS/deliver_lists.js"></script>
+<script src="SHOP_JS/lodop_funcs.js"></script>
+{include file="order/order_common_action" /}
+<!-- 修改订单收货地址 -->
+{include file="order/order_action" /}
+<!-- 发货 -->
+{include file="order/order_delivery_action" /}
+<!-- 外卖发货 -->
+{include file="localorder/local_order_delivery_action" /}
+<script type="text/html" id="express_sheet">
+    <div class="layui-form express-sheet">
+        <div class="layui-form-item express-mode">
+            <label class="layui-form-label"><span class="required">*</span>面单模版：</label>
+            <div class="layui-input-block ns-len-mid">
+                <select name="template_id" lay-search lay-filter="express_company" lay-verify="required">
+                    <option value="">请选择面单模版</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否发货</label>
+            <div class="layui-input-block">
+                <input type="checkbox" name="is_delivery" lay-skin="switch" value="1">
+            </div>
+        </div>
+        <div class="ns-form-row">
+            <button type="button" class="layui-btn ns-bg-color" lay-submit lay-filter="express_sheet_save">点击确定</button>
+        </div>
+    </div>
+</script>
+<script>
+    var laypage,element, form, hash_url;
+    var is_refresh = false;
+    var order_type_status_json = [];
+    var orderDataAll = [];
+
+    /**
+     *通过hash获取页数
+     */
+    function getHashPage(){
+        var page = 1;
+        var hash = location.hash;
+
+        var hash_arr = hash.split("&");
+        $.each(hash_arr,function(index, itemobj){
+            var item_arr = itemobj.split("=");
+            if(item_arr.length == 2){
+                if(item_arr[0].indexOf("page") != "-1"){
+                    page = item_arr[1];
+                }
+            }
+        });
+        return page;
+    }
+
+    //从hash中获取数据
+    function getHashData(){
+        var hash = ns.urlReplace(location.hash);
+        var data= [];
+
+        var hash_arr = hash.split("&");
+
+        var form_json = {
+            "end_time" : "",
+            "order_from" : "",
+            "order_label" : $("select[name=order_label]").val(),
+            "order_name" : "",
+            "order_status" : "",
+            // "promotion_type" : "",
+            "pay_type" : "",
+            "search" : "",
+            "start_time" : "",
+            "order_type" : 'all',
+            "page" : ""
+        };
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    $.each(form_json,function(key, form_val){
+                        if(item_arr[0].indexOf(key) != "-1"){
+                            form_json[key] = item_arr[1];
+                        }
+                    })
+                }
+            })
+        }
+        resetOrderStatus(form_json.order_type, 2);
+        form.val("order_list", form_json);
+        setOrderStatusTab(form_json.order_status);
+        return form_json;
+    }
+
+    /**
+     * 获取哈希值order_type
+     */
+    function getHashOrderType(){
+        var hash = ns.urlReplace(location.hash);
+        var hash_arr = hash.split("&");
+        var order_type = "all";
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    if(item_arr[0].indexOf("order_type") != "-1") {
+                        order_type = item_arr[1];
+                    }
+                }
+            })
+        }
+        return order_type;
+    }
+    layui.use(['laypage','laydate','form', 'element'], function(){
+        form = layui.form;
+        laypage = layui.laypage;
+        element = layui.element;
+        var laydate = layui.laydate;
+        form.render();
+
+        //渲染时间
+        laydate.render({
+            elem: '#start_time',
+			type: 'datetime',
+			change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+        laydate.render({
+            elem: '#end_time',
+			type: 'datetime',
+			change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        //监听筛选事件
+        form.on('submit(btn_search)', function(data){
+            is_refresh = true;
+            data.field.page = 1;
+            resetOrderStatus(data.field.order_type, 2);
+            setHashOrderList(data.field);
+            return false;
+        });
+
+        //批量导出
+        form.on('submit(batch_export)', function(data){
+            data.field.order_type = 1;
+            data.field.order_status = 1;
+            location.href = ns.url("shop/order/exportOrderGoods",data.field);
+            return false;
+        });
+
+
+        //订单类型
+        form.on('select(order_type)', function(data){
+
+            resetOrderStatus(data.value, 1);
+            return false;
+        });
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(order_tab)', function(){
+            var status = this.getAttribute('lay-id');
+            form.val("delivery_list", {"order_status":status});
+
+            var hash_data = getHashList();
+            hash_data.order_status = status;
+            hash_data.page = 1;
+            setHashOrderList(hash_data);
+        });
+        getHashData();
+        getOrderList();//筛选
+
+    });
+
+    function setOrderStatusTab(order_status){
+        $(".layui-tab-title li").removeClass("layui-this");
+        $(".layui-tab-title li").each(function(){
+            var status = $(this).attr("lay-id");
+            if(status == order_status){
+                $(this).addClass("layui-this")
+            }
+        });
+    }
+    //重置状态tab 选项卡
+    function resetOrderStatus(order_type, is_tab){
+        var hash_order_type = getHashOrderType();
+        if(hash_order_type != order_type || is_refresh == false){
+            if(is_tab != 1 || is_refresh == false) {
+                $(".layui-tab-title li").not(':first').remove();
+                $(".layui-tab-title li").find(":first").addClass("layui-this");
+            }
+            if(is_tab != 2 || is_refresh == false){
+                $("select[name=order_status] option").not(':first').remove();
+            }
+
+            var status_item = [];
+            $.each(status_item,function(index, itemobj){
+                if(is_tab != 1 || is_refresh == false) {
+                    $(".layui-tab-title").append('<li lay-id="' + index + '">' + itemobj + '</li>');
+                }
+                if(is_tab != 2 || is_refresh == false) {
+                    $("select[name=order_status]").append('<option value="' + index + '">' + itemobj + '</option>');
+                }
+            });
+            form.render('select');
+        }
+    }
+
+    //哈希值 订单数据
+    function setHashOrderList(data){
+        var hash = "";
+        $.each(data,function(index, itemobj){
+            if(itemobj != "" && itemobj != "all"){
+                if(hash == ""){
+                    hash += "#!"+index +"="+itemobj;
+                }else{
+                    hash += "&"+index +"="+itemobj;
+                }
+            }
+        });
+        // window.location.href = hash;
+        hash_url = hash;
+        location.hash = hash;
+        getOrderList();
+    }
+
+    function getHashList(){
+        var hash = ns.urlReplace(location.hash);
+        var data= [];
+        var hash_arr = hash.split("&");
+
+        var form_json = {
+            "end_time" : "",
+            "order_from" : "",
+            "order_label" : $("select[name=order_label]").val(),
+            "order_name" : "",
+            "order_status" : "",
+            // "promotion_type" : "",
+            "pay_type" : "",
+            "search" : "",
+            "start_time" : "",
+            "order_type" : 'all',
+            "page" : ""
+        };
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    $.each(form_json,function(key, form_val){
+                        if(item_arr[0].indexOf(key) != "-1"){
+                            form_json[key] = item_arr[1];
+                        }
+                    })
+                }
+            })
+        }
+
+        return form_json;
+    }
+
+    var delivery = new Delivery();
+    function getOrderList(){
+        var url = ns.url("shop/delivery/lists", ns.urlReplace(location.hash.replace('#!', '')));
+
+        $.ajax({
+            type : 'get',
+            dataType: 'json',
+            url :url,
+            success : function(res){
+                if(res.code == 0){
+                    delivery.setData(res.data);
+                    $("#delivery_list").html(delivery.fetch());
+                    form.render();
+					$(".order-operation").show();
+
+                    //批量选择
+                    form.on('checkbox(allCheckbox)', function(data){
+                        $(".sub-selected-checkbox input").prop("checked",data.elem.checked);
+                        $(".all-selected-checkbox input").prop("checked",data.elem.checked);
+                        form.render("checkbox");
+                        getOrderId();
+                    });
+
+                    //全选选择
+                    form.on('checkbox(subCheckbox)', function(data){
+                        var subLen = $(".sub-selected-checkbox input:checked").length;
+                        $(".all-selected-checkbox input").prop("checked",false);
+                        if (subLen == 10){
+                            $(".all-selected-checkbox input").prop("checked",true);
+                        }
+                        form.render("checkbox");
+                        getOrderId();
+                    });
+
+                    //获取选中的id
+                    function getOrderId(){
+                        var subLen = $(".sub-selected-checkbox input:checked").length,
+                            lists = $(".sub-selected-checkbox input:checked");
+
+                        orderDataAll = [];
+
+                        lists.each(function(index,item){
+                            orderDataAll.push(JSON.parse($(item).parents(".sub-selected-checkbox").attr("data-json")));
+                        });
+                    }
+
+
+                    //执行一个laypage实例
+                    laypage.render({
+                        elem: 'delivery_page',
+                        count: res.data.count,
+                        curr: getHashPage(),
+                        layout: ['count', 'prev', 'page', 'next'],
+                        // hash: 'page',
+                        jump: function(obj, first){
+                            //首次不执行
+                            if(!first){
+                                var hash_data = getHashData();
+                                hash_data.page = obj.curr;
+                                setHashOrderList(hash_data);
+                                // $("#btn_search").click();//筛选
+                            }
+                        }
+                    });
+                }else{
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+
+    /**
+     * 七天时间
+     */
+    function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+        // alert(new Date().format("yyyy-MM-dd hh:mm"));
+        var now_date = new Date();
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+
+    }
+
+    //批量发货
+    $("body").on("click",".order-operation .btn-deliver", function () {
+        var subLen = $(".sub-selected-checkbox input:checked").length;
+        if (subLen <=0 ) {
+            layer.msg("请选择订单");
+            return false;
+        }
+        orderBatchDelivery(orderDataAll);
+    });
+
+    /**
+     * 批量打印发货单
+     */
+    var LODOP; //声明为全局变量
+    function PrintOneURL(url){
+        LODOP=getLodop();
+        LODOP.PRINT_INIT("发货单打印");
+        LODOP.ADD_PRINT_TBURL(5,10,"770","95%",url);
+        LODOP.SET_PRINT_STYLEA(0,"HOrient",3);
+        LODOP.SET_PRINT_STYLEA(0,"VOrient",3);
+        LODOP.ADD_PRINT_TEXT(590,680,130,22,"页号：第#页/共&页");
+        LODOP.SET_PRINT_STYLEA(0,"ItemType",2);
+        LODOP.SET_PRINT_STYLEA(0,"Horient",1);
+        LODOP.SET_PRINT_STYLEA(0,"Vorient",1);
+        LODOP.SET_SHOW_MODE("MESSAGE_GETING_URL",""); //该语句隐藏进度条或修改提示信息
+        // LODOP.SET_SHOW_MODE("MESSAGE_PARSING_URL","");//该语句隐藏进度条或修改提示信息
+    }
+
+    function dispatchBill(url) {
+        PrintOneURL(url);
+        // LODOP.PREVIEW(); //预览
+        LODOP.PRINT();  //直接打印
+    }
+
+    $("body").on("click",".order-operation .btn-dispatch-bill", function () {
+		var subLen = $(".sub-selected-checkbox input:checked").length;
+		if (subLen <=0 ) {
+		    layer.msg("请选择订单");
+		    return false;
+		}
+        for (var i = 0; i < orderDataAll.length; i++){
+            var url = ns.url("shop/printer/batchprintorder",{order_id: orderDataAll[i].order_id});
+            dispatchBill(url)
+        }
+    });
+
+
+    /**
+     * 批量打印电子面单
+     */
+    function CreateTwoFormPage(html){
+        LODOP=getLodop();
+        LODOP.PRINT_INIT("打印电子面单");
+        LODOP.ADD_PRINT_HTM(0,10,"95%","100%",html);
+    }
+
+    function expressSheet(html) {
+        CreateTwoFormPage(html);
+        // LODOP.PREVIEW(); //预览
+        LODOP.PRINT();  //直接打印
+    }
+
+    $("body").on("click",".order-operation .btn-express-sheet", function () {
+
+        var subLen = $(".sub-selected-checkbox input:checked").length;
+        if (subLen <=0 ) {
+            layer.msg("请选择订单");
+            return false;
+        }
+
+        layer.open({
+            type: 1,
+            shadeClose: true,
+            shade: 0.3,
+            fixed: false,
+            scrollbar: false,
+            title: "打印电子面单",
+            area: '550px',
+            content: $("#express_sheet").html(),
+            success: function (layero, index) {
+
+                //请求电子面单
+                $.ajax({
+                    type: "post",
+                    url: ns.url("shop/delivery/getexpresselectronicsheetlist"),
+                    dataType: 'json',
+                    success(res){
+                        if (res.code >= 0){
+                            var templateList = res.data;
+                            var html = '';
+                            html += '<select name="template_id" lay-search lay-filter="express_company">';
+                            html += '<option value="">请选择面单模版</option>';
+                            for (var i = 0; i < templateList.length; i++){
+                                html += '<option value='+ templateList[i].id +'>'+ templateList[i].template_name+'</option>';
+                            }
+                            html += '</select>';
+                            $(".express-sheet select[name='template_id']").html(html);
+                            form.render();
+                        }
+                    }
+                });
+
+                form.render();
+
+                form.on('submit(express_sheet_save)', function(data){
+                    for (var i = 0; i < orderDataAll.length; i++){
+                        data.field.order_id = orderDataAll[i].order_id;
+
+                        $.ajax({
+                            type: 'post',
+                            url: ns.url("shop/delivery/printelectronicsheet"),
+                            dataType: 'JSON',
+                            data:data.field,
+                            success: function(res) {
+                                layer.msg(res.message);
+                                if (res.code >= 0){
+                                    expressSheet(res.data.PrintTemplate);
+                                    location.reload();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+        });
+    });
+
+</script>
+{/block}

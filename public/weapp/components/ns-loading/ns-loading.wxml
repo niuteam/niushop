@@ -1,0 +1,1 @@
+<view class="mescroll-downwarp"><view class="downwarp-content"><block wx:if="{{isRotate}}"><view class="downwarp-progress mescroll-rotate" style=";"></view></block><view class="downwarp-tip">{{downText}}</view></view></view>

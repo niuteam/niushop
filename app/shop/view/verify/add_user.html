@@ -1,0 +1,165 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    /* 关联会员 */
+    .ns-search-result { border: 1px solid; padding: 15px 30px 15px 15px; display: flex; align-items: center; position: relative;margin-top:10px;border-color: #e5e5e5 !important; }
+    .ns-search-res-img { width: 50px; height: 50px; margin-right: 5px; text-align: center; line-height: 50px; }
+    .ns-search-res-img img { max-width: 100%; max-height: 100%; }
+    .ns-search-res-intro p { line-height: 24px; }
+    .ns-search-res-close { position: absolute; top: 5px; right: 5px; }
+
+    .ns-search-result-admin { border: 1px solid; padding: 15px 30px 15px 15px; display: flex; align-items: center; position: relative;margin-top:10px;border-color: #e5e5e5 !important; }
+
+    .ns-check-member .layui-btn {
+        position: absolute;
+        top: 1px;
+        border-color: #e5e5e5;
+        padding: 0 10px;
+        border-right: 0;
+        border-top: 0;
+        border-bottom: 0;
+        left: 207px;
+        height: 32px;
+    }
+
+    .ns-check-admin .layui-btn {
+        position: absolute;
+        top: 2px;
+        border-color: #e5e5e5;
+        padding: 0 10px;
+        border-right: 0;
+        border-top: 0;
+        border-bottom: 0;
+        left: 207px;
+        height: 31px;
+    }
+
+    .ns-check-member .layui-input:focus+.layui-btn {border-color: #F38421;}
+    .ns-check-admin .layui-input:focus+.layui-btn {border-color: #F38421;}
+	.ns-form {margin-top: 0;}
+	.layui-input-block {overflow: hidden;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>核销人员姓名：</label>
+		<div class="layui-input-block">
+			<input name="verifier_name" type="text" placeholder="请输入核销人员姓名" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+	</div>
+    <div class="layui-form-item ns-check-member-box">
+        <label class="layui-form-label">关联前台会员：</label>
+        <div class="layui-input-block ns-check-member">
+            <input type="text" id="search_text" name="search_text" placeholder="请输入会员名或手机" class="layui-input ns-len-mid ns-member-name">
+            <button type="button" class="layui-btn layui-btn-primary" onclick="checkMember()">
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+            <input class="ns-member-id" type="hidden" name="member_id" />
+        </div>
+		<p class="ns-word-aux">关联会员后才能在手机上使用核销台功能，否则无法在手机上核销</p>
+    </div>
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false;//防重复标识
+		form.render();
+			
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+	        if (repeat_flag) return;
+	        repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/verify/addUser"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(data){
+				    layer.msg(data.message);
+	                repeat_flag = false;
+				    if(data.code == 0){
+				        location.href = ns.url("shop/verify/user");
+					}
+				}
+			});
+		});
+	});
+
+    /**
+     * 点击搜索
+     */
+    var repeat_flag_member = false;
+    var html, val;
+
+    function checkMember() {
+        var parent = $(".ns-check-member");
+        var con = parent.find(".ns-member-name").val();
+        $(".layui-word-aux").remove();
+        $(".ns-search-result").remove();
+
+        if (repeat_flag_member) return false;
+        repeat_flag_member = true;
+
+        if (con == "" || con == null || con.trim() == "") {
+            repeat_flag = false;
+        } else {
+            $.ajax({
+                type: 'POST',
+                url: ns.url("shop/verify/searchMember"),
+                data: {
+                    'search_text': con
+                },
+                dataType: 'JSON',
+                success: function(res) {
+                    // layer.msg(res.message);
+                    repeat_flag_member = false;
+
+                    if (res.data == null) {
+                        html = '<span class="layui-word-aux">未找到该用户</span>';
+                        val = res.data;
+                    } else {
+                        html = '<div class="ns-search-result layui-input-inline ns-border-color-gray">' +
+                            '<div class="ns-search-res-img">' +
+                            '<img src="' + ( res.data.headimg ? ns.img(res.data.headimg) : ns.img("{$default_headimg}")) + '" />' +
+                            '</div>' +
+                            '<div class="ns-search-res-intro">' +
+                            '<p>用户名：' + res.data.username + '</p>' +
+                            '<p>电话：' + res.data.mobile + '</p>' +
+                            '</div>' +
+                            '<div class="ns-search-res-close" onclick="closeMember()">' +
+                            '<i class="iconfont iconclose_light"></i>' +
+                            '</div>' +
+                            '</div>';
+                        val = res.data.member_id;
+                    }
+
+                    $(".ns-member-id").attr("value", val);
+                    $(".ns-check-member").append(html);
+                }
+            });
+        }
+    }
+
+    function closeMember() {
+        $(".ns-search-result").hide();
+    }
+
+    function closeAdmin() {
+        $(".ns-search-result-admin").hide();
+    }
+	
+	function back() {
+		location.href = ns.url("shop/verify/user");
+	}
+</script>
+{/block}

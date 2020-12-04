@@ -1,0 +1,133 @@
+{extend name="app/shop/view/base.html" /}
+
+{block name="resources"}
+<style type="text/css">
+.package-wrap {margin-top:50px;display:flex;}
+.package-wrap .wrap {flex:1;border:1px solid #f1f1f1;}
+.package-wrap .wrap:nth-child(2) {margin-left:30px;}
+.package-wrap .wrap .ns-card-common {margin-top:0;}
+.package-wrap .wrap .layui-card-header {padding:5px 20px;}
+.weapp-info {text-align:center;font-size: 12px}
+.weapp-info .qrcode {width:130px;height:130px;margin:30px auto;}
+.weapp-info dl {display:flex;line-height:30px}
+.weapp-info dl dt,.weapp-info dl dd {flex:1;}
+.weapp-info dl dt {width:100px;text-align:right;color:#999;}
+.weapp-info dl dd {text-align:left;padding-left:30px;}
+.wrap .step-wrap .layui-timeline {padding-left:40px!important;}
+.wrap .step-wrap .layui-timeline-title {font-size:12px;margin-bottom:5px;}
+.step-wrap .layui-timeline-content p {font-size:12px;}
+.step-wrap .layui-timeline-item{padding-bottom: 40px;}
+.step-wrap .layui-timeline-item:before {left:4px;background-color:unset;border-left:1px dashed #ccc;}
+.edition-wrap {margin-top:20px;}
+.edition-wrap .header {font-size:14px;}
+.edition-list .edition-item {display:inline-block;width:auto;border:1px solid #ddd;padding:8px 30px;line-height:1;margin:15px 15px 0 0;border-radius:5px;cursor:pointer;}
+.edition-list .edition-item .name {color:#333;}
+.edition-list .edition-item:hover,.edition-list .edition-item.active {border-color:#ff8143;}
+.edition-list .edition-item:hover .name,.edition-list .edition-item.active .name {color:#ff8143;}
+.edition-list .edition-item .version {margin-top:8px;font-size:12px;color:#999;}
+.operation {margin-top:20px;display:flex;}
+.operation .layui-btn {flex:1;}
+.loading-layer .loading-img {margin:10px auto;display:block;}
+.preview-layer .qrcode {width:100px;height:100px;margin:10px auto;display:block;}
+.new-version-tips{margin-top: 10px;border:1px dashed #ff8143;padding: 5px 10px;background: #ffe1d2;color: #ff8143;}
+</style>
+{/block}
+
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>下载之后需使用微信开发者工具上传代码，微信开发者工具下载地址: <a href="https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html" target="_blank">https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html</a></li>
+			<li>上传之后登录<a href="https://mp.weixin.qq.com" target="_blank">微信公众平台</a>，在版本管理中选择刚上传的版本提交审核，审核通过之后即可发布小程序。</li>
+			<li>UNIAPP源码包授权后可下载，可很好的进行二次开发，可通过<a href="https://www.dcloud.io/hbuilderx.html" target="_blank">HBuilder X</a>编译为H5、微信小程序、支付宝小程序、头条小程序等</li>
+			<li>小程序代码包是由UNIAPP源码包编译出来的微信小程序版下载后可直接通过微信开发者工具上传使用，但是无法进行二次开发。</li>
+		</ul>
+	</div>
+</div>
+
+<div class="package-wrap">
+	<div class="wrap">
+		<div class="layui-card ns-card-common ns-card-brief">
+			<div class="layui-card-header">
+				<span class="ns-card-title">小程序信息</span>
+			</div>
+			<div class="layui-card-body layui-field-box weapp-info">
+				<img src="{:img($config.qrcode)}" class="qrcode">
+				<dl>
+					<dt>小程序名称</dt>
+					<dd>{$config.weapp_name}</dd>
+				</dl>
+				<dl>
+					<dt>小程序ID</dt>
+					<dd>{$config.appid}</dd>
+				</dl>
+				<dl>
+					<dt>小程序原始ID</dt>
+					<dd>{$config.weapp_original}</dd>
+				</dl>
+			</div>
+		</div>
+	</div>
+	<div class="wrap">
+		<div class="layui-card ns-card-common ns-card-brief">
+			<div class="layui-card-header">
+				<span class="ns-card-title">源码下载</span>
+			</div>
+			<div class="layui-card-body layui-field-box">
+				<div class="step-wrap">
+					<ul class="layui-timeline">
+					    <li class="layui-timeline-item">
+					        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+					        <div class="layui-timeline-content layui-text">
+					            <h3 class="layui-timeline-title">下载小程序代码包</h3>
+					            <div style="margin-top: 10px;">
+					            	<a class="layui-btn layui-btn-primary" href="{:addon_url('weapp://shop/weapp/download')}" target="_blank">下载小程序代码包</a>
+					            	{if $is_auth}
+					            	<a class="layui-btn layui-btn-primary" href="{:addon_url('weapp://shop/weapp/downloaduniapp')}" target="_blank">下载UNIAPP源码包</a>
+					            	{else/}
+					            	<a class="layui-btn layui-btn-primary" href="javascript:;" onclick="authLayer()">下载UNIAPP源码包</a>
+					            	{/if}
+					            </div>
+					            {if $is_new_version}
+					            <div class="new-version-tips">
+									<p>小程序已更新，为了不影响您的使用请尽快下载小程序上传更新。</p>
+					            </div>
+					            {/if}
+					        </div>
+					    </li>
+					    <li class="layui-timeline-item">
+					        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+					        <div class="layui-timeline-content layui-text">
+					            <h3 class="layui-timeline-title">上传代码</h3>
+					            <p>下载完成之后，使用微信开发工具进行上传</p>
+					        </div>
+					    </li>
+					    <li class="layui-timeline-item">
+					        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+					        <div class="layui-timeline-content layui-text">
+					            <h3 class="layui-timeline-title">发布小程序</h3>
+					            <p>上传之后提交审核，审核通过发布小程序</p>
+					        </div>
+					    </li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+	function authLayer(){
+		layer.confirm('当前为免费版，授权后才可以下载UNIAPP源码包！是否立即授权？', {
+		  btn: ['立即授权','暂不需要'] //按钮
+		}, function(){
+		  	window.open('https://www.niushop.com');
+		}, function(){
+		  	layer.closeAll();
+		});
+	}
+</script>
+{/block}

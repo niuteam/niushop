@@ -1,0 +1,1 @@
+<view data-theme="{{themeStyle}}"><view data-event-opts="{{[['tap',[['navigateBack',['$event']]]]]}}" class="iconfont iconshang navigate-back" bindtap="__e"></view><web-view src="{{src}}"></web-view></view>

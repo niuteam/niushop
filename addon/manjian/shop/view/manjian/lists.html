@@ -1,0 +1,264 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>满减活动列表展示商品的满减活动相关信息</li>
+			<li>可根据满减活动名称搜索出具体活动信息</li>
+			<li>点击详情按钮，查看活动详细信息</li>
+			<li>进行中的活动需先关闭才可进行删除操作</li>
+			<li>时间超过活动的结束时间时，活动自动结束</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加活动</button>
+	
+	<!--<div class="layui-form">-->
+		<!--<div class="layui-input-inline">-->
+			<!--<input type="text" name="manjian_name" placeholder="请输入活动名称" class="layui-input" autocomplete="off">-->
+			<!--<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>-->
+				<!--<i class="layui-icon">&#xe615;</i>-->
+			<!--</button>-->
+		<!--</div>-->
+	<!--</div>-->
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="manjian_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">所有活动</li>
+		<li lay-id="1">进行中</li>
+		<li lay-id="2">已结束</li>
+		<li lay-id="-1">已关闭</li>
+		<li lay-id="0">未开始</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="manjian_list" lay-filter="manjian_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="detail">详情</a>
+		{{#  if(d.status == 0) {  }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{#  }else if(d.status == 1) {  }}
+		<a class="layui-btn" lay-event="close">关闭</a>
+		{{#  }else if(d.status == 2 || d.status == -1) {  }}
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{#  }  }}
+	</div>
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{foreach $manjian_status_arr as $manjian_status_k => $manjian_status_v}
+		{{#  if(d.status == {$manjian_status_k}){  }}
+			{$manjian_status_v}
+		{{#  }  }}
+	{/foreach}
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form','element'], function() {
+		var table,
+			form = layui.form,
+            element = layui.element,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(manjian_tab)', function(){
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    'status':this.getAttribute('lay-id')
+                }
+            });
+        });
+	
+		table = new Table({
+			elem: '#manjian_list',
+			url: ns.url("manjian://shop/manjian/lists"),
+			cols: [
+				[{
+					field: 'manjian_name',
+					title: '活动名称',
+					unresize: 'false',
+					width: '25%'
+				}, {
+					field: 'start_time',
+					title: '开始时间',
+					unresize: 'false',
+					width: '21%',
+					templet: function(data) {
+						return ns.time_to_date(data.start_time);
+					}
+				}, {
+					field: 'end_time',
+					title: '结束时间',
+					unresize: 'false',
+					width: '21%',
+					templet: function(data) {
+						return ns.time_to_date(data.end_time);
+					}
+				}, {
+					field: 'status',
+					title: '状态',
+					unresize: 'false',
+					width: '13%',
+					templet: '#status'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '20%'
+				}]
+			]
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("manjian://shop/manjian/edit", {"manjian_id": data.manjian_id});
+					break;
+				case 'detail': //详情
+                    location.href = ns.url("manjian://shop/manjian/detail", {"manjian_id": data.manjian_id});
+					break;
+				case 'delete': //删除
+					deleteManjian(data.manjian_id);
+					break;
+				case 'close': //关闭
+					close(data.manjian_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteManjian(manjian_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+		
+			layer.confirm('确定要删除该满减活动吗?', function() {
+				$.ajax({
+					url: ns.url("manjian://shop/manjian/delete"),
+					data: {
+						manjian_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+		
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		 * 关闭
+		 */
+		function close(manjian_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			layer.confirm('确定关闭该活动吗?', function() {
+				$.ajax({
+					url: ns.url("manjian://shop/manjian/close"),
+					data: {
+						manjian_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+					
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	function add() {
+		location.href = ns.url("manjian://shop/manjian/add");
+	}
+</script>
+
+<!-- 详情弹框html -->
+<script type="text/html" id="detail">
+	<table class="layui-table ns-table-detail">
+		<colgroup>
+			<col width="120">
+			<col width="270">
+		</colgroup>
+		
+		<tbody>
+			<tr>
+				<td>活动名称</td>
+				<td>{{d.manjian_name}}</td>
+			</tr>
+			<tr>
+				<td>开始时间</td>
+				<td>{{ ns.time_to_date(d.start_time, "YYYY-MM-DD hh:mm:ss") }}</td>
+			</tr>
+			<tr>
+				<td>结束时间</td>
+				<td>{{ ns.time_to_date(d.end_time, "YYYY-MM-DD hh:mm:ss") }}</td>
+			</tr>
+			<tr>
+				<td id="rule_name">满减规则</td>
+				<td id="rule">
+					{{#  var rule = JSON.parse(d.rule_json);  }}
+					{{#  for(var key in rule){  }}
+						<p>单笔订单满<span class="ns-text-color-red money-num">{{ rule[key].money }}</span>元，立减现金<span class="ns-text-color-red discount_money-num">{{ rule[key].discount_money }}</span>元</p>
+					{{#  }  }}
+				</td>
+			</tr>
+			<tr>
+				<td>备注</td>
+				<td>{{ d.remark }}</td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+{/block}

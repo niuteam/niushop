@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-login": "/components/ns-login/ns-login"
+  }
+}

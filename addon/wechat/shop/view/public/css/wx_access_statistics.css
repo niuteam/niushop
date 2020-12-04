@@ -1,0 +1,9 @@
+.access-statistics .access-api-list{display: flex;justify-content: space-between;padding: 0 15px;}
+.access-statistics .access-api-item{flex-grow: 1;text-align: center;margin-right: 10px;border: 1px solid #e5e5e5;padding-top: 25px;}
+.access-statistics .access-api-item:last-of-type{margin-right:0;}
+.access-statistics .access-api-itme-content{height: 80px; line-height: 80px; font-size: 30px;}
+.access-statistics .access-api-item-title{position: relative;}
+.access-statistics .access-api-item-title h3{display: inline-block;}
+.access-statistics .access-api-vice-content{font-size: 25px;}
+.layui-fluid .layui-tab-title{margin-top: 0;}
+.layui-tab-content-time{display: inline-block; height: 40px; margin-left: 15px; line-height: 40px;}

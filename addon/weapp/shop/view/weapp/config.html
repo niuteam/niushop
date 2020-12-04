@@ -1,0 +1,207 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">小程序开发者设置</span>
+		</div>
+		<div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label">小程序名称：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" name="weapp_name" autocomplete="off" class="layui-input ns-len-long" value="{$config_info.weapp_name ?? ''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">小程序原始ID：</label>
+                <div class="layui-input-block ">
+                    <input type="text" name="weapp_original" autocomplete="off" class="layui-input ns-len-long" value="{$config_info.weapp_original ?? ''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label img-upload-lable">小程序二维码：</label>
+                <div class="layui-input-inline img-upload">
+                    <div class="upload-img-block">
+                        <div class='upload-img-box {if condition="$config_info && $config_info.qrcode"}hover{/if}'>
+							<div class="ns-upload-default" id="img" >
+								{if condition="$config_info && $config_info.qrcode"}
+									<div id="preview_img" class="preview_img">
+										<img layer-src src="{:img($config_info.qrcode)}" class="img_prev"/>
+									</div>
+								{else/}
+									<div class="upload">
+										<img src="SHOP_IMG/upload_img.png" data-id="imgUpload"/>
+										<p>点击上传</p>
+									</div>
+								{/if}
+							</div>
+							<div class="operation"  >
+								<div>
+									<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+									<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+								</div>
+								
+								<div class="replace_img js-replace">点击替换</div>
+							</div>
+							<input type="hidden" class="layui-input" name="qrcode" value="{$config_info.qrcode ?? ''}"/>
+                        </div>
+                     </div>
+                     <!--   <p id="img" class=" {if condition="$config_info && $config_info.qrcode"} replace {else/} no-replace{/if}">替换</p>
+                        <input type="hidden" class="layui-input" name="qrcode" value="{$config_info.qrcode ?? ''}"/>
+                        <i class="del {if condition="$config_info && $config_info.qrcode"}show{/if}">x</i> -->
+                </div>
+            </div>
+        </div>
+    </div>
+	
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">开发者ID设置</span>
+		</div>
+		<div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label">APPID：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" name="appid" autocomplete="off" class="layui-input ns-len-long" value="{$config_info.appid ?? ''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">APP密钥：</label>
+                <div class="layui-input-block ">
+                    <input type="text" name="appsecret" autocomplete="off" class="layui-input ns-len-long" value="{$config_info.appsecret ?? ''}">
+                </div>
+                <div class="ns-word-aux">AppID(小程序ID)和AppSecret(小程序密钥)来自于您申请的小程序账号，使用小程序账号密码登录公众平台，在开发->开发设置中可以找到</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">业务域名校验文件：</label>
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-primary" id="checkFile">上传文件</button>
+                </div>
+                <div class="ns-word-aux">仅支持上传TXT格式的文件</div>
+            </div>
+        </div>
+    </div>
+	
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">服务器配置信息</span>
+		</div>
+		<div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label">request合法域名：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" autocomplete="off" readonly id="url_request" class="layui-input ns-len-long" value="{$url}">
+                </div>
+                <button class="layui-btn layui-btn-primary" onclick="ns.copy('url_request')">复制</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">socket合法域名：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" autocomplete="off" readonly id="url_socket" class="layui-input ns-len-long" value="{$url}">
+                </div>
+                <button class="layui-btn layui-btn-primary" onclick="ns.copy('url_socket')">复制</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">uploadFile合法域名：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" autocomplete="off" readonly id="url_upload" class="layui-input ns-len-long" value="{$url}">
+                </div>
+                <button class="layui-btn layui-btn-primary" onclick="ns.copy('url_upload')">复制</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">downloadFile合法域：</label>
+                <div class="layui-input-inline ">
+                    <input type="text" autocomplete="off" id="url_download" readonly class="layui-input ns-len-long" value="{$url}">
+                </div>
+                <button class="layui-btn layui-btn-primary" onclick="ns.copy('url_download')">复制</button>
+            </div>
+        </div>
+    </div>
+	
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">消息推送设置</span>
+		</div>
+		<div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label">URL(服务器地址)：</label>
+                <div class="layui-input-block">
+                    <div class="layui-input-inline">
+                        <input type="text" name="token" readonly id="callback_url" autocomplete="off" class="layui-input ns-len-long" value="{$url}">
+                    </div>
+                    <button class="layui-btn layui-btn-primary" onclick="ns.copy('callback_url')">复制</button>
+                </div>
+                <div class="ns-word-aux">必须以http://或https://开头，分别支持80端口和443端口。</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Token(令牌)</label>
+                <div class="layui-input-block">
+                    <div class="layui-input-inline">
+                        <input type="text" name="token" autocomplete="off" id="empowerToken" class="layui-input ns-len-long" value="{$config_info.token ?? ''}">
+                    </div>
+                    <button class="layui-btn layui-btn-primary" onclick="ns.copy('empowerToken')">复制</button>
+                </div>
+                <div class="ns-word-aux">Token必须为英文或数字，长度为3-32字符。如不填写则默认为“TOKEN”。</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">EncodingAESKey：</label>
+                <div class="layui-input-block">
+                    <div class="layui-input-inline ns-len-long">
+                        <input class="layui-input" type="text" name="encodingaeskey" id="encodingaeskey" autocomplete="off" value="{$config_info.encodingaeskey ?? ''}">
+                    </div>
+                    <button class="layui-btn layui-btn-primary" onclick="ns.copy('encodingaeskey')">复制</button>
+                </div>
+                <div class="ns-word-aux">消息加密密钥由43位字符组成，字符范围为A-Z,a-z,0-9</div>
+            </div>
+            <div class="ns-form-row">
+                <button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+                <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    layui.use(['form'], function () {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        form.on('submit(save)', function (data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+            $.ajax({
+                type: "post",
+                url: "{:addon_url('weapp://shop/weapp/config')}",
+                dataType: "JSON",
+                data: data.field,
+                success: function (data) {
+                    repeat_flag = false;
+                    layer.msg(data.message);
+                }
+            });
+        });
+
+        var upload = new Upload({
+            elem: '#img'
+        });
+
+        var file_upload = new Upload({
+            elem: '#checkFile',
+            url: ns.url("shop/upload/checkfile"),
+            accept: 'file',
+            acceptMime: 'text/plain',
+            exts: 'txt'
+        });
+
+    });
+
+    function back() {
+        location.href = "{:addon_url('weapp://shop/weapp/setting')}";
+    }
+
+</script>
+{/block}

@@ -1,0 +1,187 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {
+	    margin-top: 0;
+	}
+	.ns-text-color-red:hover {
+		color: red;
+	}
+	.desc{
+		margin-bottom: 15px;border:1px dashed #ff8143;padding: 5px 10px;background: #fff0e9;color: #ff8143;width: 65%;
+	}
+	.ns-word-aux{
+		width: 50%!important;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-form ns-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+	    <div class="layui-card-header">
+	        <div>
+	            <span class="ns-card-title">普通登录注册设置</span>
+	        </div>
+	    </div>
+	    <div class="layui-card-body">
+    		<div class="desc">
+	    		设置在非第三方平台(第三方平台是指微信公众号，微信小程序，支付宝小程序等平台内部)或第三方平台自动注册未开启情况下会员的注册登录方式。
+	    	</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label ">用户名：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="register" value="username" title="注册" lay-skin="primary" {if condition="!empty($value['register']) && in_array('username', $value['register'])"}checked{/if}>
+					<input type="checkbox" name="login" value="username" title="登录" lay-skin="primary" {if condition="!empty($value['login']) && in_array('username', $value['login'])"}checked{/if}>
+				</div>
+				<div class="ns-word-aux">用户名是指通过用户名加密码的注册登录方式。</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label ">手机号：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="register" value="mobile" title="注册" lay-skin="primary" {if condition="!empty($value['register']) && in_array('mobile', $value['register'])"}checked{/if}>
+					<input type="checkbox" name="login" value="mobile" title="登录" lay-skin="primary" {if condition="!empty($value['login']) && in_array('mobile', $value['login'])"}checked{/if}>
+				</div>
+				<div class="ns-word-aux">手机号是指通过手机号加动态验证码的注册登录方式。</div>
+				<div class="ns-word-aux">启用前需配置好“注册验证”，“动态码登录”短信模板，<a href="{:addon_url('shop/message/lists')}" class="ns-text-color" >前去配置</a></div>
+			</div>
+	    	
+	    </div>
+	</div>
+
+	<div class="layui-card ns-card-common ns-card-brief">
+	    <div class="layui-card-header">
+	        <div>
+	            <span class="ns-card-title">第三方平台注册设置</span>
+	        </div>
+	    </div>
+	    <div class="layui-card-body">
+	    	<div class="desc">
+	    		第三方平台注册是指在微信公众号，微信小程序，支付宝小程序等平台下会员的注册方式.
+	    	</div>
+	    	<div class="layui-form-item">
+				<label class="layui-form-label ">允许三方平台自动注册：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="third_party" value="1" lay-filter="third_party" lay-skin="switch" {if condition="isset($value.third_party) && $value.third_party == 1"} checked {/if} >
+				</div>
+				<div class="ns-word-aux">第三方直接注册是指系统通过获取第三方的粉丝信息直接注册会员，会员用户名随机生成，昵称是第三方获取的用户昵称，注册过程中会将第三方平台获取的信息绑定到注册的会员，方便后期直接自动登录。若关闭，系统将按照普通注册方式注册会员。</div>
+				<div class="ns-word-aux ns-text-color">注∶第三方直接注册会员如果不强制绑定手机情况下会导致在不同第三方平台会员无法统一，如果只是在微信环境（微信公众号与微信小程序），可以通过绑定<a href="https://open.weixin.qq.com/" class="ns-text-color" target="_blank">微信开放平台</a>获取unionid实现账户统一。</div>
+			</div>
+
+			<div class="layui-form-item {if $value.third_party neq 1}layui-hide{/if}" id="bindMobile">
+				<label class="layui-form-label ">是否强制绑定手机：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="bind_mobile" value="1" lay-filter="bind_mobile" lay-skin="switch" {if condition="$value.bind_mobile == 1"} checked {/if} >
+				</div>
+				<div class="ns-word-aux">为了实现不同的第三方平台用户账户的统一，需要在注册过程中强制绑定用户手机，通过手机实现微信平台与支付宝平台，抖音平台等账号的统一。开启之后在对应会员相关页面会引导会员绑定手机账号。</div>
+				<div class="ns-word-aux">启用前需配置好“账户绑定”短信模板，<a href="{:addon_url('shop/message/lists')}" class="ns-text-color" >前去配置</a></div>
+			</div>
+    	</div>
+	</div>
+
+	<div class="layui-card ns-card-common ns-card-brief">
+	    <div class="layui-card-header">
+	        <div>
+	            <span class="ns-card-title">密码设置</span>
+	        </div>
+	    </div>
+	    <div class="layui-card-body">
+	    
+			<div class="layui-form-item">
+				<label class="layui-form-label ">密码最小长度：</label>
+				<div class="layui-input-block">
+					<input type="number" min="0" name="pwd_len" class="layui-input ns-len-short" lay-verify="pwd_lens" value="{$value.pwd_len}">
+				</div>
+				<div class="ns-word-aux">新用户注册时密码最小长度，0或不填为不限制</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label ">密码复杂程度设置：</label>
+				<div class="layui-input-block" id="pwd_complexity">
+					<input type="checkbox" name="pwd_complexity" value="number" title="数字" lay-skin="primary" {if condition="!empty($value) && in_array('number', $value['pwd_complexity_arr'])"}checked{/if}>
+					<input type="checkbox" name="pwd_complexity" value="letter" title="小写字母" lay-skin="primary" {if condition="!empty($value) && in_array('letter', $value['pwd_complexity_arr'])"}checked{/if}>
+					<input type="checkbox" name="pwd_complexity" value="upper_case" title="大写字母" lay-skin="primary" {if condition="!empty($value) && in_array('upper_case', $value['pwd_complexity_arr'])"}checked{/if}>
+					<input type="checkbox" name="pwd_complexity" value="symbol" title="符号" lay-skin="primary" {if condition="!empty($value) && in_array('symbol', $value['pwd_complexity_arr'])"}checked{/if}>
+				</div>
+				<div class="ns-word-aux">设置密码复杂度</div>
+			</div>
+	    </div>
+    </div>
+	
+	<div class="ns-form-row">
+		<button type="button" class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复
+		form.render();
+
+		form.on('submit(save)', function(data) {
+			var pwd_complexity_array = [], register = [], login = [];
+
+			$("#pwd_complexity input:checked").each(function(){
+				pwd_complexity_array.push($(this).val())
+			})
+
+			$("[name='register']:checked").each(function(){
+				register.push($(this).val())
+			})
+
+			$("[name='login']:checked").each(function(){
+				login.push($(this).val())
+			})
+
+			if (login.length == 0){
+				layer.msg('请至少启用一种登录方式', {icon: 5})
+				return false;
+			}
+
+			data.field.register = register.toString();
+			data.field.login = login.toString();
+			data.field.pwd_complexity = pwd_complexity_array.toString();
+				
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/member/regConfig"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+
+		form.on('switch(third_party)', function(data) {
+			if($(data.elem).is(':checked')){
+				$('#bindMobile').removeClass('layui-hide');
+			} else {
+				$('#bindMobile').addClass('layui-hide');
+			}
+		})
+		
+		/**
+		 * 表单验证
+		 */	
+		form.verify({
+			pwd_lens: function(value, item){ //value：表单的值、item：表单的DOM对象
+				if(!new RegExp("^[0-9]*[1-9][0-9]*$").test(value)){
+					return '密码长度只能是正整数！';
+				}
+			}
+		});    
+		
+	});
+</script>
+{/block}

@@ -1,0 +1,104 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 筛选面板 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<label class="layui-form-label">分类：</label>
+				<div class="layui-input-inline">
+					<select name="class_id">
+						<option value="0" data-level="0">未选择</option>
+						{foreach name="$class_list['data']" item="vo"}
+						<option value="{$vo['class_id']}" >{$vo['class_name']}</option>
+						{/foreach}
+					</select>
+				</div>
+				<label class="layui-form-label">标题：</label>
+				<div class="layui-input-inline">
+					<input type="text" name="search_text" placeholder="请输入标题名称" autocomplete="off" class="layui-input">
+				</div>
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+<!-- 列表 -->
+<table id="help_list" lay-filter="help_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="basic">查看</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table,
+			form = layui.form;
+		form.render();
+
+		table = new Table({
+			elem: '#help_list',
+			url: ns.url("shop/shophelp/helpList"),
+			cols: [
+				[{
+					field: 'title',
+					title: '帮助标题',
+					width: '32%',
+					unresize: 'false'
+				}, {
+					field: 'class_name',
+					title: '帮助类型',
+					width: '20%',
+					unresize: 'false'
+				}, {
+					field: 'create_time',
+					title: '更新时间',
+					width: '25%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}, {
+					title: '操作',
+					width: '15%',
+					toolbar: '#operation',
+					unresize: 'false'
+				}]
+			],
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'basic': //编辑
+					location.href = ns.url("shop/shophelp/helpdetail?help_id=" + data.id);
+					break;
+			}
+		});
+	});
+</script>
+{/block}

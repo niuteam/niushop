@@ -1,0 +1,490 @@
+@import "tablebox.css";
+*{
+	 padding:0px;
+	 margin:0px;
+ }
+body{
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #333;
+	background-color: #edf0f3;
+}
+ul{
+	list-style:none;
+}
+a{
+	color: #333;
+	text-decoration: none;
+}
+a:hover{
+	color:#FF6A00;
+	text-decoration:none;
+}
+input,button,select{
+	vertical-align:middle;
+	outline: none;
+}
+.fc-690{
+	color:#333;
+}
+.fs-14{
+	font-size:14px;
+}
+
+
+.head-block{
+	margin-bottom: 20px;
+	background-color: #fff;
+}
+.top{
+	overflow:hidden;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 1200px;
+	height: 80px;
+	margin: auto;
+}
+.top .top-logo{
+	overflow:hidden;
+	width:142px;
+	height: 100%;
+	background:url(../img/logo.png) no-repeat center;
+}
+.top-sub{
+	flex:1;
+	font-size:19px;
+	font-weight: bold;
+	margin-left:10px;
+}
+.top .top-logo h1{
+	font-size:0px;
+	line-height:1000%;
+}
+.top .top-link{
+	height:15px;
+}
+.top .top-link li{
+	display: inline-block;
+	margin-left: 15px;
+	line-height:14px;
+	font-size: 16px;
+}
+.install-content{
+	margin: 0 auto 50px;
+	width: 1200px;
+	background-color: #fff;
+}
+.install-content::after{
+	content:"";
+	display: block;
+	clear: both;
+}
+.install-content-procedure{
+	border: 1px solid #EDF0F3;
+	height: 116px;
+}
+.install-content-procedure .content-procedure-list{
+	width: 1000px;
+	margin: 15px auto;
+	display: flex;
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.install-content-procedure .content-procedure-item{
+	flex: 1;
+	height: 36px;
+	font-size: 14px;
+	line-height: 36px;
+	text-align: center;
+	background: url("../img/not_complete.png") no-repeat center / contain;
+}
+.install-content-procedure .content-procedure-item:first-of-type{
+	color: #fff;
+	background: url("../img/complete_one.png") no-repeat center / contain;
+}
+.install-content-procedure .content-procedure-item:last-of-type{
+	background: url("../img/not_complete_two.png") no-repeat center / contain;
+}
+
+/* 第一个页面 */
+.pright{
+	margin: 0px auto 0;
+	padding-bottom: 40px;
+	width:1100px;
+	padding-top: 40px;
+}
+.pright .pr-title{
+	padding-left: 30px;
+	height: 50px;
+	font-size: 16px;
+	font-weight: bold;
+	line-height: 50px;
+	background-color: #e7e7e7;
+}
+
+.pr-agreement{
+	overflow-y:scroll;
+	padding: 10px 30px;
+	border:1px  solid #ddd;
+	height:300px;
+	line-height:21px;
+	color:#666;
+}
+
+.pr-agreement::-webkit-scrollbar {
+	width: 6px;
+	background-color: #FFF;
+}
+.pr-agreement::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+	background-color: #494E51;
+}
+
+.pr-agreement::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+.pr-agreement strong{
+	display:block;
+	color:#333;
+	line-height:27px;
+	margin-top:6px;
+}
+.pr-agreement p{
+	text-indent:30px;
+}
+.pr-agreement .describe{
+	text-indent: 0;
+}
+
+.btn-box{
+	margin-top: 30px;
+	text-align: right;
+	vertical-align: middle;
+	height: 34px;
+	line-height: 34px;
+}
+.btn-back, .btn-next{
+	width:100px;
+	height:34px;
+	border:none;
+	background-color:#ff8143;
+	color:#FFF;
+	cursor:pointer;
+	margin-left:10px;
+	overflow:hidden;
+	font-size: 14px;
+	border-radius:3px;
+}
+
+.btn-back{
+	border: 1px solid #C7C7C7;
+	color: #333;
+	background-color: #fff;
+}
+
+.btn-box-text{
+	position: relative;
+	display: inline-block;
+	height: 16px;
+	line-height: 16px;
+}
+
+#readpact{
+	position: relative;
+	height: 16px;
+	width: 16px;
+	vertical-align: bottom;
+	z-index: 8;
+	opacity: 0;
+	cursor: pointer;
+}
+.btn-box-selection{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 16px;
+	height: 16px;
+	background: url("../img/no_agree.png") no-repeat center;
+}
+
+
+.btn-box .agreement{
+	font-size: 14px;
+	font-weight: bold;
+}
+
+/* 第二个页面 */
+.testing{
+	padding: 25px 25px 35px;
+}
+.testing-item{
+	margin-bottom: 30px;
+}
+.testing-item:last-of-type{
+	margin-bottom: 0;
+}
+.testing-item h3{
+	height: 50px;
+	line-height: 50px;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.testing .testing-item .desc{
+	margin-left: 5px;
+	color: #666;
+	font-size: 12px;
+	font-weight: normal;
+}
+
+.testing .twbox{
+	width: 100%;
+	font-size: 14px;
+	border: 1px solid #e7e7e7;
+}
+.testing .twbox th{
+	height: 50px;
+	text-align: left;
+	background-color: #e7e7e7;
+}
+.testing .twbox td{
+	height: 50px;
+	border-top: 1px solid #e7e7e7;
+}
+.testing .twbox th:first-of-type, .testing .twbox td:first-of-type{
+	padding-left: 30px;
+}
+
+/* 第三个页面 */
+.parameter .twbox{
+	border-top: 0;
+}
+.parameter .input-txt{
+	padding-left: 11px;
+	width: 180px;
+	height: 30px;
+	border:1px solid #c7c7c7;
+	font-size:12px;
+	color: #333;
+	outline: none;
+}
+
+.parameter .onetd{
+	padding: 0 !important;
+	width:120px;
+	font-weight: 400;
+	text-align:right;
+	line-height:25px;
+}
+.parameter small{
+	margin-left: 20px;
+	color: #999;
+}
+
+.waitpage {
+  top:0;
+  left:0;
+  filter:Alpha(opacity=70);
+  -moz-opacity:0.7;
+  position:absolute;
+  z-index:10000;
+  background:url(../img/loading1.gif) #ababab no-repeat center 200px;
+  width:100%;
+  height:2500px;
+  display:none;
+}
+
+.install-code{
+	height:27px;line-height:27px;
+}
+
+.installimg-btn{
+	background-color:#777;
+}
+
+/* 第四个页面 */
+.install-success{
+	padding: 10px 0 50px;
+	margin-left: 50px;
+	margin-right: 50px;
+	border-bottom: 1px dashed #E7E7E7;
+	text-align: center;
+	padding-top: 50px;
+}
+.install-content .install-success-box{
+	display: inline-block;
+	align-self: center;
+	margin: auto;
+}
+.install-content .install-success-pic{
+	width: 45px;
+	height: 45px;
+	margin-right: 20px;
+	vertical-align: middle;
+}
+.install-content .install-success-text{
+	display: inline-block;
+	text-align: left;
+	vertical-align: middle;
+}
+.install-content .install-success-title{
+	margin-bottom: 5px;
+	font-size: 18px;
+	font-weight: bolder;
+}
+.install-content .install-success-desc{
+	color: #999;
+	font-size: 14px;
+}
+.install-content .other-links{
+	padding: 39px 50px 300px;
+	font-size: 14px;
+}
+.install-content .other-links-list{
+	display: flex;
+	margin-top: 60px;
+	justify-content: space-around;
+}
+
+.install-content .other-links-item{
+	display: flex;
+	align-self: center;
+}
+.install-content .other-links-pic{
+	margin-right: 20px;
+	width: 45px;
+	height: 45px;
+	line-height: 45px;
+	text-align: center;
+}
+.install-content .other-links-pic img{
+	display: block;
+	max_width: 100%;
+	max-height: 100%;
+}
+.install-content .other-links-text{
+	line-height: 45px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.step-content{
+	margin: 0 auto 3px;
+	width: 1200px;
+	background-color: #fff;
+	padding-bottom:30px;
+}
+input{
+	vertical-align:middle;
+	margin-right:3px;
+	font-size:12px;
+}
+input.but{
+	height:26px;
+	padding-left:6px;
+	padding-right:6px;
+	line-height:26px;
+	font-weight:bold;
+	letter-spacing:1px;
+	color:#FFF;
+	background-color:#FC3;
+}
+
+
+
+
+/*步骤*/
+.processBar{
+	float: left;
+	width: 329px;
+	margin-top: 15px;
+}
+.processBar .bar{
+	background: #fbeeea;
+	height: 3px;
+	position: relative;
+	width: 314px;
+	margin-left: 10px;
+}
+.processBar .b-select{
+	background: #ff8143;
+}
+.processBar .bar .c-step{
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+
+	background-image: url(../img/step_point.png);
+	left: -16px;
+	top: 50%;
+	margin-top: -8px;
+}
+.processBar .bar .c-select{
+	width: 16px;
+	height: 16px;
+	margin: -9px 1px;
+	background-image: url(../img/step_point_check.png);
+
+}
+.main-hide {
+	position: absolute;
+	top: -9999px;
+	left: -9999px;
+}
+.poetry{
+	color: #000;
+	font-size: 13px;
+	background-color: transparent;
+	font-weight: 800;
+}
+button{
+	width: 80px;
+	line-height: 30px;
+	font-size: 11px;
+	color: #ff8143;
+	text-align: center;
+	border-radius: 6px;
+	border: 1px solid #e2e2e2;
+	cursor: pointer;
+	background-color: #fff;
+	outline:none;
+}
+button:hover{
+	border: 1px solid #fbeeea;
+}
+
+
+.layui-form-item .layui-form-checkbox[lay-skin=primary]{
+	margin-top: 3px !important;
+}
+
+
+.mysql-message{
+	height: 32px;
+	line-height: 32px;
+	margin-left: 10px;
+}

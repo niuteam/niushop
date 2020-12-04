@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "注册",
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "register-reward": "/components/register-reward/register-reward"
+  }
+}

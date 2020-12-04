@@ -1,0 +1,1 @@
+.money-wrap{text-align:center;font-size:50rpx;font-weight:700;margin:40rpx;border-bottom:1px solid #eee;padding:40rpx}.item{margin:40rpx}.item .line-wrap{margin-bottom:20rpx}.item .line-wrap .label{display:inline-block;width:200rpx;color:#909399;font-size:28rpx}.item .line-wrap .value{display:inline-block;font-size:28rpx}

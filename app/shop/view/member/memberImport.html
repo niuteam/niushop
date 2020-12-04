@@ -1,0 +1,142 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .ns-card-common:first-of-type{margin-top: 0;}
+    .layui-card-body{display: flex;padding-bottom: 0 !important;padding-right: 50px !important;padding-left: 50px !important;flex-wrap: wrap;}
+    .layui-card-body .content{width: 33.3%;display: flex;flex-direction: column;margin-bottom: 30px;justify-content: center;}
+    .layui-card-body .money{font-size: 20px;color: #666;font-weight: bold;margin-top: 10px;max-width: 250px;}
+    .layui-card-body .subhead{font-size: 12px;margin-left: 3px;cursor: pointer;}
+    .ns-single-filter-box {justify-content: left;line-height: 34px}
+    .ns-single-filter-box a{cursor:pointer;margin-left: 10px}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-single-filter-box">
+    <button class="layui-btn ns-bg-color" id="member_file">导入会员</button>
+    <a class="layui-btn layui-btn-primary" onclick="downloadMemberFile()">点击下载模板</a>
+</div>
+
+<!-- 列表 -->
+<table id="member_import_log_list" lay-filter="member_import_log_list"></table>
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" lay-event="info">查看</a>
+    </div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+    var table,upload,repeat_flag = false;
+    layui.use(['form', 'laydate','laytpl', 'upload'], function() {
+        var form = layui.form,
+            laydate = layui.laydate,
+            currentDate = new Date(),
+            laytpl = layui.laytpl,
+            minDate = "";
+            upload = layui.upload;
+        form.render();
+        /**
+         * 表格加载
+         */
+        table = new Table({
+            elem: '#member_import_log_list',
+            url: ns.url("shop/member/memberImport"),
+            cols: [
+                [{
+					field: 'create_time',
+					title: '导入时间',
+                    width: '20%',
+					unresize: 'false',
+				}, {
+					field: 'member_num',
+					title: '导入会员数',
+					width: '20%',
+					unresize: 'false',
+				}, {
+					field: 'success_num',
+					title: '导入成功会员数',
+					width: '20%',
+					unresize: 'false',
+				}, {
+                    field: 'error_num',
+                    title: '导入失败会员数',
+					width: '15%',
+                    unresize: 'false',
+                }, {
+                    field: 'status_name',
+                    title: '导入状态',
+					width: '15%',
+                    unresize: 'false',
+                }, {
+                    title: '操作',
+                    width: '10%',
+                    unresize: 'false',
+                    toolbar: '#operation'
+                }]
+            ]
+        });
+        //允许上传的文件后缀
+        upload.render({
+            elem: '#member_file'
+            ,url: ns.url("shop/member/file"),
+            accept: 'file',
+            exts: 'xlsx',
+            done: function(res){
+                if (res.code >= 0) {
+                    member_import(1, res.data.name, res.data.path);
+                    repeat_flag = false;
+                }else{
+                    layer.msg(res.message);
+                }
+            }
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'info': //查看
+                    location.href = ns.url("shop/member/memberimportlist?id=" + data.id);
+                    break
+            }
+        });
+    });
+
+    function member_import(index, name, path, success_num = 0, error_num = 0, record = 0){
+        $.ajax({
+            url: ns.url("shop/member/import"),
+            data: {
+                filename: name,
+                path: path,
+                index: index,
+                success_num : success_num,
+                error_num : error_num,
+                record : record
+            },
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                index ++;
+                if(res.code == 0){
+
+                    if(res.data.num < res.data.allRow){
+                        member_import(index, res.data.name, res.data.path, res.data.success_num, res.data.error_num, res.data.record);
+                    }else{
+                        table.reload();
+                    }
+                }
+                layer.msg(res.message);
+            }
+        });
+    }
+
+    function downloadMemberFile(){
+        location.href = ns.url("shop/member/downloadMemberFile");
+        return false;
+    }
+</script>
+{/block}

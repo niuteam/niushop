@@ -1,0 +1,103 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+	.table { display: flex; }
+	.qrcode { width: 320px; height: 569px; background: #f5f5f5; position: relative; border: 1px solid #e1e1e1;margin-right: 10px;}
+	.qrcode #imgLogo { max-width: 320px; max-height: 569px; }
+	#header { width: 45px; height: 45px; position: absolute; left: 59px; top: 15px; cursor: move; }
+	#logo { width: 43px; position: absolute; left: 60px; top: 210px; cursor: move; }
+	#code{ width: 144px; height: 144px; position: absolute; left: 70px; top: 300px; cursor: move;}
+	#name{ font-size: 14px; color: #000; position: absolute; left: 128px; top: 23px; cursor: move;}
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="table">
+	<div class="qrcode" id="divBlock">
+		{if $info['background']}
+		<img id="imgLogo" src="{:img($info['background'])}">
+		{else/ }
+		<img id="imgLogo">
+		{/if}
+		<img class="tdrag-header" id="header" src="WECHAT_IMG/icon-header.png" style="left:{$info['header_left']};top:{$info['header_top']};">
+		<img class="tdrag-logo" id="logo" src="__STATIC__/img/bitbug_favicon.ico" style="left:{$info['logo_left']};top:{$info['logo_top']};{if $info["is_logo_show"] == 0}display:none;{/if}">
+		<img class="tdrag-code" id="code" src="WECHAT_IMG/template_qrcode.png" style="left:{$info['code_left']};top:{$info['code_top']};">
+		<span class="tdrag-name" id="name" style="left:{$info['name_left']};top:{$info['name_top']};color:{$info['nick_font_color']};font-size:{$info['nick_font_size']}px;">昵称</span>
+	</div>
+	<div class="layui-form ns-form">
+		<input type="hidden" name="id" value="{$info['id']}">
+		<input type="hidden" name="nick_font_color" value="{$info['nick_font_color']}">
+		<div class="layui-form-item">
+			<label class="layui-form-label img-upload-lable">背景图片：</label>
+			<div class="layui-input-block">
+				<div class="upload-img-block">
+					<!-- 用于存储图片路径 -->
+					<div class="upload-img-box {if $info['background']}hover{/if}">
+						<div class="ns-upload-default" id="background">
+							{if $info['background']}
+							<div id="preview_background" class="preview_img">
+								<img layer-src src="{:img($info['background'])}" class="img_prev">
+							</div>
+							{else /}
+								<div class="upload">
+									<img src="SHOP_IMG/upload_img.png" />
+									<p>点击上传</p>
+								</div>
+							{/if}
+						</div>
+						<div class="operation"  >
+							<div >
+								<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px"></i>
+								<i title="删除图片" class="layui-icon layui-icon-delete js-delete" ></i>
+							</div>
+							
+							<div class="replace_img js-replace">点击替换</div>
+						</div>
+						<input type="hidden" name="background" value="{$info['background']}" />
+					</div>
+				<!-- 	<p id="background" class=" {if condition="$info['background']"} replace {else/} no-replace{/if}">替换</p>
+					<i class="del {if $info['background']}show{/if}">x</i> -->
+				</div>
+			</div>
+			<div class="ns-word-aux">背景图必须是640px*1134px的png图像；点击下方"保存"按钮后生效。</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">昵称文本颜色：</label>
+			<div class="layui-input-inline">
+				<div id="font_color"></div>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">昵称字体大小：</label>
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<input id="font_size"  min="8" max="50"  name="nick_font_size" value="{$info['nick_font_size']}" type="number" lay-verify="int" class="layui-input ns-len-short">
+				</div>
+				<div class="layui-form-mid">px</div>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">是否显示logo：</label>
+			<div class="layui-input-block" id="isOpen">
+				<input type="checkbox" name="is_logo_show" {if $info['is_logo_show']}checked{/if} lay-skin="switch" lay-filter="logo" >
+			</div>
+		</div>
+
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/Tdrag.min.js"></script>
+<script src="WECHAT_JS/wx_qrcode.js"></script>
+<script>
+	var default_color = '{$info["nick_font_color"]}'?'{$info["nick_font_color"]}':'#000000';
+	var url = ns.url("wechat://shop/wechat/editQrcode");
+</script>
+{/block}

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "ns-goods-recommend": "/components/ns-goods-recommend/ns-goods-recommend",
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

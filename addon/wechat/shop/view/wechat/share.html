@@ -1,0 +1,213 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+	.layui-form {overflow: hidden;}
+	.ns-card { display: inline-block; margin-right: 8px; width: 310px; height: 200px; border-width: 1px; border-style: solid; border-radius: 3px; vertical-align: top; }
+	.layui-card-header { text-align: center; position: relative; }
+	.layui-card-header .edit-btn, .layui-card-header .cancel-btn { position: absolute; right: 15px; }
+	.cancel-btn { display: none; }
+	.layui-card-body { color: rgba(0, 0, 0, .6); }
+	.share-con { display: flex; margin-top: 10px; }
+	.share-img { flex-shrink: 0; width: 80px; height: 80px; border: 1px solid #f1f1f1; background: #ececec; text-align: center; }
+	.share-img span { color: #c0c0c0; line-height: 80px; font-weight: bold; }
+	.share-font { padding-left: 10px; }
+	.share-star { color: #999; }
+	.share-star .star { font-size: 16px; }
+	.share-con .layui-input { height: 30px; font-size: 12px; color: #5e6166!important; margin-bottom: 5px; display: none; }
+	.share-title-input { display: none; }
+	.share-title-input .layui-input { display: inline-block; height: 30px; font-size: 12px; color: #5e6166!important; }
+	.btn-hide { display: none; }
+	.ns-btn-save { position: relative; left: 450px; }
+	.ns-border-color-gray {border: 1px solid #e5e5e5 !important;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card ns-border-color-gray">
+		<div class="layui-card-header">
+			<span class="title">推广二维码</span>
+			<a href="javascript:void(0)" class="edit-btn ns-text-color" id="codeEdit">编辑</a>
+			<a href="javascript:void(0)" class="cancel-btn ns-text-color" id="codeCancel">取消</a>
+		</div>
+		<div class="layui-card-body">
+			<p class="share-title">分享二维码</p>
+			<div class="share-con">
+				<div class="share-img">
+					<span>个人头像</span>
+				</div>
+				<div class="share-font">
+					<p class="share-price">
+						<span class="span-show">{$info['qrcode_param_1'] ? $info['qrcode_param_1'] : '向您推荐'}</span>
+						<input class="layui-input ns-len-short share-price-input" type="text" name="qrcode_param_1" value="{$info['qrcode_param_1'] ? $info['qrcode_param_1'] : '向您推荐'}" placeholder="请输入分享标题" />
+					</p>
+					<p class="share-adv">
+						<span class="span-show">{$info['qrcode_param_2'] ? $info['qrcode_param_2'] : '注册有优惠'}</span>
+						<input class="layui-input ns-len-short share-adv-input" type="text" name="qrcode_param_2" value="{$info['qrcode_param_2'] ? $info['qrcode_param_2'] : '注册有优惠'}" placeholder="请输入分享内容" />
+					</p>
+					<div class="share-star">
+						<span>收藏热度：</span>
+						<span class="star">★★★★★</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card ns-card ns-border-color-gray">
+		<div class="layui-card-header">
+			<span class="title">商品设置</span>
+			<a href="javascript:void(0)" class="edit-btn ns-text-color" id="proEdit">编辑</a>
+			<a href="javascript:void(0)" class="cancel-btn ns-text-color" id="proCancel">取消</a>
+		</div>
+		<div class="layui-card-body">
+			<p class="share-title">商品分享</p>
+			<div class="share-con">
+				<div class="share-img">
+					<span>商品图片</span>
+				</div>
+				<div class="share-font">
+					<p class="share-price">
+						<span class="span-show">{$info['goods_param_1'] ? $info['goods_param_1'] : '优惠价'}</span>
+						<input class="layui-input ns-len-short share-price-input" type="text" name="goods_param_1" value="{$info['goods_param_1'] ? $info['goods_param_1'] : '优惠价'}" placeholder="请输入价格标题" />
+					</p>
+					<p class="share-adv">
+						<span class="span-show">{$info['goods_param_2'] ? $info['goods_param_2'] : '全场正品'}</span>
+						<input class="layui-input ns-len-short share-adv-input" type="text" name="goods_param_2" value="{$info['goods_param_2'] ? $info['goods_param_2'] : '全场正品'}" placeholder="请输入分享内容" />
+					</p>
+					<div class="share-star">
+						<span>收藏热度：</span>
+						<span class="star">★★★★★</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card ns-card ns-border-color-gray">
+		<div class="layui-card-header">
+			<span class="title">店铺设置</span>
+			<a href="javascript:void(0)" class="edit-btn ns-text-color" id="storeEdit">编辑</a>
+			<a href="javascript:void(0)" class="cancel-btn ns-text-color" id="storeCancel">取消</a>
+		</div>
+		<div class="layui-card-body">
+			<p class="share-title">
+				<span class="span-show">{$info['shop_param_1'] ? $info['shop_param_1'] : '欢迎打开'}**店</span>
+				<div class="share-title-input">
+					<input class="layui-input ns-len-short" type="text" name="shop_param_1" value="{$info['shop_param_1'] ? $info['shop_param_1'] : '欢迎打开'}" />**店
+				</div>
+			</p>
+			<div class="share-con">
+				<div class="share-img">
+					<span>个人头像</span>
+				</div>
+				<div class="share-font">
+					<p class="share-price">
+						<span class="span-show">{$info['shop_param_2'] ? $info['shop_param_2'] : '向您推荐'}</span>
+						<input class="layui-input ns-len-short share-price-input" type="text" name="shop_param_2" value="{$info['shop_param_2'] ? $info['shop_param_2'] : '向您推荐'}" placeholder="请输入分享标题" />
+					</p>
+					<p class="share-adv">
+						<span class="span-show">{$info['shop_param_3'] ? $info['shop_param_3'] : '注册有优惠'}</span>
+						<input class="layui-input ns-len-short share-adv-input" type="text" name="shop_param_3" value="{$info['shop_param_3'] ? $info['shop_param_3'] : '注册有优惠'}" placeholder="请输入分享内容" />
+					</p>
+					<div class="share-star">
+						<span>收藏热度：</span>
+						<span class="star">★★★★★</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="ns-btn-save">
+		<button class="layui-btn ns-bg-color btn-hide" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	$(document).ready(function () {
+		function btnShow() {
+			if ($("#codeEdit").is(":hidden") || $("#proEdit").is(":hidden") || $("#storeEdit").is(":hidden")) {
+				$(".btn-hide").show();
+			} else {
+				$(".btn-hide").hide();
+			}
+		}
+		
+		$("#codeEdit").click(function () {
+			$(this).hide();
+			$("#codeCancel").show();
+			$(this).parents(".ns-card").find(".share-font .span-show").hide();
+			$(this).parents(".ns-card").find(".share-font input").show();
+			btnShow();
+		});
+		
+		$("#codeCancel").click(function () {
+			$(this).hide();
+			$("#codeEdit").show();
+			$(this).parents(".ns-card").find(".share-font .span-show").show();
+			$(this).parents(".ns-card").find(".share-font input").hide();
+			btnShow();
+		});
+		
+		$("#proEdit").click(function () {
+			$(this).hide();
+			$("#proCancel").show();
+			$(this).parents(".ns-card").find(".share-font .span-show").hide();
+			$(this).parents(".ns-card").find(".share-font input").show();
+			btnShow();
+		});
+		
+		$("#proCancel").click(function () {
+			$(this).hide();
+			$("#proEdit").show();
+			$(this).parents(".ns-card").find(".share-font .span-show").show();
+			$(this).parents(".ns-card").find(".share-font input").hide();
+			btnShow();
+		});
+		
+		$("#storeEdit").click(function () {
+			$(this).hide();
+			$("#storeCancel").show();
+			$(this).parents(".ns-card").find(".span-show").hide();
+			$(this).parents(".ns-card").find(".share-title-input, input").show();
+			btnShow();
+		});
+		
+		$("#storeCancel").click(function () {
+			$(this).hide();
+			$("#storeEdit").show();
+			$(this).parents(".ns-card").find(".span-show").show();
+			$(this).parents(".ns-card").find(".share-title-input, input").hide();
+			btnShow();
+		});
+	});
+
+	layui.use(['form'], function() {
+		var form = layui.form,
+				repeat_flag = false; //防重复标识
+
+		/**
+		 * 监听保存
+		 */
+		form.on('submit(save)', function (data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			var field = data.field;
+			$.ajax({
+				type: 'POST',
+				url: ns.url("wechat://shop/wechat/share"),
+				data: field,
+				dataType: 'JSON',
+				success: function (res) {
+					layer.msg(res.message);
+					setTimeout(function () {
+						location.href = ns.url("wechat://shop/wechat/share");
+					}, 1000);
+					repeat_flag = false;
+				}
+			});
+		});
+	})
+</script>
+{/block}

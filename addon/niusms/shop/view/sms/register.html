@@ -1,0 +1,99 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-form {
+		margin-top: 0;
+	}
+	.tips {
+		padding: 10px;
+		margin-bottom: 15px;
+		background: #ffe1d2;
+		color: #ff8143;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+
+	<p class="tips">已有账号，<a href="{:addon_url('niusms://shop/sms/login')}">去登录</a></p>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户名：</label>
+		<div class="layui-input-block">
+			<input type="text" name="username" lay-verify="username" placeholder="请输入用户名" autocomplete="off" class="layui-input ns-len-long">
+			<span class="layui-word-aux">仅支持6~50位英文+数字组合，不支持下划线</span>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">密码：</label>
+		<div class="layui-input-block">
+			<input type="text" name="password" lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">公司名称：</label>
+		<div class="layui-input-block">
+			<input type="text" name="company" lay-verify="required" placeholder="请输入公司名称" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">手机号：</label>
+		<div class="layui-input-block">
+			<input type="text" name="mobiles" lay-verify="required" placeholder="请输入手机号" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">注册</button>
+	</div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function () {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.verify({
+			username:function (value) {
+				if(value.length == 0){
+					return "请输入用户名";
+				}
+				if(value.indexOf("_") !=-1){
+					return "不支持下划线";
+				}
+				if(!/^[0-9a-zA-z]{6,50}$/.test(value)){
+					return "仅支持6~50位英文+数字组合";
+				}
+			}
+
+		});
+
+		form.on('submit(save)', function (data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("niusms://shop/sms/register"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function (res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.msg("注册成功");
+						location.href = ns.url("niusms://shop/sms/index");
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+</script>
+{/block}

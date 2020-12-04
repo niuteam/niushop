@@ -1,0 +1,56 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">名称</label>
+		<div class="layui-input-block">
+			<input name="" value="" type="text" placeholder="请输入名称" class="layui-input ns-len-mid">
+		</div>
+	</div>
+	
+	<!-- 表单操作 -->
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+	
+	<!-- 隐藏域 -->
+	<input value="" type="hidden" name="" />
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+		
+		form.on('submit(save)', function(data) {
+			
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/cardgoods/editGoods"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						location.href = ns.url("shop/cardgoods/lists")
+					}
+				}
+			});
+		});
+	});
+	
+	function back() {
+		location.href = ns.url("shop/cardgoods/lists");
+	}
+</script>
+{/block}

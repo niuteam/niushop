@@ -1,0 +1,117 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>公告标题：</label>
+		<div class="layui-input-block">
+			<input type="text" name="title" value="{$info.title}" lay-verify="require" class="layui-input ns-len-long" placeholder="请输入公告标题">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否置顶：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_top" lay-skin="switch" value="1" {if $info.is_top} checked {/if}> 
+		</div> 
+	</div>
+	
+	<!--<div class="layui-form-item">-->
+		<!--<label class="layui-form-label">接收范围：</label>-->
+		<!--<div class="layui-input-block">-->
+			<!--<input type="checkbox" name="receiving_type[]" value="mobile" {if strpos($info.receiving_type,'mobile') !== false } checked {/if} lay-skin="primary" title="手机端" >-->
+		<!--</div>-->
+	<!--</div>-->
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>公告内容：</label>
+		<div class="layui-input-block ns-special-length">
+			<script id="container" name="content" type="text/plain" style="width: 800px; height: 300px;"></script>
+		</div>
+	</div>
+
+	<input type="hidden" name="id" value="{$info.id}">
+	<input type="hidden" value="{$info.content}" id="content" />
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="formSave">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript">
+	var ue = UE.getEditor('container');
+	ue.ready(function() {   //对编辑器的操作最好在编辑器ready之后再做
+		var con = $("#content").val();
+		ue.setContent(con);   //获取html内容，返回: <p>hello</p>
+	});
+
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.verify({
+			title: function(value) {
+				if (value.length < 1) {
+					return '请输入公告标题';
+				}
+			}
+		});
+
+		form.on('submit(formSave)', function(data) {
+			var html;
+			ue.ready(function() {   //对编辑器的操作最好在编辑器ready之后再做
+				html = ue.getContent();   //获取html内容，返回: <p>hello</p>
+			});
+			data.field.content = html;
+			
+			if (data.field.content == "") {
+				layer.msg('请输入公告内容', {
+					icon: 5
+				});
+				return;
+			}
+			
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/notice/editNotice"),
+				data: data.field,
+				type: "POST",
+				dataType: "JSON",
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/notice/index")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+	
+	function back() {
+		location.href = ns.url("shop/notice/index");
+	}
+</script>
+{/block}

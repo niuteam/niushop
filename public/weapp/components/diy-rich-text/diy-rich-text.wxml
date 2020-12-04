@@ -1,0 +1,1 @@
+<view class="rich-text-box" style="{{'background-color:'+(value.backgroundColor)+';'+('padding:'+(value.padding*2+'rpx')+';')}}"><rich-text nodes="{{html}}"></rich-text></view>

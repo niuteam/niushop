@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "门店列表",
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

@@ -1,0 +1,138 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+    <div class="layui-form" lay-filter="trade_search">
+        <div class="layui-input-inline ns-len-mid">
+            <input type="text" id="search_text" name="search_text" placeholder="订单编号" autocomplete="off" class="layui-input ">
+		    <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+		        <i class="layui-icon">&#xe615;</i>
+		    </button>
+        </div>
+    </div>
+</div>
+
+<table id="trade_list" lay-filter="trade_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" lay-event="detail">详情</a>
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function() {
+        var table,
+            form = layui.form;
+
+        /**
+         * 加载表格
+         */
+        table = new Table({
+            elem: '#trade_list',
+            url: ns.url("shop/order/tradelist"),
+            where : {member_id:"{$member_id}"},
+            cols: [
+                [{
+                    field: 'order_no',
+                    title: '订单编号',
+                    width: '10%',
+                    unresize: 'false'
+                },{
+                    field: 'site_name',
+                    title: '店铺名称',
+					width: '10%',
+                    unresize: 'false'
+                }, {
+                    field: 'order_name',
+                    title: '商品信息',
+					width: '12%',
+                    unresize: 'false'
+                }, {
+                    field: 'order_money',
+                    title: '订单金额',
+					align: 'right',
+					width: '10%',
+                    unresize: 'false',
+					templet: function(data) {
+						return '￥' + data.order_money;
+					}
+                }, {
+                    field: 'pay_money',
+                    title: '实际支付金额',
+					align: 'right',
+					width: '10%',
+                    unresize: 'false',
+					templet: function(data) {
+						return '￥' + data.order_money;
+					}
+                }, {
+                    field: 'balance_money',
+                    title: '使用余额',
+					align: 'right',
+					width: '10%',
+                    unresize: 'false',
+					templet: function(data) {
+						return '￥' + data.order_money;
+					}
+                }, {
+					width: '4%',
+                    unresize: 'false'
+                }, {
+                    field: 'order_type_name',
+                    title: '订单类型',
+					width: '8%',
+                    unresize: 'false'
+                }, {
+                    field: 'order_status_name',
+                    title: '订单状态',
+					width: '8%',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '下单时间',
+                    width: '10%',
+                    templet: function(data) {
+                        return ns.time_to_date(data.create_time)
+                    }
+                }, {
+                    title: '操作',
+                    width: '8%',
+                    unresize: 'false',
+                    toolbar: '#operation'
+                }]
+            ]
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'detail': //详情
+                    var url = "shop/order/detail";
+                    window.open(ns.url(url,{order_id:data.order_id}));
+                    break;
+            }
+        });
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+            return false;
+        });
+    })
+</script>
+{/block}

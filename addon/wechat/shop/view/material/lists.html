@@ -1,0 +1,57 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_material.css">
+{/block}
+{block name="main"}
+<div class="layui-tab-item layui-show">
+	<div class="ns-single-filter-box">
+		<button class="layui-btn ns-bg-color" onclick="location.href='{:addon_url(\'wechat://shop/material/add\')}'">新建图文</button>
+	</div>
+
+	<div class="nc-table-box">
+        <table id="graphic_message_list" lay-filter="graphic_message"></table>
+    </div>
+	<!-- 标题 -->
+	<script type="text/html" id="title">
+		<div class="layui-row grid-demo">
+		{{# for (var index in d.value) { }}
+            <div class="layui-col-md12">
+				<div class="layui-col-md3 article-img">
+					<span class="ns-bg-color">图文</span>
+				</div>
+				<div class="layui-col-md8 title">
+					<a class="graphic-message-title" href="javascript:void(0);" onclick="preview({{d.id}}, {{index}})">{{d.value[index].title}}</a>
+				</div>
+			</div>
+		{{# } }}
+		{{# if (d.value.length == 1) { }}
+			<div class='layui-col-md12 read-all' onclick="preview({{ d.id }})">
+				<div class='layui-col-md4'>阅读全文</div>
+				<div class='layui-col-md4 layui-col-md-offset4'>  </div>
+			</div>
+		{{# } }}
+		</div>
+	</script>
+	<!-- 创建时间 -->
+	<script type="text/html" id="create_time">
+		<div>{{ ns.time_to_date(d.create_time) }}</div>
+	</script>
+	<!-- 修改时间 -->
+	<script type="text/html" id="update_time">
+		<div>{{ ns.time_to_date(d.update_time) }}</div>
+	</script>
+	<!-- 列表操作 -->
+	<script type="text/html" id="operation">
+		<div class="ns-table-btn">
+			<a class="layui-btn" lay-event="edit">编辑</a>
+			<a class="layui-btn" lay-event="delete">删除</a>
+		</div>
+	</script>
+</div>
+{/block}
+{block name='script'}
+<script src="WECHAT_JS/wx_material.js"></script>
+<script>
+loadMaterialList(1);
+</script>
+{/block}

@@ -1,0 +1,296 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	/* 商品整体概况 */
+	/* 头部 */
+	.ns-card-common:first-child {
+		margin-top: 0;
+	}
+
+	.ns-card-head-right {
+		display: flex;
+		align-items: center;
+	}
+
+	.ns-card-head-right .layui-form-item {
+		margin-bottom: 0;
+	}
+
+	.current-time, .ns-flow-time-today {
+		margin-left: 10px;
+		line-height: 34px;
+	}
+	/* 头部 end */
+	
+	.ns-shop-table tr {
+		border-bottom: 1px solid #E6E6E6;
+	}
+	
+	.layui-table[lay-skin=line] td {
+	    border-width: 0!important;
+	}
+
+	.ns-goods-survey-title {
+		font-size: 17px;
+		font-weight: 600;
+		color: #000000;
+	}
+
+	.layui-table[lay-skin=line] {
+		border-width: 0;
+	}
+
+	.ns-goods-intro-num {
+		font-size: 18px;
+		font-weight: 600;
+		margin-top: 10px;
+	}
+</style>
+{/block}
+{block name="main"}
+<!-- 实时概况 -->
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">实时概况</span>
+
+		<div class="ns-card-head-right layui-form">
+			<div class="layui-form-item">
+				<div class="layui-input-block ns-len-mid">
+					<select name="date" lay-filter="date">
+						<option value="0">今日实时</option>
+						<option value="1">近7天</option>
+						<option value="2">近30天</option>
+					</select>
+				</div>
+			</div>
+			<div class="ns-flow-time">
+				<div class="ns-flow-time-today"></div>
+			</div>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<table class="layui-table ns-shop-table" lay-skin="line" lay-size="lg">
+			<tbody>
+				<tr>
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>新增商品</p>
+							<p class="ns-goods-intro-num" id="addGoodsCount">0</p>
+						</div>
+					</td>
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>商品浏览</p>
+							<p class="ns-goods-intro-num" id="visitCount">0</p>
+						</div>
+					</td>
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>商品收藏</p>
+							<p class="ns-goods-intro-num" id="collectGoods">0</p>
+						</div>
+					</td>
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>订单商品</p>
+							<p class="ns-goods-intro-num" id="goodsPayCount">0</p>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<!--<td>-->
+						<!--<div class="ns-goods-intro-block">-->
+							<!--<p>店铺收藏</p>-->
+							<!--<p class="ns-goods-intro-num" id="collectShop">0</p>-->
+						<!--</div>-->
+					<!--</td>-->
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>订单金额</p>
+							<p class="ns-goods-intro-num" id="orderTotal">0</p>
+						</div>
+					</td>
+					<td>
+						<div class="ns-goods-intro-block">
+							<p>订单数</p>
+							<p class="ns-goods-intro-num" id="orderPayCount">0</p>
+						</div>
+					</td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- 趋势分析 -->
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">趋势分析</span>
+		
+		<div class="ns-card-head-right layui-form">
+			<div class="layui-form-item">
+				<div class="layui-input-block ns-len-mid">
+					<select name="date" lay-filter="date_chart">
+						<option value="1">近7天</option>
+						<option value="2">近30天</option>
+					</select>
+				</div>
+			</div>
+			<span class="current-time"></span>
+		</div>
+	</div>
+	<div class="layui-card-body">
+		<div id="main" style="width: 100%; height: 400px;"></div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script src="SHOP_JS/echarts.min.js"></script>
+<script>
+	$(function() {
+		getShopStat(0);
+		getShopStatChart(1);
+	});
+
+	layui.use(['form'], function() {
+		var form = layui.form;
+		form.render();
+		
+		/**
+		 * 监听下拉框
+		 */
+		form.on('select(date)', function(data) {
+			getShopStat(data.value);
+		});
+
+		/**
+		 * 图表监听下拉框
+		 */
+		form.on('select(date_chart)', function(data) {
+			getShopStatChart(data.value);
+		});
+	});
+
+	//获取店铺统计
+	function getShopStat(date_type) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: ns.url("shop/stat/shop"),
+			data: {
+				date_type: date_type
+			},
+			success: function(res) {
+				if (res.code == 0) {
+					$("#addGoodsCount").html(res.data.add_goods_count);
+//					$("#collectShop").html(res.data.collect_shop);
+					$("#collectGoods").html(res.data.collect_goods);
+					$("#visitCount").html(res.data.visit_count);
+					$("#orderTotal").html(res.data.order_total);
+					$("#orderPayCount").html(res.data.order_pay_count);
+					$("#goodsPayCount").html(res.data.goods_pay_count);
+					$(".ns-flow-time-today").html(res.data.time_range);
+				} else {
+					layer.msg(res.message);
+				}
+			}
+		});
+	}
+
+	//获取店铺统计图表
+	function getShopStatChart(date_type) {
+		$.ajax({
+			dataType: 'JSON',
+			type: 'POST',
+			url: ns.url("shop/stat/getshopstatlist"),
+			data: {
+				date_type: date_type
+			},
+			success: function(res) {
+				option.xAxis.data = res.time;
+				option.series[0].data = res.add_goods_count;
+				option.series[1].data = res.visit_count;
+				option.series[2].data = res.collect_goods;
+				option.series[3].data = res.goods_pay_count;
+//				option.series[4].data = res.collect_shop;
+				option.series[4].data = res.order_total;
+				option.series[5].data = res.order_pay_count;
+				
+				$(".current-time").html(res.time_range);
+				myChart.setOption(option);
+			}
+		});
+	}
+
+	// 基于准备好的dom，初始化echarts实例
+	var myChart = echarts.init(document.getElementById('main'));
+
+	// 指定图表的配置项和数据
+	option = {
+		tooltip: {
+			trigger: 'axis'
+		},
+		legend: {
+//			data: ['新增商品数', '商品浏览数', '商品收藏数', '订单商品数', '店铺收藏数', '订单金额', '订单数']
+            data: ['新增商品数', '商品浏览数', '商品收藏数', '订单商品数', '订单金额', '订单数'],
+			textStyle: {
+				fontSize: 14,
+				color: "#000"
+			}
+		},
+		xAxis: {
+			type: 'category',
+			boundaryGap: false,
+			data: []
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				formatter: '{value} '
+			}
+		},
+		series: [{
+				name: '新增商品数',
+				type: 'line',
+				data: [],
+			},
+			{
+				name: '商品浏览数',
+				type: 'line',
+				data: [],
+			},
+			{
+				name: '商品收藏数',
+				type: 'line',
+				data: [],
+			},
+			{
+				name: '订单商品数',
+				type: 'line',
+				data: [],
+			},
+//			{
+//				name: '店铺收藏数',
+//				type: 'line',
+//				data: [],
+//			},
+			{
+				name: '订单金额',
+				type: 'line',
+				data: [],
+			},
+			{
+				name: '订单数',
+				type: 'line',
+				data: [],
+			}
+			
+		]
+	};
+
+	// 使用刚指定的配置项和数据显示图表。
+	myChart.setOption(option);
+</script>
+{/block}

@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup-sku-new",
+    "ns-show-toast": "/components/ns-show-toast/ns-show-toast"
+  }
+}

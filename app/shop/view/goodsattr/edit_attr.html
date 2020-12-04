@@ -1,0 +1,234 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/goods_attr.css"/>
+<style>
+	.layui-layer-page .layui-layer-content {overflow: auto!important;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>属性模板用在商品添加编辑中批量设置然后配置对应的商品属性</li>
+			<li>商家可添加自己店铺的商品属性</li>
+		</ul>
+	</div>
+</div>
+
+<div class="ns-custom-panel ns-form">
+
+	<!--商品类型基础信息-->
+	<div class="custom-panel-content">
+		<ul class="panel-content">
+			<li>
+				<div>
+					<span>模板名称：</span>
+					<span>{$attr_class_info['class_name']}</span>
+				</div>
+				<div>
+					<span>排序：</span>
+					<span>{$attr_class_info['sort']}</span>
+				</div>
+			</li>
+		</ul>
+
+		<a class="panel-operation ns-text-color" href="javascript:editAttrClassPopup();">编辑</a>
+
+		<!--编辑商品类型-->
+		<script type="text/html" id="editAttrClass">
+
+			<div class="layui-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label mid"><span class="required">*</span>模板名称：</label>
+					<div class="layui-input-inline">
+						<input name="class_name" type="text" value="{$attr_class_info['class_name']}" placeholder="请输入模板名称" lay-verify="required" class="layui-input ns-len-mid">
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label mid">排序：</label>
+					<div class="layui-input-block">
+						<input name="sort" type="number" value="{$attr_class_info['sort']}" placeholder="请输入排序" lay-verify="num" class="layui-input ns-len-short">
+					</div>
+					<div class="ns-word-aux mid">排序值必须为整数</div>
+				</div>
+
+				<input type="hidden" name="class_id" value="{$attr_class_info['class_id']}">
+
+				<div class="ns-form-row mid">
+					<button class="layui-btn ns-bg-color" lay-submit lay-filter="save_attr">保存</button>
+				</div>
+			</div>
+
+		</script>
+
+	</div>
+
+	<!--属性管理-->
+	<div class="custom-panel-content attribute">
+
+		<!-- 列表 -->
+		<table id="attribute_list" lay-filter="attribute_list"></table>
+
+		<!-- 操作 -->
+		<script type="text/html" id="attributeOperation">
+			<div class="ns-table-btn">
+				<a class="layui-btn" lay-event="edit">编辑</a>
+				<a class="layui-btn" lay-event="delete">删除</a>
+			</div>
+		</script>
+
+		<div class="ns-form-row sm">
+			<button class="layui-btn ns-bg-color" onclick="addAttributePopup()">添加属性</button>
+		</div>
+
+		<!--添加关联属性-->
+		<script type="text/html" id="addAttribute">
+
+			<form class="layui-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label"><span class="required">*</span>属性名称：</label>
+					<div class="layui-input-block">
+						<input name="attr_name" type="text" placeholder="请输入属性名称" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label">属性类型：</label>
+					<div class="layui-input-block ns-len-mid">
+						<select name="attr_type" lay-filter="attr_type">
+							<option value="1">单选</option>
+							<option value="2">多选</option>
+							<option value="3">输入</option>
+						</select>
+					</div>
+					<div class="ns-word-aux">
+						<p>注意：属性类型确定后不允许更改，输入不参与筛选</p>
+					</div>
+				</div>
+
+				<div class="attribute-value-list">
+
+					<table class="layui-table">
+						<colgroup>
+							<col width="60%">
+							<col width="40%">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>属性值名称</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+					</table>
+
+					<div class="table-wrap">
+						<table class="layui-table">
+							<colgroup>
+								<col width="60%">
+								<col width="40%">
+							</colgroup>
+							<tbody></tbody>
+						</table>
+					</div>
+
+					<button class="layui-btn layui-btn-primary" type="button" onclick="addAttrValue()">添加属性值</button>
+
+				</div>
+
+				<input type="hidden" name="attr_class_id" value="{$attr_class_info['class_id']}">
+				<input type="hidden" name="attr_class_name" value="{$attr_class_info['class_name']}">
+
+				<div class="ns-form-row">
+					<button class="layui-btn ns-bg-color" lay-submit lay-filter="save_add_attribute">保存</button>
+				</div>
+
+			</form>
+
+		</script>
+
+		<!--编辑关联属性-->
+		<script type="text/html" id="editAttribute">
+
+			<form class="layui-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label"><span class="required">*</span>属性名称：</label>
+					<div class="layui-input-block">
+						<input name="attr_name" type="text" value="{{d.attr_name}}" placeholder="请输入属性名称" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+					</div>
+				</div>
+
+				<div class="layui-form-item">
+					<label class="layui-form-label">属性类型：</label>
+					<div class="layui-input-block ns-len-mid">
+						<select name="attr_type" lay-filter="attr_type">
+							{{# if(d.attr_type == 1){ }}
+							<option value="1" disabled selected>单选</option>
+							{{# }else if(d.attr_type == 2){ }}
+							<option value="2" disabled selected>多选</option>
+							{{# }else if(d.attr_type == 3){ }}
+							<option value="3" disabled selected>输入</option>
+							{{# } }}
+						</select>
+					</div>
+					<div class="ns-word-aux">
+						<p>注意：属性类型不可更改，输入不参与筛选</p>
+					</div>
+				</div>
+
+				{{# if(d.attr_type == 1 || d.attr_type == 2){ }}
+				<div class="attribute-value-list">
+
+					<table class="layui-table">
+						<colgroup>
+							<col width="60%">
+							<col width="40%">
+						</colgroup>
+						<thead>
+							<tr>
+								<th>属性值名称</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+					</table>
+
+					<div class="table-wrap">
+						<table class="layui-table">
+							<colgroup>
+								<col width="60%">
+								<col width="40%">
+							</colgroup>
+							<tbody></tbody>
+						</table>
+					</div>
+
+					<button class="layui-btn layui-btn-primary" type="button" onclick="addAttrValue()">添加属性值</button>
+
+				</div>
+				{{# } }}
+
+				<input type="hidden" name="attr_class_id" value="{$attr_class_info['class_id']}">
+				<input type="hidden" name="attr_class_name" value="{$attr_class_info['class_name']}">
+				<input type="hidden" name="attr_id" value="{{d.attr_id}}">
+
+				<div class="ns-form-row">
+					<button class="layui-btn ns-bg-color" lay-submit lay-filter="save_edit_attribute">保存</button>
+				</div>
+
+			</form>
+
+		</script>
+
+	</div>
+</div>
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.attr_class_id}},{{d.attr_id}},this)" value="{{d.sort}}" placeholder="请输入排序" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script>
+    var attr_class_id = "{$attr_class_info['class_id']}";
+</script>
+<script src="SHOP_JS/goods_edit_attr.js"></script>
+{/block}

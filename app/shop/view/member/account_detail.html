@@ -1,0 +1,619 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.panel-content { padding-left: 15px; box-sizing: border-box; }
+	.ns-custom-panel .custom-panel-title .panel-content { width: calc(100% - 190px); }
+	.ns-account-value, .ns-split { line-height: 34px; }
+	.ns-custom-panel .custom-panel-from { display: block; }
+	.layui-input-block + .layui-word-aux {
+	    display: block;
+	    margin-left: 100px;
+	}
+	.ns-shop-account {
+		display: flex;
+		align-items: center;
+		position: relative;
+		padding: 15px;
+		box-sizing: border-box;
+	}
+	
+	.ns-shop-detail p {
+		display: inline-block;
+		width: 300px;
+		line-height: 30px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-custom-panel">
+	<div class="ns-form">
+		<div class="layui-card-body ns-item-block-parent ns-shop-account">
+			<div class="ns-item-pic">
+				{notempty name="$member_info.headimg"}
+				<img src="{:img($member_info.headimg)}" alt="">
+				{else/}
+				<img src="SHOP_IMG/default_headimg.png" alt="">
+				{/notempty}
+			</div>
+			<div class="ns-shop-detail">
+				<p><strong>用户名：</strong><span class="ns-text-color-dark-gray">{$member_info.username}</span></p>
+				<p><strong>昵称：</strong><span class="ns-text-color-dark-gray">{$member_info.nickname}</span></p>
+				<p><strong>真实姓名：</strong><span class="ns-text-color-dark-gray">{$member_info.realname}</span></p>
+				<br>
+				<p><strong>手机号：</strong><span class="ns-text-color-dark-gray">{$member_info.mobile}</span></p>
+				<p><strong>注册时间：</strong><span class="ns-text-color-dark-gray ns-end-time">{:time_to_date($member_info.reg_time)}</span></p>
+			</div>
+		</div>
+	</div>
+
+	<div class="custom-panel-from ns-form">
+		<div class="layui-form" lay-filter="pointForm">
+			<div class="layui-form-item">
+				<label class="layui-form-label">积分：</label>
+				<div class="layui-input-inline ns-len-short ns-account-value" id="member_point">{$member_info.point}</div>
+				<button class="layui-btn layui-btn-primary" onclick="savePoint(this)" data-num="{$member_info.point}">调整</button>
+			</div>
+		</div>
+
+		<div class="layui-form">
+			<div class="layui-form-item">
+				<label class="layui-form-label">余额（不可提现）：</label>
+				<div class="layui-input-inline ns-len-short ns-account-value" id="member_balance">{$member_info.balance}</div>
+				<button class="layui-btn layui-btn-primary" onclick="saveBalance(this)" data-num="{$member_info.balance}">调整</button>
+			</div>
+		</div>
+		
+		<div class="layui-form">
+			<div class="layui-form-item">
+				<label class="layui-form-label">余额（可提现）：</label>
+				<div class="layui-input-inline ns-len-short ns-account-value" id="member_balance_money">{$member_info.balance_money}</div>
+				<button class="layui-btn layui-btn-primary" onclick="saveBalanceMoney(this)" data-num="{$member_info.balance_money}">调整</button>
+			</div>
+		</div>
+
+		<div class="layui-form">
+			<div class="layui-form-item">
+				<label class="layui-form-label">成长值：</label>
+				<div class="layui-input-inline ns-len-short ns-account-value" id="member_growth">{$member_info.growth}</div>
+				<button class="layui-btn layui-btn-primary" onclick="saveGrowth(this)" data-num="{$member_info.growth}">调整</button>
+			</div>
+		</div>
+	</div>
+	
+	<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+		<div class="layui-colla-item">
+			<h2 class="layui-colla-title"></h2>
+			<form class="layui-colla-content layui-form layui-show">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+					<label class="layui-form-label">账户类型：</label>
+					<div class="layui-input-inline">
+						<select name="account_type" lay-filter="account_type">
+							<option value="">请选择</option>
+							{foreach $account_type_arr as $account_type_arr_k => $account_type_arr_v}
+							<option value="{$account_type_arr_k}">{$account_type_arr_v}</option>
+							{/foreach}
+						</select>
+					</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label">来源类型：</label>
+						<div class="layui-input-inline">
+							<select name="from_type" class="from_type">
+								<option value="">请选择</option>
+
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-inline">
+					<label class="layui-form-label">发生时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_date" id="start_date" placeholder="开始时间" autocomplete="off" readonly>
+					</div>
+					<div class="layui-input-inline ns-split">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+					<div class="layui-input-inline ns-len-mid">
+						<input type="text" class="layui-input" name="end_date" id="end_date" placeholder="结束时间" autocomplete="off" readonly>
+					</div>
+					</div>
+				</div>
+
+				<input type="hidden" name="member_id" value="{$member_info.member_id}" id="member_id"/>
+
+				<!-- 提交 -->
+				<div class="ns-form-row">
+					<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+					<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+<!-- 列表 -->
+<table id="member_account" lay-filter="member_account"></table>
+{/block}
+{block name="script"}
+<script>
+	var date = {$member_info.reg_time};
+	$(".reg-time").text(ns.time_to_date(date, "YYYY-MM-DD"));
+	$("#member_point").text(parseInt("{$member_info.point}"));
+
+	var form,
+		table,
+		laydate,
+		laytpl;
+		repeat_flag = false, //防重复标识
+		currentDate = new Date(),
+		minDate = "";
+	
+	currentDate.setDate(currentDate.getDate() - 7);
+	
+	layui.use(['form', 'laydate', 'laytpl'], function() {
+		form = layui.form;
+		laydate = layui.laydate;
+		laytpl = layui.laytpl;
+		form.render();
+
+		//开始时间
+		laydate.render({
+			elem: '#start_date',
+			type: 'datetime'
+		});
+		
+		//结束时间
+		laydate.render({
+			elem: '#end_date',
+			type: 'datetime'
+		});
+
+        //根据账户类型获取来源类型
+        form.on('select(account_type)', function (data) {
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/member/getfromtype"),
+                data: {type:data.value},
+                dataType: 'JSON',
+                success: function(res) {
+
+                    var html = '<option value="">请选择</option>';
+                    $.each(res,function(k,v){
+                        html += '<option value="'+k+'">'+v.type_name+'</option>';
+                    });
+
+                    $('.from_type').html(html);
+					form.render();
+                }
+            });
+        });
+
+		/**
+		 * 重新渲染结束时间
+		 * */
+		function reRender() {
+			$("#reg_end_date").remove();
+			$(".end-time").html('<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间">');
+			laydate.render({
+				elem: '#reg_end_date',
+				min: minDate
+			});
+		}
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#member_account',
+			url: ns.url("shop/member/accountDetail"),
+			where:{
+			    member_id : $("#member_id").val(),
+			},
+			cols: [
+				[{
+					field: 'account_type_name',
+					title: '账户类型',
+					width: '15%',
+					unresize: 'false'
+				}, {
+					title: '数据金额',
+					width: '15%',
+					unresize: 'false',
+					templet: function (d) {
+						return d.account_type = "point" ? parseInt(d.account_data) : d.account_data;
+					}
+				}, {
+					field: 'type_name',
+					title: '发生方式',
+					width: '15%',
+					unresize: 'false'
+				}, {
+					field: 'remark',
+					title: '备注',
+					width: '35%',
+					unresize: 'false'
+				}, {
+					field: 'create_time',
+					title: '发生时间',
+					width: '20%',
+					unresize: 'false',
+					templet: function(data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}]
+			]
+		});
+		
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			num: function(value) {
+				var arrMen = value.split(".");
+				var val = 0;
+				if (arrMen.length == 2) {
+					val = arrMen[1];
+				}
+				
+				if (value == "") {
+					return false;
+				}
+				if (val.length > 2) {
+					return '保留小数点后两位'
+				}
+			}
+		});
+		
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+		
+		form.on('submit(savePoint)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			var point = {$member_info.point};
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag = false;
+				return ;
+			}
+			if (point*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('积分不可以为负数');
+				repeat_flag = false;
+				return ;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustPoint"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						$("#member_point").html(res.data.point);
+						$("#member_point").next().attr('data-num', res.data.point);
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+		
+		form.on('submit(saveBalance)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			var balance = {$member_info.balance};
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag = false;
+				return ;
+			}
+			if (balance*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('当前余额（不可提现）不可以为负数');
+				repeat_flag = false;
+				return ;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustBalance"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						$("#member_balance").html(res.data.balance);
+						$("#member_balance").next().attr('data-num', res.data.balance);
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+		
+		form.on('submit(saveBalanceMoney)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			var balance = {$member_info.balance_money};
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag = false;
+				return ;
+			}
+			if (balance*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('余额(可提现)不可以为负数');
+				repeat_flag = false;
+				return ;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustBalanceMoney"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						$("#member_balance_money").html(res.data.balance_money);
+						$("#member_balance_money").next().attr('data-num', res.data.balance_money);
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+		
+		form.on('submit(saveGrowth)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			var growth = {$member_info.growth};
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag = false;
+				return ;
+			}
+			if (growth*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('成长值不可以为负数');
+				repeat_flag = false;
+				return;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustGrowth"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						$("#member_growth").html(res.data.growth);
+						$("#member_growth").next().attr('data-num', res.data.growth);
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+	});
+	
+	function savePoint(e) {
+		var point = $(e).attr('data-num');
+		var data = {
+			point : point
+		};
+		laytpl($("#point").html()).render(data, function(html) {
+			layer.open({
+				title: '调整积分',
+				skin: 'layer-tips-class',
+				type: 1,
+				area: ['800px'],
+				content: html
+			});
+		});
+
+
+		$(".integral-bounced .amount input").on("input propertychange",function(val){
+			var newIntegral = parseInt($(this).val());
+			$(this).val(newIntegral);
+			var currIntegral = parseInt($(".integral-bounced .ns-account-value").text());
+
+			if (newIntegral + currIntegral < 0){
+				layer.msg("调整数额与当前值积分数相加不能小于0");
+				$(this).val(-currIntegral);
+				return false;
+			}
+
+		})
+	}
+	
+	function saveBalance(e) {
+		var balance = $(e).attr('data-num');
+		var data = {
+			balance : balance
+		};
+		laytpl($("#balance").html()).render(data, function(html) {
+			layer.open({
+				title: '调整余额（不可提现）',
+				skin: 'layer-tips-class',
+				type: 1,
+				area: ['800px'],
+				content: html
+			});
+		});
+	}
+	
+	function saveBalanceMoney(e) {
+		var balance_money = $(e).attr('data-num');
+		var data = {
+			balance_money : balance_money
+		};
+		laytpl($("#balance_money").html()).render(data, function(html) {
+			layer.open({
+				title: '调整余额（可提现）',
+				skin: 'layer-tips-class',
+				type: 1,
+				area: ['800px'],
+				content: html
+			});
+		});
+	}
+	
+	function saveGrowth(e) {
+		var growth = $(e).attr('data-num');
+		var data = {
+			growth : growth
+		};
+		laytpl($("#growth").html()).render(data, function(html) {
+			layer.open({
+				title: '调整成长值',
+				skin: 'layer-tips-class',
+				type: 1,
+				area: ['800px'],
+				content: html
+			});
+		});
+	}
+</script>
+
+<!-- 积分弹框html -->
+<script type="text/html" id="point">
+	<div class="layui-form integral-bounced">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前积分：</label>
+			<div class="layui-input-block ns-account-value">{{ parseInt(d.point) }}</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block amount">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前积分数相加不能小于0</span>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+		
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="savePoint">确定</button>
+		</div>
+		
+		<input type="hidden" name="member_id" value="{$member_info.member_id}" />
+		<input type="hidden" name="point" value="{{ d.point }}" />
+	</div>
+</script>
+
+<!-- 余额弹框html -->
+<script type="text/html" id="balance">
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前余额（不可提现）：</label>
+			<div class="layui-input-block ns-account-value">{{ d.balance }}</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前不可提现余额相加不能小于0</span>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+		
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="saveBalance">确定</button>
+		</div>
+		
+		<input type="hidden" name="member_id" value="{$member_info.member_id}" />
+		<input type="hidden" name="point" value="{{ d.balance }}" />
+	</div>
+</script>
+
+<!-- 余额（可提现）弹框html -->
+<script type="text/html" id="balance_money">
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前余额（可提现）：</label>
+			<div class="layui-input-block ns-account-value">{{ d.balance_money }}</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前可提现余额相加不能小于0</span>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+		
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="saveBalanceMoney">确定</button>
+		</div>
+		
+		<input type="hidden" name="member_id" value="{$member_info.member_id}" />
+		<input type="hidden" name="point" value="{{ d.balance_money }}" />
+	</div>
+</script>
+
+<!-- 成长值弹框html -->
+<script type="text/html" id="growth">
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前成长值：</label>
+			<div class="layui-input-block ns-account-value">{{ d.growth }}</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前成长值相加不能小于0</span>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+		
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="saveGrowth">确定</button>
+		</div>
+		
+		<input type="hidden" name="member_id" value="{$member_info.member_id}" />
+		<input type="hidden" name="point" value="{{ d.growth }}" />
+	</div>
+</script>
+{/block}

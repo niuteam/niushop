@@ -1,0 +1,240 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>会员标签是商城为了更加有效的对会员进行管理和分组。</li>
+			<li>用户可以针对会员设置相应的标签，方便查找和管理。</li>
+		</ul>
+	</div>
+</div>
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="window.location.href='{:url("shop/memberlabel/addLabel")}'">添加标签</button>
+
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" id="search_text" name="search_text" placeholder="请输入标签名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+			  <i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 会员标签列表 -->
+<table id="label_info" lay-filter="label_info" ></table>
+
+<script type="text/html" id="label_id">
+	{{#  layui.each(res.data, function(index, item){ }}
+	<input type="checkbox" name="label_id" value="{{item.label_id}}"  />
+	{{#  }); }}
+</script>
+
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<!-- 顶部工具栏 -->
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.label_id}}, this)" value="{{d.sort}}" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script>
+	var form, table;
+	layui.use(['form'], function() {
+		form = layui.form;
+		var repeat_flag = false;
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#label_info',
+			url: ns.url("shop/memberlabel/labelList"),
+			cols: [
+				[
+					{
+						width: "3%",
+						type: 'checkbox',
+						templet: '#label_id',
+						unresize:'false'
+						
+					}, {
+						field: 'label_name',
+						title: '标签名称',
+						width: '17%',
+						unresize:'false'
+					}, {
+						unresize:'false', 
+						field: 'remark',
+						title: '备注',
+						width: '22%',
+					}, {
+						unresize:'false',
+						field: 'modify_time',
+						title: '创建时间',
+						width: '18%',
+						templet: function (data) {
+							return ns.time_to_date(data.create_time); //创建时间转换方法
+						}
+					}, {
+						unresize:'false',
+						title: '排序',
+						width: '20%',
+						align: 'center',
+						templet: '#editSort'
+					}, {
+						unresize:'false',
+						title: '操作',
+						width: '15%',
+						toolbar: '#operation'
+					}
+				]
+			],
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+		
+		/**
+		* 监听工具栏操作
+		*/
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/memberlabel/editLabel?label_id="+data.label_id)
+					break;
+				case 'delete': //删除
+					deleteLabel(data.label_id);
+					break;
+			}
+		});
+
+		/**
+		* 删除
+		*/
+		function deleteLabel(label_ids) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			layer.confirm('确定要删除该标签吗?', function() {
+				$.ajax({
+					url: ns.url("shop/memberlabel/deleteLabel"),
+					data: {label_ids},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		* 批量操作
+		*/
+		table.bottomToolbar(function(obj) {
+		
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].label_id);
+					deleteLabel(id_array.toString());
+					break;
+			}
+		});
+		
+		//监听事件
+		table.toolbar(function(obj){
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			
+			var checkStatus = table.checkStatus(obj.config.id);
+			switch (obj.event) {
+				case 'del':
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].label_id);
+					deleteLabel(id_array.toString());
+					break;
+			};
+		});
+
+		// 搜索
+		form.on('submit(search)', function(data){
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	// 监听单元格编辑
+	function editSort(id, event){
+	 	var data = $(event).val();
+		
+		if (data == '') {
+			$(event).val(0);
+			data = 0;
+		}
+		
+		if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+			layer.msg("排序号只能是整数");
+			return ;
+		}
+		if(data<0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+	 	$.ajax({
+	 		type: 'POST',
+	 		url: ns.url("shop/memberlabel/modifySort"),
+	 		data: {
+	 			sort: data,
+	 			label_id: id
+	 		},
+	 		dataType: 'JSON',
+	 		success: function(res) {
+	 			layer.msg(res.message);
+	 			if(res.code==0){
+	 				table.reload();
+	 			}
+	 		}
+	 	});
+	 }
+</script>
+{/block}

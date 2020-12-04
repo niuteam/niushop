@@ -1,0 +1,428 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member_cluster.css" />
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips" >
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">操作提示</h2>
+        <ul class="layui-colla-content layui-show">
+            <li>点击批量处理，可以针对符合条件的会员群体进行批量操作，比如：发放优惠券，调整积分，余额等</li>
+        </ul>
+    </div>
+</div>
+
+<!-- 添加会员群体 -->
+<div class="ns-single-filter-box">
+    <button type="button" class="layui-btn ns-bg-color" onclick="window.location.href='{:addon_url("shop/membercluster/addCluster")}'">添加群体</button>
+</div>
+
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title"></h2>
+        <form class="layui-colla-content layui-form layui-show">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">群体名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="cluster_name" placeholder="群体名称" autocomplete="off" class="layui-input ">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">更新时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="start_date" id="start_date" placeholder="请输入开始时间" autocomplete="off" readonly>
+                    </div>
+                    <div class="layui-input-inline ns-split">-</div>
+                    <div class="layui-input-inline end-time">
+                        <input type="text" class="layui-input" name="end_date" id="end_date" placeholder="请输入结束时间" autocomplete="off" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="ns-form-row">
+                <button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 列表 -->
+<table id="cluster_list" lay-filter="cluster_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" lay-event="member">查看会员</a>
+        <a class="layui-btn" lay-event="info">编辑</a>
+        <a class="layui-btn" lay-event="delete">删除</a>
+        <a class="layui-btn" lay-event="more">批量处理</a>
+        <div class="more-operation">
+            <a class="operation" lay-event="recive_coupon">发放优惠券</a>
+            <a class="operation" lay-event="adjust_balance">调整余额</a>
+            <a class="operation" lay-event="adjust_integral">调整积分</a>
+            <a class="operation" lay-event="export_cluster_member">导出</a>
+        </div>
+    </div>
+</script>
+
+<!-- 积分弹框html -->
+<script type="text/html" id="point">
+    <div class="layui-form integral-bounced">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">调整数额：</label>
+            <div class="layui-input-block amount">
+                <input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+            </div>
+            <span class="ns-word-aux">调整数额与当前积分数相加不能小于0</span>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block ns-len-long">
+                <textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+            </div>
+        </div>
+
+        <div class="ns-form-row">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="savePoint">确定</button>
+        </div>
+
+        <input type="hidden" name="cluster_id" value="{{d.cluster_id}}" />
+    </div>
+</script>
+
+<!-- 余额弹框html -->
+<script type="text/html" id="balance">
+    <div class="layui-form">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">调整数额（不可提现）：</label>
+            <div class="layui-input-block">
+                <input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+            </div>
+            <span class="ns-word-aux">调整数额与当前不可提现余额相加不能小于0</span>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block ns-len-long">
+                <textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+            </div>
+        </div>
+
+        <div class="ns-form-row">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="saveBalance">确定</button>
+        </div>
+
+        <input type="hidden" name="cluster_id" value="{{d.cluster_id}}" />
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script type='text/javascript' src='SHOP_JS/member_cluster.js'></script>
+<script type="text/javascript">
+    var table, form, laytpl, laydate,
+        repeat_flag = false,
+        currentDate = new Date(),
+        minDate = "";
+
+    layui.use(['form', 'laytpl', 'laydate'], function() {
+        form = layui.form;
+        laytpl = layui.laytpl;
+        laydate = layui.laydate;
+        currentDate.setDate(currentDate.getDate() - 7);
+        form.render();
+
+        //注册开始时间
+        laydate.render({
+            elem: '#start_date',
+            type: 'datetime'
+        });
+
+        //注册结束时间
+        laydate.render({
+            elem: '#end_date',
+            type: 'datetime'
+        });
+
+        /**
+         * 重新渲染结束时间
+         * */
+        function reRender() {
+            $("#reg_end_date").remove();
+            $(".end-time").html('<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间">');
+            laydate.render({
+                elem: '#reg_end_date',
+                min: minDate
+            });
+        }
+
+        /**
+         * 加载表格
+         */
+        table = new Table({
+            elem: '#cluster_list',
+            url: ns.url("shop/membercluster/clusterList"),
+            cols: [
+                [
+                    {
+                    field: 'cluster_name',
+                    title: '群体名称',
+                    width: '25%',
+                    unresize: 'false'
+                }, {
+                    field: 'member_num',
+                    title: '人数',
+                    width: '25%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return "<a href='"+ns.url("shop/member/memberList?cluster_id=" + data.cluster_id)+"'>"+"<span class='ns-text-color'>"+data.member_num+"</span>"+"</a>";
+                    }
+                }, {
+                    field: 'update_time',
+                    title: '更新时间',
+                    width: '25%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return ns.time_to_date(data.update_time);
+                    }
+                }, {
+                    title: '操作',
+                    width: '25%',
+                    unresize: 'false',
+                    toolbar: '#operation'
+                }
+                ]
+            ],
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'info': //编辑
+                    location.href = ns.url("shop/membercluster/editCluster?cluster_id=" + data.cluster_id);
+                    break;
+                case 'delete': //删除
+                    delCluster(data.cluster_id);
+                    break;
+                case 'adjust_balance': //调整余额
+                    adjustBalance(data);
+                    break;
+                case 'adjust_integral': //调整积分
+                    adjustIntegral(data);
+                    break;
+                case 'more': //更多
+                    $('.more-operation').css('display', 'none');
+                    $(obj.tr).find('.more-operation').css('display', 'block');
+                    break;
+                case 'recive_coupon': //发放优惠券
+                    selectCoupon(data);
+                    break;
+                case 'export_cluster_member': //导出相应会员
+                    exportClusterMember(data.cluster_id);
+                    break;
+                case 'member': //查看会员
+                    window.open(ns.url("shop/member/memberList?cluster_id=" + data.cluster_id));
+                    break;
+            }
+        });
+
+        $(document).click(function(event) {
+            if ($(event.target).attr('lay-event') != 'more' && $('.more-operation').not(':hidden').length) {
+                $('.more-operation').css('display', 'none');
+            }
+        });
+
+        /**
+         * 删除
+         */
+        function delCluster(cluster_ids) {
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            layer.confirm('确认删除会员群体？', function() {
+                $.ajax({
+                    url: ns.url("shop/membercluster/deleteCluster"),
+                    data: {cluster_ids},
+                    dataType: 'JSON',
+                    type: 'POST',
+                    success: function(res) {
+                        layer.msg(res.message);
+                        repeat_flag = false;
+
+                        if (res.code == 0) {
+                            table.reload();
+                        }
+                    }
+                });
+            }, function () {
+                layer.close();
+                repeat_flag = false;
+            });
+        }
+
+        // 调整余额
+        function adjustBalance(e){
+            laytpl($("#balance").html()).render(e, function(html) {
+                layer.open({
+                    title: '调整余额（不可提现）',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['800px'],
+                    content: html
+                });
+            });
+        }
+
+        //调整积分
+        function adjustIntegral(e){
+            laytpl($("#point").html()).render(e, function(html) {
+                layer.open({
+                    title: '调整积分',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['800px'],
+                    content: html
+                });
+            });
+        }
+        var repeat_flag_point = false;
+        form.on('submit(savePoint)', function(data) {
+            if (repeat_flag_point) return false;
+            repeat_flag_point = true;
+
+            if (data.field.adjust_num == 0) {
+                layer.msg('调整数值不能为0');
+                repeat_flag_point = false;
+                return ;
+            }
+            if (data.field.adjust_num < 0) {
+                layer.msg('积分不可以为负数');
+                repeat_flag_point = false;
+                return ;
+            }
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/membercluster/sendPoint"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag_point = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                        table.reload();
+                    }
+                }
+            });
+        });
+
+        var repeat_flag_balance = false;
+        form.on('submit(saveBalance)', function(data) {
+            if (repeat_flag_balance) return false;
+            repeat_flag_balance = true;
+
+            if (data.field.adjust_num == 0) {
+                layer.msg('调整数值不能为0');
+                repeat_flag_balance = false;
+                return ;
+            }
+            if (data.field.adjust_num < 0) {
+                layer.msg('当前余额（不可提现）不可以为负数');
+                repeat_flag_balance = false;
+                return ;
+            }
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/membercluster/sendBalance"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag_balance = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                        table.reload();
+                    }
+                }
+            });
+        });
+
+        /**
+         * 导出群体内会员信息
+         */
+        function exportClusterMember(cluster_id) {
+            location.href = ns.url("shop/membercluster/exportClusterMember",{"cluster_id":cluster_id});
+        }
+
+        /**
+         * 搜索功能
+         */
+        form.on('submit(search)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+            return false;
+        });
+
+        $(".search-form").click(function() {
+            $(".layui-form-search").show();
+            $(this).hide();
+        });
+
+        $(".form-hide-btn").click(function() {
+            $(".layui-form-search").hide();
+            $(".search-form").show();
+        });
+
+        /**
+         * 发放优惠券
+         */
+        function selectCoupon(data) {
+            laytpl($("#recive_coupon").html()).render(data, function(html) {
+                layer_coupon = layer.open({
+                    title: '选择优惠券',
+                    skin: 'layer-tips-class',
+                    type: 1,
+                    area: ['700px', '542px'],
+                    content: html,
+                });
+                renderCoupon("", data.cluster_id);
+            });
+        }
+    });
+</script>
+
+<!-- 发放优惠券弹框 -->
+<script type="text/html" id="recive_coupon">
+    <div class="recive-coupon">
+        <div class="coupon-modal">
+            <div class="coupon-list all-coupon">
+                <div class="title ns-bg-color-gray">可选优惠券</div>
+                <div class="box"></div>
+            </div>
+            <button class="add">添加</button>
+            <div class="coupon-list selected-coupon">
+                <div class="title ns-bg-color-gray">已选优惠券</div>
+                <div class="box"></div>
+            </div>
+        </div>
+        <div class="modal-operation">
+            <button class="layui-btn ns-bg-color save-btn">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+        </div>
+    </div>
+</script>
+{/block}

@@ -1,0 +1,13 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "会员中心",
+  "usingComponents": {
+    "uni-grid": "/components/uni-grid/uni-grid",
+    "uni-grid-item": "/components/uni-grid-item/uni-grid-item",
+    "ns-login": "/components/ns-login/ns-login",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "diy-bottom-nav": "/components/diy-bottom-nav/diy-bottom-nav",
+    "to-top": "/components/toTop/toTop",
+    "ns-copy-right": "/components/ns-copyright/ns-copyright"
+  }
+}

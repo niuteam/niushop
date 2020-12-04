@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="renderer" content="webkit" />
+	<meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1" />
+	<title>安装程序 - 单商户V4版</title>
+	<!--<script src="INSTALL_JS/jquery-2.2.js"></script>-->
+	<link rel="icon" type="image/x-icon" href="__STATIC__/img/shop_bitbug_favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="INSTALL_CSS/style.css" />
+	<link rel="stylesheet" type="text/css" href="__STATIC__/ext/layui/css/layui.css" />
+	<link rel="stylesheet" type="text/css" href="SHOP_CSS/common.css" />
+	<script src="__STATIC__/js/jquery-3.1.1.js"></script>
+	<script src="__STATIC__/ext/layui/layui.js"></script>
+
+	<script>
+		layui.use(['layer', 'upload', 'element'], function() {});
+		window.ns_url = {
+			baseUrl: "ROOT_URL/",
+			route: ['install', '{:request()->controller()}', '{:request()->action()}'],
+		};
+	</script>
+	<script src="INSTALL_JS/common.js"></script>
+	{block name="resources"}{/block}
+</head>
+
+<body>
+<div class="head-block">
+	<div class="top">
+		<div class="top-logo"></div>
+		<div class="top-sub" style="flex:1;">单商户V4版</div>
+		<ul class="top-link">
+			<li><a href="http://www.niushop.com.cn" target="_blank">官方网站</a></li>
+			<li><a href="http://bbs.niushop.com.cn" target="_blank">技术论坛</a></li>
+		</ul>
+	</div>
+</div>
+<div class="step-content">
+	<div style="width:1000px;margin:0 auto;">
+
+		<!--  标题进度条 start-->
+		<div class="content" style="margin:30px 0 0 0;width: 100%;">
+			<div class="processBar">
+				<div class="text" style="margin: 10px -25px;"><span class='poetry'>1.许可协议</span></div>
+				<div id="line0" class="bar">
+					<div id="point0" class="c-step c-select"></div>
+				</div>
+
+			</div>
+			<div class="processBar">
+				<div class="text" style="margin: 10px -30px;"><span class='poetry'>2.环境检测</span></div>
+				<div id="line1" class="bar">
+					<div id="point1" class="c-step"></div>
+				</div>
+
+			</div>
+			<div class="processBar">
+				<div class="text" style="margin: 10px -30px;"><span class='poetry'>3.参数配置</span></div>
+				<div id="line2" class="bar">
+					<div id="point2" class="c-step"></div>
+				</div>
+			</div>
+			<div class="processBar" style="width:10px;">
+				<div class="text" style="margin: 10px -39px;"><span class='poetry'>4.安装完成</span></div>
+				<div id="line3" class="bar" style="width: 0;">
+					<div id="point3" class="c-step"></div>
+				</div>
+			</div>
+		</div>
+		<!--  标题进度条 end-->
+		<div style="clear: both;"></div>
+	</div>
+</div>
+<div class="install-content">
+
+	{block name='main'}
+	{/block}
+</div>
+
+<script>
+	var index=0;
+	$(document).ready(function(){
+		$("#education").addClass('main-hide');
+		$("#work").addClass('main-hide');
+		$("#social").addClass('main-hide');
+		$('#previous_step').hide();
+
+		/*上一步*/
+		$('#previous_step').bind('click', function () {
+			index--;
+			ControlContent(index);
+		});
+		/*下一步*/
+		$('#next_step').bind('click', function () {
+			index++;
+			ControlContent(index);
+		});
+
+	});
+
+	function ControlContent(index) {
+		var stepContents = ["basicInfo","education","work","social"];
+		var key;//数组中元素的索引值
+		for (key in stepContents) {
+			var stepContent = stepContents[key];//获得元素的值
+			if (key == index) {
+				if(stepContent=='basicInfo'){
+					$('#previous_step').hide();
+				}else{
+					$('#previous_step').show();
+				}
+				if(stepContent=='social'){
+					$('#next_step').hide();
+				}else{
+					$('#next_step').show();
+				}
+				$('#'+stepContent).removeClass('main-hide');
+				$('#point'+key).addClass('c-select');
+				$('#line'+key).removeClass('b-select');
+			}else {
+				$('#'+stepContent).addClass('main-hide');
+				if(key>index){
+					$('#point'+key).removeClass('c-select');
+					$('#line'+key).removeClass('b-select');
+				}else if(key<index){
+					$('#point'+key).addClass('c-select');
+					$('#line'+key).addClass('b-select');
+				}
+			}
+		}
+
+	}
+
+	function success(message){
+		layer.alert(message, {
+			icon: 1,
+			skin: 'layer-ext-moon',
+			title:'提示'
+		})
+	}
+	function error(message){
+		layer.alert(message, {
+			icon: 2,
+			skin: 'layer-ext-moon',
+			title:'提示'
+		})
+	}
+</script>
+{block name="script"}
+{/block}
+
+</body>
+</html>

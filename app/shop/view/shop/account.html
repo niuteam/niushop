@@ -1,0 +1,648 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-shop-account-block {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .ns-shop-account {
+        padding: 20px 0;
+        width: 30%;
+        text-align: center;
+        background-color: #fff;
+    }
+
+    .ns-shop-account-num {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .ns-shop-account-name {
+        font-size: 18px;
+    }
+
+    .layui-tab-content {
+        padding: 10px 0;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="ns-shop-account-block">
+	<div class="ns-shop-account">
+		<div class="ns-shop-account-num">{$account}</div>
+		<div class="ns-shop-account-name">可用余额</div>
+		{if $shop_withdraw_config.is_period_settlement == 0}
+		<a class="ns-text-color" href="javascript:applyWithdraw();">申请提现</a>
+		{/if}
+	</div>
+
+	<div class="ns-shop-account">
+		<div class="ns-shop-account-num">{$account_withdraw}</div>
+		<div class="ns-shop-account-name">已提现</div>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="edit_user_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="account">账户流水</li>
+		<li lay-id="order_calc">待结算订单</li>
+		<li lay-id="account_withdraw">提现记录</li>
+		<li lay-id="deposit">保证金</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 账户流水 -->
+		<div class="layui-tab-item layui-show">
+			<div class="ns-single-filter-box">
+				<div class="layui-form">
+					<div class="layui-inline">
+						<label class="layui-form-label">创建时间：</label>
+						<div class="layui-input-inline">
+						    <input type="text" class="layui-input" name="start_time" id="start_time" autocomplete="off" placeholder="开始时间" readonly>
+                            <i class="ns-calendar"></i>
+						</div>
+						<div class="layui-input-inline">
+						    <input type="text" class="layui-input" name="end_time" id="end_time" autocomplete="off" placeholder="结束时间" readonly>
+                            <i class="ns-calendar"></i>
+						</div>
+					</div>
+					<div class="layui-input-inline">
+                        <select name="type_name">
+                            <option value="">请选择类型</option>
+                            <option value="订单结算">订单结算</option>
+                            <option value="提现">提现</option>
+                            <option value="退款结算">退款结算</option>
+                        </select>
+						<!--<input type="text" name="type_name" placeholder="请输入类型名称" class="layui-input" autocomplete="off">-->
+
+					</div>
+                    <button type="button" class="layui-btn layui-btn-primary" lay-filter="select" lay-submit>
+                        <i class="layui-icon">&#xe615;</i>
+                    </button>
+				</div>
+			</div>
+			
+			<table id="account_list"></table>
+		</div>
+
+		<!-- 待结算订单 -->
+		<div class="layui-tab-item">
+			<div class="ns-single-filter-box">
+				<div class="layui-form">
+					<div class="layui-input-inline">
+						<select name="is_refund">
+							<option value="">是否退款</option>
+							<option value="1">是</option>
+							<option value="0">否</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="order_no" placeholder="请输入订单编号" class="layui-input" autocomplete="off">
+						<button type="button" class="layui-btn layui-btn-primary" lay-filter="check" lay-submit>
+							<i class="layui-icon">&#xe615;</i>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<table id="order_calc_list" lay-filter="order_calc_list"></table>
+		</div>
+
+		<!-- 提现记录 -->
+		<div class="layui-tab-item">
+			<div class="ns-single-filter-box">
+				<div class="layui-form">
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="提现流水编号/账户名称/联系人手机" autocomplete="off" class="layui-input ns-len-long">
+						<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+							<i class="layui-icon">&#xe615;</i>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<table id="account_withdraw_list"></table>
+		</div>
+
+		<!-- 保证金 -->
+		<div class="layui-tab-item">
+			<div class="layui-collapse ns-tips">
+				<div class="layui-colla-item">
+					<ul class="layui-colla-content layui-show">
+						<li>当前记录店铺后期缴纳的保证金，入驻缴纳保证金不在记录中，按照入驻费用整体查看</li>
+					</ul>
+				</div>
+			</div>
+			
+			<div style="background-color: #f7f7f7; height: 10px;"></div>
+			
+			<div class="ns-single-filter-box">
+				<div class="layui-form">
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="支付编码/支付账户名" autocomplete="off" class="layui-input ns-len-mid">
+						<button type="button" class="layui-btn layui-btn-primary" lay-filter="search_deposit" lay-submit>
+							<i class="layui-icon">&#xe615;</i>
+						</button>
+					</div>
+				</div>
+			</div>
+			
+			<table id="deposit_list"></table>
+		</div>
+	</div>
+</div>
+
+<!-- 待结算 -- 商品图片名称 -->
+<script type="text/html" id="good">
+	<div class="ns-table-tuwen-box">
+        <div class="ns-img-box">
+            <img layer-src src="{{ns.img(d.sku_image,'small')}}" />
+        </div>
+        <div class="ns-font-box">
+            <p class="ns-over-hide-second lh25">{{d.sku_name}}</p>
+        </div>
+    </div>
+</script>
+
+<!-- 待结算 -- 是否退款 -->
+<script type="text/html" id="is_refund">
+	{{d.is_refund == 0 ? '否' : '是'}}
+</script>
+
+<!-- 待结算 -- 是否结算完成 -->
+<script type="text/html" id="is_complete">
+	{{d.is_complete == 0 ? '否' : '是'}}
+</script>
+
+<!--账户信息-->
+<script type="text/html" id="account_info">
+	{{# if(d.bank_type == 1){ }}
+    <div class="layui-elip">账户类型：银行卡</div>
+    {{# }else{ }}
+    <div class="layui-elip">账户类型：支付宝</div>
+    {{# } }}
+    <div class="layui-elip">账户名称：{{d.settlement_bank_name}}</div>
+    <div class="layui-elip">提现账号：{{d.settlement_bank_account_number}}</div>
+    <div class="layui-elip">开户名：{{d.settlement_bank_account_name}}</div>
+</script>
+
+<!-- 已提现 -- 时间 -->
+<script type="text/html" id="times">
+	<div class="layui-elip">申请时间：{{ns.time_to_date(d.apply_time)}}</div>
+    <div class="layui-elip">转账时间：{{ns.time_to_date(d.payment_time)}}</div>
+</script>
+
+<!-- 已提现 -- 状态 -->
+<script type="text/html" id="status">
+	{{# if(d.status == 0){ }}
+    <div class="layui-elip">待审核</div>
+    {{# }else if(d.status == 1){ }}
+    <div class="layui-elip">待转账</div>
+    {{# }else if(d.status == 2){ }}
+    <div class="layui-elip">已转账</div>
+    {{# }else if(d.status == -1){ }}
+    <div class="layui-elip">已拒绝</div>
+    {{# } }}
+</script>
+
+<!--操作-->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" lay-event="basic">查看</a>
+    </div>
+</script>
+
+<!-- 保证金时间 -->
+<script type="text/html" id="deposit_times">
+	<div class="layui-elip">创建时间：{{ns.time_to_date(d.create_time)}}</div>
+    <div class="layui-elip">审核时间：{{ns.time_to_date(d.audit_time)}}</div>
+</script>
+
+<!-- 保证金时间 -->
+<script type="text/html" id="deposit_certificate">
+	<div class="layui-elip">
+        <div class="ns-img-box">
+            <img layer-src src="{{ns.img(d.pay_certificate)}}"/>
+        </div>
+    </div>
+</script>
+
+<!-- 保证金状态 -->
+<script type="text/html" id="deposit_status">
+	{{# if(d.status == 0){ }}
+    <div class="layui-elip">待审核</div>
+    {{# }else if(d.status == 1){ }}
+    <div class="layui-elip">已通过</div>
+    {{# }else if(d.status == -1){ }}
+    <div class="layui-elip">已拒绝</div>
+    {{# } }}
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+    layui.use(['element','form', 'laytpl', 'laydate'], function() {
+        var tableAccount,
+            tableOrderCalc,
+            tableAccountWithdraw,
+            tableDeposit,
+            repeat_flag = false,
+            element = layui.element,
+            form = layui.form,
+			laydate = layui.laydate;
+
+        laytpl = layui.laytpl;
+		form.render();
+
+		//渲染时间
+		laydate.render({
+			elem: '#start_time',
+			type: 'datetime'
+		});
+		
+		laydate.render({
+			elem: '#end_time',
+			type: 'datetime'
+		});
+		
+		// 获取账户流水
+        tableAccount = new Table({
+            elem: '#account_list',
+            url: ns.url("shop/shop/getshopaccount"),
+            cols: [
+                [{
+                    field: 'type_name',
+                    title: '类型',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+                    field: 'account_data',
+                    title: '金额',
+                    width: '17%',
+                    unresize: 'false'
+                }, {
+                    field: 'remark',
+                    title: '说明',
+                    width: '23%',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '创建时间',
+                    width: '20%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return ns.time_to_date(data.create_time); //创建时间转换方法
+                    }
+                }]
+            ]
+        });
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(select)', function(data){
+		    tableAccount.reload({
+		        page: {
+		            curr: 1
+		        },
+		        where: data.field
+		    });
+		});
+	 
+		// 获取待结算列表
+        tableOrderCalc = new Table({
+            elem: '#order_calc_list',
+            url: ns.url("shop/shop/getordercalc"),
+            cols: [
+                [{
+                    field: 'order_no',
+                    title: '订单编号',
+                    width: '18%',
+                    unresize: 'false',
+                }, {
+                    field: 'order_type_name',
+                    title: '订单类型',
+                    width: '9%',
+                    unresize: 'false'
+                }, {
+                    field: 'order_status_name',
+                    title: '订单状态',
+                    width: '9%',
+                    unresize: 'false'
+                }, {
+                    field: 'shop_money',
+                    title: '店铺金额',
+                    width: '9%',
+                    unresize: 'false'
+                }, {
+                    field: 'platform_money',
+                    title: '平台金额',
+                    width: '9%',
+                    unresize: 'false'
+                }, {
+                    field: 'create_time',
+                    title: '创建时间',
+                    width: '15%',
+                    unresize: 'false',
+                    templet: function(data) {
+                        return ns.time_to_date(data.create_time); //创建时间转换方法
+                    }
+                }, {
+                    title: '操作',
+                    width: '8%',
+                    toolbar: '#operation',
+                    unresize: 'false'
+                }]
+            ]
+        });
+
+        /**
+         * 搜索功能
+         */
+        // 待结算
+        form.on('submit(check)', function(data){
+            tableOrderCalc.reload({
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            });
+        });
+	    
+		// 获取提现记录
+		tableAccountWithdraw = new Table({
+			elem: '#account_withdraw_list',
+			url: ns.url("shop/shop/getShopWithdraw"),
+			cols: [
+			    [{
+			        field: 'withdraw_no',
+			        title: '提现流水编号',
+			        width: '18%',
+			        unresize: 'false',
+			    }, {
+			        field: 'name',
+			        title: '联系人姓名',
+			        width: '9%',
+			        unresize: 'false'
+			    }, {
+			        field: 'mobile',
+			        title: '联系人手机',
+			        width: '9%',
+			        unresize: 'false'
+			    }, {
+			        field: 'bank_type',
+			        title: '账户类型',
+			        width: '9%',
+			        unresize: function(data) {
+						return data.bank_type == 1 ? '银行' : '支付宝';
+					}
+			    }, {
+			        field: 'status',
+			        title: '状态',
+			        width: '9%',
+			        unresize: function(data) {
+						return data.status == 0 ? '待审核' : (data.status == 1 ? '代转账' : '已转账');
+					}
+			    }, {
+			        field: 'payment_time',
+			        title: '转账时间',
+			        width: '15%',
+			        unresize: 'false',
+			        templet: function(data) {
+			            return ns.time_to_date(data.payment_time); //创建时间转换方法
+			        }
+			    }, {
+			        title: '操作',
+			        width: '8%',
+			        toolbar: '#operation',
+			        unresize: 'false'
+			    }]
+			]
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data){
+		    tableOrderCalc.reload({
+		        page: {
+		            curr: 1
+		        },
+		        where: data.field
+		    });
+		});
+	 
+		// 获取保证金记录
+		tableDeposit = new Table({
+			elem: '#deposit_list',
+			url: ns.url("shop/shop/getShopDeposit"),
+			cols: [
+			    [{
+			        field: 'pay_no',
+			        title: '支付编码',
+			        width: '18%',
+			        unresize: 'false',
+			    }, {
+			        field: 'pay_account_name',
+			        title: '支付银行名称',
+			        width: '9%',
+			        unresize: 'false'
+			    }, {
+			        field: 'money',
+			        title: '支付金额',
+			        width: '9%',
+			        unresize: 'false'
+			    }, {
+			        field: 'pay_certificate',
+			        title: '支付凭据',
+			        width: '9%',
+			        unresize: function(data) {
+						return ns.img(data.pay_certificate);
+					}
+			    }, {
+			        field: 'status',
+			        title: '审核状态',
+			        width: '9%',
+			        unresize: function(data) {
+						return data.status == 1 ? '审核成功' : '待审核';
+					}
+			    }, {
+			        field: 'create_time',
+			        title: '创建时间',
+			        width: '15%',
+			        unresize: 'false',
+			        templet: function(data) {
+			            return ns.time_to_date(data.create_time); //创建时间转换方法
+			        }
+			    }, {
+			        title: '操作',
+			        width: '8%',
+			        toolbar: '#operation',
+			        unresize: 'false'
+			    }]
+			]
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search_deposit)', function(data){
+		    tableOrderCalc.reload({
+		        page: {
+		            curr: 1
+		        },
+		        where: data.field
+		    });
+		});
+
+        form.verify({
+            apply_money: function (value) {
+                if (parseFloat(value) < parseFloat($("input[name='min_withdraw']").val())) {
+                    return "最小提现金额为"+$("input[name='min_withdraw']").val();
+                }
+                if (parseFloat(value) > parseFloat($("input[name='max_withdraw']").val())) {
+                    return "最大提现金额为"+$("input[name='max_withdraw']").val();
+                }
+            },
+        });
+
+        form.on('submit(submit_withdraw)', function(data) {
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/shop/applywithdraw"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+
+                    repeat_flag = false;
+
+                    if (res.code == 0) {
+                        layer.msg(res.message+'，请到提现记录中查看！');
+                        layer.closeAll('page');
+                    }else{
+                        layer.msg(res.message);
+                    }
+                }
+            });
+        });
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(edit_user_tab)', function(){
+            location.hash = 'edit_user_tab='+ this.getAttribute('lay-id');
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        tableOrderCalc.tool(function(obj) {
+            var data = obj.data;
+
+            switch (obj.event) {
+                case 'basic': //查看
+                    window.open(ns.url("shop/order/detail?order_id=" + data.order_id));
+                    break;
+            }
+
+        })
+    });
+
+    /**
+     * 申请提现
+     */
+    function applyWithdraw() {
+        laytpl($("#apply_withdraw_content").html()).render({}, function(html) {
+            layer_withdraw = layer.open({
+                title: '申请提现',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['800px', '600px'],
+                content: html,
+            });
+        });
+    }
+
+    function closeWithdraw() {
+        layer.close(layer_withdraw);
+    }
+
+</script>
+<!-- 申请提现 -->
+<script type="text/html" id="apply_withdraw_content">
+	<div class="layui-form" lay-filter="form">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">当前金额:</label>
+            <div class="layui-input-inline">
+                <p>{$account}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">申请金额</label>
+            <div class="layui-input-inline">
+                <input type="text" id="apply_money" name="apply_money" required class="layui-input" lay-verify="apply_money">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">账户类型:</label>
+            <div class="layui-input-inline">
+                {if $shop_cert_info.bank_type == 1}
+                银行卡
+                {else/}
+                支付宝
+                {/if}
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">开户名:</label>
+            <div class="layui-input-inline">
+                <p>{$shop_cert_info.settlement_bank_account_name}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">结算账号:</label>
+            <div class="layui-input-inline">
+                <p>{$shop_cert_info.settlement_bank_account_number}</p>
+            </div>
+        </div>
+        {if $shop_cert_info.bank_type == 1}
+        <div class="layui-form-item">
+            <label class="layui-form-label">结算开户银行支行名称:</label>
+            <div class="layui-input-inline">
+                <p>{$shop_cert_info.settlement_bank_name}</p>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">结算开户银行所在地:</label>
+            <div class="layui-input-inline">
+                <p>{$shop_cert_info.settlement_bank_address}</p>
+            </div>
+        </div>
+        {/if}
+        <div class="layui-form-item">
+            <label class="layui-form-label">说明:</label>
+            <div class="layui-input-inline required">
+                最低提现金额{$shop_withdraw_config.min_withdraw}元
+            </div>
+            <div class="layui-input-inline required">
+                最高提现金额{$shop_withdraw_config.max_withdraw}元
+            </div>
+
+        </div>
+        <input type="hidden" id="min_withdraw" name="min_withdraw" value="{$shop_withdraw_config.min_withdraw}">
+        <input type="hidden" id="max_withdraw" name="max_withdraw" value="{$shop_withdraw_config.max_withdraw}">
+        <div class="ns-form-row">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="submit_withdraw">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeWithdraw()">返回</button>
+        </div>
+    </div>
+</script>
+{/block}

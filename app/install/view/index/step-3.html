@@ -1,0 +1,246 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .install-content-procedure .content-procedure-item:first-of-type{
+        background: url("INSTALL_IMG/complete_two.png") no-repeat center / contain;
+        color: #fff;
+    }
+    .install-content-procedure .content-procedure-item:nth-child(2){
+        background: url("INSTALL_IMG/complete_four.png") no-repeat center / contain;
+        color: #fff;
+    }
+    .install-content-procedure .content-procedure-item:nth-child(3){
+        background: url("INSTALL_IMG/conduct.png") no-repeat center / contain;
+        color: #fff;
+    }
+</style>
+{/block}
+
+{block name="main"}
+<div id='postloader' class='waitpage'></div>
+<form  class="layui-form" >
+    <div class="testing parameter">
+        <div class="testing-item">
+            <h3>数据库设定</h3>
+            <table border="0" align="center" cellpadding="0" cellspacing="0" class="twbox">
+                <tr>
+                    <td class="onetd"><span class="required">*</span>数据库主机：</td>
+                    <td>
+                        <input name="dbhost" id="dbhost" type="text" lay-verify="empty" placeholder="请输入数据库主机" value="" class="input-txt" onChange="testDb()" />
+                        <small>一般为localhost</small>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span>Mysql端口：</td>
+                    <td>
+                        <input name="dbport" id="dbport" type="text" value="3306" class="input-txt"lay-verify="empty" placeholder="请输入Mysql端口"/>
+                        <small>一般为3306</small>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span>数据库用户：</td>
+                    <td>
+                        <input name="dbuser" id="dbuser" type="text" value="" class="input-txt" onChange="testDb()"lay-verify="empty" placeholder="请输入数据库用户"/>
+                        <small>默认root</small>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span>数据库密码：</td>
+                    <td>
+                        <div style='float:left;margin-right:3px;'>
+                            <input name="dbpwd" id="dbpwd" type="text" class="input-txt" onChange="testDb()"lay-verify="empty" placeholder="请输入数据库密码" />
+                        </div>
+                        <div style='float:left' class="mysql-message" id='dbpwdsta'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span>数据库名称：</td>
+                    <td>
+                        <div style='float:left;margin-right:3px;'><input name="dbname" id="dbname" type="text" value="" class="input-txt" onChange="haveDB()"lay-verify="empty" placeholder="请输入数据库名称" /></div>
+                        <div style='float:left' class="mysql-message" id='havedbsta'></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="onetd">数据表前缀：</td>
+                    <td>
+                        <div style='float:left;margin-right:3px;'><input name="dbprefix" id="dbprefix" type="text" value="" class="input-txt" placeholder="请输入数据表前缀"/></div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="onetd">数据库编码：</td>
+                    <td>
+                        <label class="install-code">UTF8</label>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="testing-item">
+            <h3>网站设定</h3>
+            <table border="0" align="center" cellpadding="0" cellspacing="0" class="twbox">
+                <tr>
+                    <td class="onetd"><span class="required">*</span><strong>网站标题：</strong></td>
+                    <td><input name="site_name" id="site_name" type="text" value="" class="input-txt"lay-verify="empty" placeholder="请输入网站标题"/>
+                        <small id="mess_site_name">网站标题 必填</small></td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span><strong>管理员用户名：</strong></td>
+                    <td><input name="username" id="username" type="text" value="" class="input-txt" lay-verify="empty" placeholder="请输入平台用户名"/>
+                        <small id="mess_username">管理员用户名 必填</small></td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span><strong>管理员密码：</strong></td>
+                    <td><input name="password" id="password" type="password" value="" class="input-txt"lay-verify="empty" placeholder="请输入平台密码"/>
+                        <small id="mess_password">密码 必填</small></td>
+                </tr>
+                <tr>
+                    <td class="onetd"><span class="required">*</span><strong>确认密码：</strong></td>
+                    <td><input name="password2" id="password2" type="password" value="" class="input-txt"lay-verify="empty" placeholder="请输入平台确认密码"/>
+                        <small id="mess_password2">确认密码 必填</small></td>
+                </tr>
+                <tr>
+                    <td class="onetd"><strong>演示数据：</strong></td>
+                    <td><input type="checkbox" name="yanshi" id="yanshi" title="" value="1" lay-skin="primary">
+                        <small id="mess_yanshi" style="margin-left: 0;">勾选后将添加演示数据</small></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="btn-box"></div>
+
+        <div class="btn-box">
+                <input type="button" class="btn-back" value="后退" onclick="window.location.href='{$root_url}/install.php/index/index?step=2'" />
+                <input type="button" class="btn-next" lay-submit lay-filter="install"value="开始安装" id="form_submit">
+        </div>
+    </div>
+</form>
+
+{/block}
+{block name='script'}
+<script language="javascript" type="text/javascript">
+    ControlContent(2);
+    var is_existdb = 1;//数据库是否存在
+    var message = '数据库账号或密码不能为空';
+    function inputBoxPointer(id){
+        return document.getElementById(id);
+    }
+    var is_install = false;
+    layui.use('form', function(){
+        var form = layui.form;
+        form.verify({
+            empty: function(value, item){ //value：表单的值、item：表单的DOM对象
+                if(value == ''){
+                    var msg = $(item).attr("placeholder");
+                    return msg;
+                }
+            }
+
+        });
+        form.on('submit(install)', function(data){
+            if(is_existdb == 2){
+                layer.confirm('数据库存在，系统将覆盖数据库!', {
+                    btn: ['继续','取消'] //按钮
+                }, function(){
+                    layer.closeAll(); //疯狂模式，关闭所有层
+                    install(data.field);
+
+                }, function(){
+                    layer.closeAll(); //疯狂模式，关闭所有层
+                    return false;
+                });
+            }else{
+                install(data.field);
+            }
+
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+        function install(data){
+
+            if(is_install){
+                return false;
+            }
+            document.getElementById('form_submit').disabled= true;
+            $("#form_submit").val("正在安装...");
+            $("#form_submit").addClass("installimg-btn");
+			var index = layer.load(2);
+            is_install = true;
+
+            $.ajax({
+                url: "{$root_url}/install.php/index/index?step=4",
+                data: data,
+                dataType: 'json',
+                type: 'post',
+                success : function(data) {
+					layer.close(index);
+                    if(data.code < 0){
+                        error(data.message);
+                        is_install = false;
+                        document.getElementById('form_submit').disabled= false;
+                        $("#form_submit").val("开始安装");
+                        $("#form_submit").removeClass("installimg-btn");
+                    }else{
+                        window.location.href = '{$root_url}/install.php/index/installSuccess'
+                    }
+                }
+            })
+        }
+    });
+
+    //数据库连接测试
+    function testDb()
+    {
+        var dbhost = inputBoxPointer('dbhost').value;
+        var dbuser = inputBoxPointer('dbuser').value;
+        var dbpwd = inputBoxPointer('dbpwd').value;
+        var dbport = inputBoxPointer('dbport').value;
+        inputBoxPointer('dbpwdsta').innerHTML='<img src="INSTALL_IMG/ajax-loader.gif">';
+
+        $.ajax({ //post也可
+            url: '{$root_url}/install.php/index/testdb',
+            data: { dbhost: dbhost, dbport : dbport, dbuser:dbuser, dbpwd:dbpwd},
+            type: "post",
+            dataType: 'json',
+            success: function(data){
+                if(data.code >= 0){
+                    inputBoxPointer('dbpwdsta').innerHTML = data.data.message;
+                    is_existdb = data.data.status;
+                    message = data.data.message;
+                }else{
+                    is_existdb = -1;
+                }
+            }
+        });
+    }
+
+    /**
+     *验证数据库是否存在
+     */
+    function haveDB()
+    {
+        var dbhost = inputBoxPointer('dbhost').value;
+        var dbname = inputBoxPointer('dbname').value;
+        var dbuser = inputBoxPointer('dbuser').value;
+        var dbpwd = inputBoxPointer('dbpwd').value;
+        var dbport = inputBoxPointer('dbport').value;
+        inputBoxPointer('havedbsta').innerHTML='<img src="INSTALL_IMG/ajax-loader.gif">';
+
+        $.ajax({ //post也可
+            url: '{$root_url}/install.php/index/testdb',
+            data: { dbhost: dbhost, dbport : dbport, dbuser:dbuser, dbpwd:dbpwd,dbname:dbname},
+            type: "post",
+            dataType: 'json',
+            success: function(data){
+                if(data.code >= 0){
+                    inputBoxPointer('havedbsta').innerHTML = data.data.message;
+                    is_existdb = data.data.status;
+                    message = data.data.message;
+                }else{
+                    is_existdb = -1;
+                }
+            }
+        });
+
+    }
+</script>
+{/block}

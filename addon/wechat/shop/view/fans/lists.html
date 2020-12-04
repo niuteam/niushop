@@ -1,0 +1,210 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member.css" />
+<link rel="stylesheet" type="text/css" href="WECHAT_CSS/wx_fans.css" />
+{/block}
+{block name="main"}
+
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color btn-hide" lay-submit="" lay-filter="save"  onclick="refresh()">同步粉丝信息</button>
+    <!-- 右边的form元素 -->
+    <div class="layui-form">
+        <div class="layui-input-inline">
+            <input type="text" name="nickname" placeholder="请输入粉丝名称" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- 列表 -->
+<table id="Fans_list" lay-filter="Fans_list"></table>
+
+<!-- 批量操作 -->
+<script type="text/html" id="batchOperation">
+</script>
+
+<!-- 地址 -->
+<script type="text/html" id="diqu">
+    <p>{{d.country}}{{d.province}}{{d.city}}{{ d.district != '' && d.district != '无' ? d.district : '' }}</p>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" href="" lay-event="">查看消息</a>
+	</div>
+</script>
+
+<!-- 用户信息 -->
+<script type="text/html" id="fansMessage">
+	<div class='ns-table-title'>
+		<div class='ns-title-pic'>
+		{{#  if(d.headimgurl){  }}
+			<img layer-src src={{ns.img(d.headimgurl)}} class="head-portrait">
+		{{#  }  }}
+		</div>
+		<div class='ns-title-content'>
+			<p class="layui-elip">用户名：{{d.nickname}}</p>
+			{{#  if(d.sex == 1){ }}
+			<p class="layui-elip">性别：男</p>
+			{{#  }else{ }}
+			<p class="layui-elip">性别：女</p>
+			{{#  } }}
+		</div>
+	</div>
+</script>
+
+<!-- 用户来源 -->
+<script type="text/html" id="subscribe_scene">
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_SEARCH'){ }}
+		<p>公众号搜索</p>
+		{{#  } }}
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_ACCOUNT_MIGRATION'){ }}
+		<p>公众号迁移</p>
+		{{#  } }}
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_PROFILE_CARD'){ }}
+		<p>名片分享</p>
+		{{#  } }}
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_QR_CODE'){ }}
+		<p>扫描二维码</p>
+		{{#  } }}
+
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_PROFILE_LINK'){ }}
+		<p>图文页内名称点击</p>
+		{{#  } }}
+
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_PROFILE_ITEM'){ }}
+		<p>图文页右上角菜单</p>
+		{{#  } }}
+
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_PAID'){ }}
+		<p>支付后关注</p>
+		{{#  } }}
+
+		{{#  if(d.subscribe_scene == 'ADD_SCENE_OTHERS '){ }}
+		<p>其他</p>
+		{{#  } }}
+
+</script>
+
+<div class="progress-layer">
+	<h3>正在同步中，已完成...</h3>
+	<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="progress">
+		<div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form', 'element'], function() {
+        var table,
+			form = layui.form;
+		form.render();
+
+        table = new Table({
+            elem: '#Fans_list',
+            url: ns.url("wechat://shop/fans/lists"),
+            page: true,
+            cols: [
+                [{
+                    title: '粉丝信息',
+					width: '30%',
+                    unresize: 'false',
+					templet: '#fansMessage'
+				}, {
+					field: 'subscribe_time',
+					title: '关注时间',
+					width: '20%',
+					unresize: 'false',
+					templet: function(data) {
+						return ns.time_to_date(data.subscribe_time);
+					}
+				}, {
+					field: 'country',
+					title: '详细地址',
+					width: '30%',
+					unresize: 'false',
+					templet:'#diqu'
+                }, {
+					field: 'subscribe_scene',
+                    title: '粉丝来源',
+					width: '20%',
+                    unresize: 'false',
+					templet:'#subscribe_scene'
+				}]
+            ]
+        });
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+    });
+
+	// 更新粉丝列表
+	var repeat_flag = false;//防重复标识
+	var page_index = 0;
+	var page_count = 0;
+	var progress_element;
+	layui.use('element', function(){
+		progress_element = layui.element;
+	});
+
+	function refresh() {
+		if(repeat_flag) return;
+		repeat_flag = true;
+		$.ajax({
+			type : "post",
+			url : "{:addon_url('wechat://shop/fans/syncWechatFans')}",
+			data : {
+				"page" : page_index,
+			},
+			dataType : "JSON",
+			beforeSend : function() {
+				$(".progress-layer").fadeIn();
+			},
+			success : function(data) {
+				repeat_flag = false;
+				if (data.code != 0 && data.message != undefined && data.message != '') {
+					layer.msg(data.message);
+					$(".progress-layer").fadeOut();
+				} else if (data.code == 0) {
+					if (page_index == 0) page_count = data['data']["page_count"];
+
+					page_index += 1;
+					if (data.data == null) {
+						$(".progress-layer").fadeOut();
+					}
+
+					if (page_index <= page_count) {
+						var speed_of_progress = (page_index / page_count * 100).toFixed(2);
+						progress_element.progress('progress', speed_of_progress + '%');
+					}
+					if (page_index <= page_count) {
+						repeat_flag = false;
+						refresh();
+					} else {
+						window.location.reload();
+					}
+				} else {
+					layer.msg('更新失败');
+					$(".progress-layer").fadeOut();
+				}
+			},
+			error: function (e) {
+				layer.msg('更新失败');
+				$(".progress-layer").fadeOut();
+			}
+		})
+	}
+</script>
+{/block}

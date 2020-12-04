@@ -1,0 +1,160 @@
+<nc-component v-bind:data="data[index]" class="image-ads">
+	
+	<!-- 预览 -->
+	<template slot="preview">
+		
+		<template v-if="nc.selectedTemplate=='horizontal-sliding'">
+			<div class="image-ads-list">
+				<div v-for="(item,index) in nc.list" class="image-ads-item"
+				     v-bind:style="{marginRight: (nc.selectedTemplate=='horizontal-sliding' ? (nc.imageClearance+'px') : ''), paddingTop: nc.marginTop + 'px'}"
+				     v-bind:class="[nc.selectedTemplate]">
+
+					<p v-show="item.imageUrl==''">
+						<span>图片广告</span>
+					</p>
+					<div v-show="item.imageUrl">
+						<img v-bind:src="changeImgUrl(item.imageUrl)" :style="{borderRadius: nc.imageRadius=='right-angle' ? '' : '5px'}" draggable="false"/>
+					</div>
+
+					<!-- <span v-show="item.title">{{item.title}}</span> -->
+
+				</div>
+			</div>
+		</template>
+		
+		<template v-if="nc.selectedTemplate == 'single-graph'">
+			<!-- <div v-for="(item,index) in nc.list" class="image-ads-item" :style="{borderRadius: nc.imageRadius=='right-angle' ? '' : '5px', paddingTop: nc.marginTop + 'px'}">
+				<template v-if="index == 0">
+					<p v-show="item.imageUrl==''">
+						<span>图片广告</span>
+					</p>
+					<div v-show="item.imageUrl">
+						<img v-bind:src="changeImgUrl(item.imageUrl)" draggable="false"/>
+					</div>
+				</template>
+			</div> -->
+			
+			<template v-for="(item, index) in nc.list">
+				<template v-if="index == 0">
+					<div class="image-ads-item" :style="{padding: nc.marginTop + 'px 15px 0'}">
+						<p v-show="item.imageUrl==''">
+							<span>图片广告</span>
+						</p>
+						<div v-show="item.imageUrl">
+							<img v-bind:src="changeImgUrl(item.imageUrl)" :style="{borderRadius: nc.imageRadius=='right-angle' ? '' : '5px'}" draggable="false"/>
+						</div>
+					</div>
+				</template>
+			</template>
+		</template>
+		
+		<template v-if="nc.lazyLoad && nc.selectedTemplate=='carousel-posters'">
+			<div class="" :style="{paddingTop: nc.marginTop + 'px'}">
+				<image-ads-carouse v-bind:index="index"></image-ads-carouse>
+			</div>
+		</template>
+	
+	</template>
+	
+	<!-- 编辑 -->
+	<template slot="edit">
+		<div class="template-edit-title">
+			<h3>图片广告显示样式</h3>
+			<i class="layui-icon layui-icon-down" onclick="closeBox(this)"></i>
+		</div>
+		
+		<div class="template-edit-wrap">
+			
+			<div class="layui-form-item ns-icon-radio">
+				<label class="layui-form-label sm">选择模板</label>
+				<div class="layui-input-block">
+					<span :class="{'layui-hide': nc.selectedTemplate != 'single-graph'}">单图模式</span>
+					<span :class="{'layui-hide': nc.selectedTemplate != 'carousel-posters'}">轮播海报</span>
+					<span :class="{'layui-hide': nc.selectedTemplate != 'horizontal-sliding'}">横向滑动</span>
+					
+					<ul class="ns-icon">
+						<li :class="{'ns-text-color ns-border-color ns-bg-color-diaphaneity': nc.selectedTemplate == 'single-graph'}" @click="nc.selectedTemplate = 'single-graph'">
+							<img v-if="nc.selectedTemplate == 'single-graph'" src="{$resource_path}/image_ads/img/single_1.png" />
+							<img v-else src="{$resource_path}/image_ads/img/single.png" />
+						</li>
+						<li :class="{'ns-text-color ns-border-color ns-bg-color-diaphaneity': nc.selectedTemplate == 'carousel-posters'}" @click="nc.selectedTemplate = 'carousel-posters'">
+							<img v-if="nc.selectedTemplate == 'carousel-posters'" src="{$resource_path}/image_ads/img/banner_1.png" />
+							<img v-else src="{$resource_path}/image_ads/img/banner.png" />
+						</li>
+						<li :class="{'ns-text-color ns-border-color ns-bg-color-diaphaneity': nc.selectedTemplate == 'horizontal-sliding'}" @click="nc.selectedTemplate = 'horizontal-sliding'">
+							<img v-if="nc.selectedTemplate == 'horizontal-sliding'" src="{$resource_path}/image_ads/img/cross_slip_1.png" />
+							<img v-else src="{$resource_path}/image_ads/img/cross_slip.png" />
+						</li>
+					</ul>
+					<!-- <div class="selected-template-list">
+						<ul>
+							<li v-bind:class="[nc.selectedTemplate == 'single-graph' ? 'ns-border-color ns-text-color' : '']"
+								v-on:click="nc.selectedTemplate = 'single-graph'">
+								<img src="{$resource_path}/image_ads/img/single_graph.png">
+								<div>单图</div>
+							</li>
+							<li v-bind:class="[nc.selectedTemplate == 'carousel-posters' ? 'ns-border-color ns-text-color' : '']"
+								v-on:click="nc.selectedTemplate = 'carousel-posters'">
+								<img src="{$resource_path}/image_ads/img/carousel_posters.png">
+								<div>轮播海报</div>
+							</li>
+							<li v-bind:class="[nc.selectedTemplate == 'vertically' ? 'ns-border-color ns-text-color' : '']"
+								v-on:click="nc.selectedTemplate = 'vertically'">
+								<img src="{$resource_path}/image_ads/img/ads_vertically.png">
+								<div>垂直排列</div>
+							</li>
+							<li v-bind:class="[nc.selectedTemplate == 'horizontal-sliding' ? 'ns-border-color ns-text-color' : '']"
+								v-on:click="nc.selectedTemplate = 'horizontal-sliding'">
+								<img src="{$resource_path}/image_ads/img/horizontal_sliding.png">
+								<div>横向滑动</div>
+							</li>
+						</ul>
+					</div> -->
+				</div>
+			</div>
+			
+			<!-- <div class="layui-form-item" v-show="nc.selectedTemplate == 'carousel-posters'">
+				<label class="layui-form-label sm">图片高度</label>
+				<div class="layui-input-block">
+					<input type="text" v-model="nc.height" placeholder="请输入图片高度" class="layui-input">
+				</div>
+			</div> -->
+			
+			<slide v-show="nc.selectedTemplate == 'vertically'" v-bind:data="{ field : 'padding', label : '左右边距' }"></slide>
+			
+			<slide v-show="nc.selectedTemplate == 'horizontal-sliding'" v-bind:data="{ field : 'imageClearance', label : '图片间隙' }"></slide>
+			
+			<template v-if="nc.lazyLoad">
+				<img-ads-radius></img-ads-radius>
+				<img-ads-carousel v-show="nc.selectedTemplate == 'carousel-posters'"></img-ads-carousel>
+			</template>
+		</div>
+		
+		<div class="template-edit-wrap">
+			<template v-if="nc.lazyLoad">
+				<image-ads-single v-if="nc.selectedTemplate == 'single-graph'"></image-ads-single>
+				<image-ads-list v-if="nc.selectedTemplate != 'single-graph'"></image-ads-list>
+			</template>
+		</div>
+		
+		<div class="template-edit-title">
+			<h3>其他设置</h3>
+			<i class="layui-icon layui-icon-down" onclick="closeBox(this)"></i>
+		</div>
+		
+		<div class="template-edit-wrap">
+			<slide v-bind:data="{ field : 'marginTop', label : '页面间距' }"></slide>
+		</div>
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var imageAdsResourcePath = "{$resource_path}";
+		</js>
+		<css src="{$resource_path}/image_ads/css/design.css"></css>
+		<js src="{$resource_path}/image_ads/js/design.js"></js>
+	
+	</template>
+
+</nc-component>

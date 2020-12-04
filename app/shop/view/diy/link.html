@@ -1,0 +1,786 @@
+<style>
+    .link-box{font-size:12px}
+    .link-box .link-center{display:flex;height:480px}
+    .link-box .link-left{overflow-y:auto;width:138px;height:100%;border-right:1px solid #f2f2f2}
+    .link-box .link-left dt{position:relative;padding-left:15px;height:32px;line-height:32px;color:#333;cursor:pointer;transition:all .3s}
+    .link-box .link-left dt.triangle:after{content:'';position:absolute;left:0;top:51%;transform:translateY(-50%);border:4px solid transparent;border-right-color:#333;border-bottom-color:#333;cursor:pointer}
+    .link-box .link-left dt.active:after{transform:translateY(-50%) rotate(-45deg)}
+    .link-box .link-left dd{margin-right:25px;padding-left:25px;height:32px;line-height:32px;color:#666;cursor:pointer}
+    .link-box .link-left dd:hover{background-color:#f2f2f2}
+    .link-box .link-right{overflow-y:auto;height:100%;flex:1;padding-left:20px}
+    .link-box .link-right dl{overflow:hidden}
+    .link-box .link-right dt{height:40px;line-height:40px}
+    .link-box .link-right dd{float:left;margin:5px 5px 5px 0;padding:0 16px;border:1px solid #ededed;border-radius:3px;line-height:30px;color:#666;cursor:pointer}
+    .link-box .link-right .layui-table-body{height:285px}
+    .link-btn{margin-top:20px;padding-right:10px;height:45px;line-height:45px;text-align:right;border-top:1px solid #f2f2f2}
+    .link-box .custom-link{width:360px;margin:50px}
+    .link-box .ns-word-aux{width:250px}
+
+</style>
+
+<div class="link-box">
+    <div class="link-center">
+        <div class="link-left">
+            {foreach $list as $item}
+            <dl>
+                <dt data-ident="{$item.name}" {notempty name='$item.child_list'}class="triangle"{/notempty}>{$item.title}</dt>
+                {foreach $item.child_list as $child_key =>$child_item}
+                <dd data-ident="{$child_item.name}" class="{if !empty($link) && isset($link.parents) &&  $child_item.name == $link.parents}ns-text-color{/if}">{$child_item.title}</dd>
+                {/foreach}
+            </dl>
+            {/foreach}
+        </div>
+        <div class="link-right"></div>
+    </div>
+    <div class="link-btn">
+        <button class="layui-btn link-eliminate layui-btn-primary">清空</button>
+        <button class="layui-btn link-save ns-bg-color">确定</button>
+    </div>
+</div>
+
+<script>
+    var promotion,wap_url,goodsIdent,
+        initMeun = $(".link-box .link-left dd:eq(0)").attr("data-ident"),
+        customIdent = false, //是否点击自定义链接
+        getLineData = {
+            link : '{:html_entity_decode($link)}',
+            support_diy_view : '{$support_diy_view}',
+        };
+            console.log(getLineData);
+    var preoldlink = JSON.parse(getLineData.link);
+
+    if(!preoldlink.parents){
+        preoldlink.parents = initMeun;
+    }
+
+    firstRequest();
+
+    //左侧循环列表    请求参数
+    function firstRequest(){
+        if(preoldlink.parents == 'CUSTOM_LINK'){
+            $(".link-left dl").eq(2).find('dt').addClass("ns-text-color");
+            showCustom();
+            $(".link-box input[name='title']").val(preoldlink.title);
+            $(".link-box input[name='wap_url']").val(preoldlink.wap_url);
+            customIdent = true;
+            return;
+        }
+        $categoryList = eval(<?php echo json_encode($list);?>);
+        let categoryList=$categoryList;
+        for(let i=0;i<categoryList.length;i++){
+            let arr=categoryList[i].child_list;
+            for(let j=0;j<arr.length;j++){
+
+                if(arr[j].name == preoldlink.parents){
+                    let documentPage= $(".link-left dl dt");
+                    for(let z=0;z<documentPage.length;z++){
+                        documentPage.eq(z).addClass("active");
+                        $(documentPage.eq(z)).parent("dl").find("dd").addClass("layui-hide");
+                    }
+                    documentPage.eq(i).removeClass("active");
+                    $(documentPage.eq(i)).parent("dl").find("dd").removeClass("layui-hide");
+                    $(documentPage.eq(i)).parent("dl").find("dd").eq(j).addClass("ns-text-color");
+                    let title = $(documentPage.eq(i)).parent("dl").find("dd").eq(j).attr("data-ident");
+                    getLinkInfo(title);
+                }
+            }
+        }
+    }
+
+    /*
+    * 渲染数据
+    * */
+    function getLinkInfo(name){
+        getLineData.name = name;
+        $.ajax({
+            url : "{:addon_url($request_url)}",
+            data: getLineData,
+            dataType: 'json',
+            type: 'post',
+            success : function(data) {
+                var list = data.list;
+                var data_link = data.link;
+                var html = '';
+                if (list.length > 0){
+                    for (var i = 0; i < list.length; i++){
+                        html += `<dl>`;
+                        html += `<dt>${list[i].title}</dt>`;
+                        if (list[i].child_list != undefined) {
+                            for (var j = 0; j < list[i].child_list.length; j++){
+                                if (list[i].child_list[j].name == preoldlink.name || list[i].child_list[j].name == preoldlink.name)
+                                    html += `<dd data-value='${JSON.stringify(list[i].child_list[j])}' class="ns-border-color" data-old-value='${JSON.stringify(data_link)}'>${list[i].child_list[j].title}</dd>`;
+                                else
+                                    html += `<dd data-value='${JSON.stringify(list[i].child_list[j])}'>${list[i].child_list[j].title}</dd>`;
+                            }
+                        }
+                        html += `</dl>`
+                    }
+                }else{
+                    if (name.indexOf('_GOODS') != -1) {
+                        html += `<table id="goods_list" lay-filter="goods_list"></table>`;
+                    } else if (name.indexOf('_GAME') != -1) {
+                        html += `<table id="game_list" lay-filter="game_list"></table>`;
+                    } else if(name.indexOf('_CATEGORY') != -1){
+                        html += `<div id="category_list" lay-filter="category_list"></div>`;
+                    }
+
+                }
+                $(".link-right").html(html);
+                if (!list.length){
+                    if (name.indexOf('_GOODS') != -1) {
+                        getGoodsInfo(name);
+                    } else if (name.indexOf('_GAME') != -1) {
+                        getGameInfo(name);
+                    } else if(name.indexOf('_CATEGORY') != -1){
+                        getCategory(name);
+                    }
+                }
+            }
+        });
+    }
+
+    function getCategory(name){
+        var addon_url = '';
+        wap_url = '/pages/goods/list/list?category_id=';
+        initMeun = name;
+
+        layui.use(['laytpl', 'form'], function(){
+            var laytpl = layui.laytpl;
+            var form = layui.form;
+            laytpl($("#category_html").html()).render([], function(html) {
+                $("#category_list").html(html);
+                //展开收齐点击事件
+                $(".js-switch").click(function () {
+                    var category_id = $(this).attr("data-category-id");
+                    var level = $(this).attr("data-level");
+                    var open = parseInt($(this).attr("data-open").toString());
+
+                    if(open){
+                        $(".goods-category-list .layui-table tr[data-category-id-"+ level+"='" + category_id + "']").hide();
+                        $(this).text("+");
+                    }else{
+                        $(".goods-category-list .layui-table tr[data-category-id-"+ level+"='" + category_id + "']").show();
+                        $(this).text("-");
+                    }
+                    $(this).attr("data-open", (open ? 0 : 1));
+
+
+
+                });
+
+
+                console.log($("input[name='category_select_id']:checked").length);
+                if ($("input[name='category_select_id']:checked").length > 0){
+                    var category_id_1 = $("input[name='category_select_id']:checked").parents('.category-line').attr('data-category-id-1');
+                    var category_id_2 = $("input[name='category_select_id']:checked").parents('.category-line').attr('data-category-id-2');
+                    // $("input[name='category_select_id']:checked").parents().parent().find('.category-line').css('display', 'block');
+                    console.log(category_id_1,category_id_2);
+                    if(category_id_1 > 0){
+                        $('tr[data-category-id-1='+category_id_1+']').show();
+
+                    }
+                    if(category_id_2 > 0){
+                        $('tr[data-category-id-2='+category_id_2+']').show();
+
+                    }
+
+
+                }
+                // 勾选分类
+                form.on('checkbox(category_select_id)', function(data) {
+                    if (data.elem.checked){
+
+                        $("input[name='category_select_id']:checked").prop("checked",false);
+                        $(data.elem).prop("checked",true);
+                        form.render();
+                    }
+                });
+                form.render();
+            });
+        });
+
+
+    }
+
+    function getGoodsInfo(name){
+        var goodsCols,table;
+        initMeun = name;
+        if (name == 'ALL_GOODS'){
+            promotion = 'all';
+            wap_url = '/pages/goods/detail/detail?sku_id=';
+
+            goodsCols = [
+                [
+                    {
+                        unresize: 'false',
+                        width: '8%',
+                        templet: '#checkbox'
+                    },
+                    {
+                        title: '商品',
+                        unresize: 'false',
+                        width: '62%',
+                        templet: '#goods_info'
+                    },
+                    {
+                        field: 'price',
+                        title: '价格',
+                        unresize: 'false',
+                        width: '15%'
+                    },
+                    {
+                        field: 'goods_stock',
+                        title: '库存',
+                        unresize: 'false',
+                        width: '15%'
+                    }
+                ]
+            ];
+        }else if(name == "PINTUAN_GOODS"){
+            promotion = 'pintuan';
+            wap_url = '/promotionpages/pintuan/detail/detail?id=';
+
+            goodsCols = [
+                [{
+                    unresize: 'false',
+                    width: '8%',
+                    templet: '#checkbox'
+                },{
+                    title: '拼团商品',
+                    unresize: 'false',
+                    width: '62%',
+                    templet: function (data) {
+                        var html = '';
+                        html += `<div class="ns-table-title">`;
+                            html += `<div class="ns-title-pic" id="goods_img_{{data.goods_id}}">`;
+                                html += `<img layer-src src="${ns.img(data.sku_image != '' && data.sku_image != undefined ? data.sku_image.split(',')[0] : '', 'small')}"/>`;
+                            html += `</div>`;
+                            html += `<div class="ns-title-content">`;
+                                html += `<a href="javascript:;" class="ns-multi-line-hiding ns-text-color" title="${data.goods_name}">${data.goods_name}</a>`;
+                            html += `</div>`;
+                        html += `</div>`;
+
+                        return html;
+                    }
+                },{
+                    field: 'pintuan_price',
+                    title: '价格',
+                    unresize: 'false',
+                    width: '15%'
+                },{
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    width: '15%'
+                }]
+            ];
+        }else if(name == "GROUPBUY_GOODS"){
+            promotion = 'groupbuy';
+            wap_url = '/promotionpages/groupbuy/detail/detail?id=';
+
+            goodsCols = [
+                [{
+                    unresize: 'false',
+                    width: '8%',
+                    templet: '#checkbox'
+                },{
+                    title: '团购商品',
+                    unresize: 'false',
+                    width: '62%',
+                    templet: '#goods_info'
+                },{
+                    field: 'groupbuy_price',
+                    title: '价格',
+                    unresize: 'false',
+                    width: '15%'
+                },
+                {
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    width: '15%'
+                }]
+            ]
+        }else if(name == "DISTRIBUTION_GOODS"){
+            promotion = 'fenxiao';
+            wap_url = '/pages/goods/detail/detail?sku_id=';
+
+            goodsCols = [
+                [{
+                    unresize: 'false',
+                    width: '8%',
+                    templet: '#checkbox'
+                },{
+                    title: '分销商品',
+                    unresize: 'false',
+                    width: '62%',
+                    templet: '#goods_info'
+                },{
+                    field: 'price',
+                    title: '价格',
+                    unresize: 'false',
+                    width: '15%'
+                },
+                {
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    width: '15%'
+                }]
+            ]
+        }else if(name == "BARGAIN_GOODS"){
+            promotion = 'bargain';
+            wap_url = '/promotionpages/bargain/detail/detail?id=';
+
+            goodsCols = [
+                [{
+                    unresize: 'false',
+                    width: '8%',
+                    templet: '#checkbox'
+                },{
+                    title: '砍价商品',
+                    unresize: 'false',
+                    width: '62%',
+                    templet: function(d){
+                        var html = '';
+                        html += `<div class="ns-table-title">`;
+                            html += `<div class="ns-title-pic" id="goods_img_{{d.goods_id}}">`;
+                                html += `<img layer-src src="${ns.img(d.sku_image.split(',')[0], 'small')}"/>`;
+                            html += `</div>`;
+                            html += `<div class="ns-title-content">`;
+                                html += `<a href="javascript:;" class="ns-multi-line-hiding ns-text-color" title="{{d.goods_name}}">${d.sku_name}</a>`;
+                            html += `</div>`;
+                        html += `</div>`;
+                        return html;
+                    }
+                },{
+                    field: 'price',
+                    title: '价格',
+                    unresize: 'false',
+                    width: '15%'
+                },
+                {
+                    field: 'goods_stock',
+                    title: '库存',
+                    unresize: 'false',
+                    width: '15%'
+                }]
+            ]
+        }
+        goodsIdent = name;
+
+        table = new Table({
+            elem: '#goods_list',
+            url: '{:addon_url("shop/goods/goodsselect")}',
+            where: {promotion},
+            cols: goodsCols
+        });
+    }
+
+    function getGameInfo(name){
+        var addon_url = '';
+        initMeun = name;
+
+        if (name == 'CARDS_GAME'){
+            wap_url = '/otherpages/game/cards/cards?id=';
+            addon_url = '{:addon_url("cards://shop/cards/lists")}';
+        } else if (name == 'TURNTABLE_GAME'){ 
+            wap_url = '/otherpages/game/turntable/turntable?id=';
+            addon_url = '{:addon_url("turntable://shop/turntable/lists")}';
+        } else if (name == 'EGG_GAME'){
+            wap_url = '/otherpages/game/smash_eggs/smash_eggs?id=';
+            addon_url = '{:addon_url("egg://shop/egg/lists")}';
+        }
+        var goodsCols = [
+            [
+                {
+                    unresize: 'false',
+                    width: '8%',
+                    templet: '#game_checkbox'
+                },
+                {
+                    field: 'game_name',
+                    title: '标题',
+                    unresize: 'false',
+                    width: '62%',
+                },
+                {
+                    field: 'price',
+                    title: '状态',
+                    unresize: 'false',
+                    width: '30%',
+                    templet: '#game_status'
+                }
+            ]
+        ];
+        var table = new Table({
+            elem: '#game_list',
+            url: addon_url,
+            cols: goodsCols
+        });
+
+    }
+
+    //自定义链接
+    $("dt[data-ident='CUSTOM_LINK']").click(function(){
+        showCustom();
+        customIdent = true;
+    });
+
+    function showCustom(){
+        var html = '';
+        html += '<div class="layui-form custom-link">';
+        html += '<div class="layui-form-item">';
+        html += '<label class="layui-form-label sm"><span class="required">*</span>链接名称</label>';
+        html += '<div class="layui-input-inline">';
+        html += '<input type="text" name="title" class="layui-input ns-len-mid" required>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="layui-form-item">';
+        html += '<label class="layui-form-label sm"><span class="required">*</span>跳转路径</label>';
+        html += '<div class="layui-input-block">';
+        html += '<input type="text" name="wap_url" class="layui-input ns-len-mid">';
+        html += '</div>';
+        html += '<div class="ns-word-aux sm">路径必须以“/”开头，例：“/pages/goods/list/list”</div>';
+        html += '</div>';
+        html += '</div>';
+
+        $(".link-right").html(html);
+    }
+
+    $(".link-box .link-left dt").click(function () {
+        if (!$(this).hasClass("active")){
+            $(this).addClass("active");
+            $(this).parent("dl").find("dd").addClass("layui-hide");
+        }else{
+            $(this).removeClass("active");
+            $(this).parent("dl").find("dd").removeClass("layui-hide");
+        }
+
+        if ($(this).parent("dl").find("dd").length == 0) {
+            $(".link-box .link-left dd").removeClass("ns-text-color");
+            $(this).addClass("ns-text-color");
+        }
+    });
+
+    $("body").off('click').on("click", ".link-box .link-left dd", function () {
+        customIdent = false;
+        if (!$(this).hasClass("ns-text-color")){
+            $(".link-box .link-left dd,.link-box .link-left dt").removeClass("ns-text-color");
+            $(this).addClass("ns-text-color");
+        }
+        initMeun = $(this).attr("data-ident");
+        getLinkInfo(initMeun);
+    });
+
+    // link-right
+    $("body").on("click", ".link-box .link-right dd", function () {
+
+        $(".link-box .link-right dd").removeClass("ns-border-color");
+        if (!$(this).hasClass("ns-border-color")) $(this).addClass("ns-border-color");
+    });
+
+    layui.use('form',function () {
+        var form = layui.form;
+        // 勾选商品
+        form.on('checkbox(goods_checkbox)', function(data) {
+            var goods_id = $(data.elem).attr("data-goods-id");
+
+            if (data.elem.checked){
+                $("input[name='goods_checkbox']:checked").prop("checked",false);
+                $(data.elem).prop("checked",true);
+                form.render();
+            }
+        });
+
+        // 勾选小游戏
+        form.on('checkbox(game_checkbox)', function(data) {
+            var game_id = $(data.elem).attr("data-game-id");
+
+            if (data.elem.checked){
+                $("input[name='game_checkbox']:checked").prop("checked",false);
+                $(data.elem).prop("checked",true);
+                form.render();
+            }
+        });
+
+
+    });
+
+    //清空
+    $(".link-btn .link-eliminate").click(function () {
+        $(".link-box input[name='title']").val('');
+        $(".link-box input[name='wap_url']").val('');
+
+        $(".link-box .link-right dd").removeClass("ns-border-color");
+
+        $(".link-box input[type='checkbox']:checked").prop('checked',false);
+        $(".link-box .layui-unselect.layui-form-checkbox").removeClass("layui-form-checked");
+
+        var obj = {"title":"","wap_url":'',"name":''};
+        window.linkData = obj;
+        window.linkData.parents = '';
+
+        layer.close(window.linkIndex);
+    });
+
+    // 保存
+    $(".link-box .link-save").click(function(){
+        var value,old_value;
+        var dd = $(".link-box .link-right dd.ns-border-color").eq(0);
+
+        /* 商城页面链接保存 */
+        if(dd.length){
+            value = dd.attr("data-value");
+            old_value = dd.attr("data-old-value");
+
+            if(old_value) value = old_value;
+            initMeun = $(".link-box .link-left dd.ns-text-color").attr('data-ident');
+        }
+
+        /* 商品链接保存 */
+        if ($("input[name='goods_checkbox']:checked").length){
+            var goodsId = $("input[name='goods_checkbox']:checked").eq(0).attr("data-goods-id");
+            value = $("input[name='goods_json'][data-goods-id = "+ goodsId +"]").val();
+            old_value = $("input[name='old_goods_json'][data-goods-id = "+ goodsId +"]").val();
+
+            if(old_value) value = old_value.toString();
+            value = JSON.parse(value);
+            if (!value.wap_url){
+                var nn =value.id;
+                if (goodsIdent=='GROUPBUY_GOODS') {
+                    value.wap_url = wap_url + value.groupbuy_id;
+                } else if (goodsIdent=='PINTUAN_GOODS' || goodsIdent=='BARGAIN_GOODS') {
+                    value.wap_url = wap_url + value.id;     
+                } else if (goodsIdent=='DISTRIBUTION_GOODS') {
+                    value.wap_url = wap_url + value.sku_id;
+                } else {
+                    value.wap_url = wap_url + value.sku_list[0].sku_id;
+                }
+
+                value.title = goodsIdent=='BARGAIN_GOODS' ? value.sku_name : value.goods_name;
+                value.name = "";
+            }
+            value = JSON.stringify(value);
+        }
+
+        // 小游戏
+        if ($("input[name='game_checkbox']:checked").length){
+            var gameId = $("input[name='game_checkbox']:checked").eq(0).attr("data-game-id");
+            value = $("input[name='game_json'][data-game-id = "+ gameId +"]").val();
+            old_value = $("input[name='old_game_json'][data-game-id = "+ gameId +"]").val();
+  
+            if(old_value) value = old_value.toString();
+            value = JSON.parse(value);
+
+            if (!value.wap_url){
+                value.wap_url = wap_url+value.game_id;
+                value.title = value.game_name;
+                value.selected = true;
+                value.name = "";
+            }
+            value = JSON.stringify(value);
+        }
+        // 商品分类
+        if ($("input[name='category_select_id']:checked").length){
+            var category_select_id = $("input[name='category_select_id']:checked").attr('data-category_select_id');
+            value = $("input[name='category_select_id']:checked").val();
+            // old_value = $("input[name='old_game_json'][data-game-id = "+ gameId +"]").val();
+
+            // if(old_value) value = old_value.toString();
+
+            value = JSON.parse(value);
+
+            if (!value.wap_url){
+                value.wap_url = wap_url+value.category_id;
+                value.title = value.category_name;
+                value.selected = true;
+                value.name = "";
+            }
+            value = JSON.stringify(value);
+        }
+
+        //自定义链接
+        if(customIdent){
+            value = {};
+            if (!$(".custom-link input[name='title']").val()){
+                layer.msg("链接名称不能为空");
+                return false;
+            }
+
+            if (!$(".custom-link input[name='wap_url']").val()){
+                layer.msg("跳转路径不能为空");
+                return false;
+            }
+
+            value.title = $(".custom-link input[name='title']").val();
+            value.wap_url = $(".custom-link input[name='wap_url']").val();
+            value.id = -999;
+            value.addon_icon = "";
+            value.addon_name = "CustomLink";
+            value.addon_title = "自定义链接";
+            value.icon = "";
+            value.name = "CUSTOM_LINK";
+            value.type = 0;
+
+            window.linkData = value;
+            window.linkData.parents = 'CUSTOM_LINK';
+        }
+
+        if(value && !customIdent) {
+            value = JSON.parse(value);
+            window.linkData = value;
+            window.linkData.parents = initMeun;
+        }
+        layer.close(window.linkIndex);
+    });
+</script>
+
+<script type="text/html" id="checkbox">
+    {{# if(Object.getOwnPropertyNames(preoldlink).length && preoldlink.goods_id == d.goods_id && preoldlink.parents == initMeun &&  promotion == 'all' || preoldlink.parents == initMeun && Object.getOwnPropertyNames(preoldlink).length && preoldlink.sku_id == d.sku_id && promotion == 'bargain' || preoldlink.parents == initMeun && Object.getOwnPropertyNames(preoldlink).length && preoldlink.groupbuy_id== d.groupbuy_id && promotion == 'groupbuy' || preoldlink.parents == initMeun && Object.getOwnPropertyNames(preoldlink).length && preoldlink.sku_id== d.sku_id  && promotion == 'pintuan'|| preoldlink.parents == initMeun && Object.getOwnPropertyNames(preoldlink).length && preoldlink.sku_id== d.sku_id  && promotion == 'fenxiao'){ }}
+    <input type="checkbox" data-goods-id="{{d.sku_id ? d.sku_id : d.goods_id}}" name="goods_checkbox" lay-skin="primary" lay-filter="goods_checkbox" checked>
+    <input type="hidden" data-goods-id="{{d.sku_id ? d.sku_id : d.goods_id}}" name="old_goods_json" value='{:html_entity_decode($link)}' />
+    {{# }else{ }}
+    <input type="checkbox" data-goods-id="{{d.sku_id ? d.sku_id : d.goods_id}}" name="goods_checkbox" lay-skin="primary" lay-filter="goods_checkbox">
+    {{# } }}
+    <input type="hidden" data-goods-id="{{d.sku_id ? d.sku_id : d.goods_id}}" name="goods_json" value='{{ JSON.stringify(d) }}' />
+</script>
+
+<!-- 商品信息 -->
+<script type="text/html" id="goods_info">
+    <div class="ns-table-title">
+        <div class="ns-title-pic" id="goods_img_{{d.goods_id}}">
+            <img layer-src src="{{ns.img(d.goods_image.split(',')[0], 'small')}}"/>
+        </div>
+        <div class="ns-title-content">
+            <a href="javascript:;" class="ns-multi-line-hiding ns-text-color" title="{{d.goods_name}}">{{d.goods_name}}</a>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="game_checkbox">
+    {{# if(Object.getOwnPropertyNames(preoldlink).length && preoldlink.game_id == d.game_id){ }}
+    <input type="checkbox" data-game-id="{{d.game_id}}" name="game_checkbox" lay-skin="primary" lay-filter="game_checkbox" checked>
+    <input type="hidden" data-game-id="{{d.game_id}}" name="old_game_json" value='{:html_entity_decode($link)}' />
+    {{# }else{ }}
+    <input type="checkbox" data-game-id="{{d.game_id}}" name="game_checkbox" lay-skin="primary" lay-filter="game_checkbox">
+    {{# } }}
+    <input type="hidden" data-game-id="{{d.game_id}}" name="game_json" value='{{ JSON.stringify(d) }}' />
+</script>
+
+<!-- 游戏状态 -->
+<script type="text/html" id="game_status">
+    {{#  if(d.status == 0){  }}
+    未开始
+    {{#  }else if(d.status == 1){  }}
+    进行中
+    {{#  }else if(d.status == 2){  }}
+    已结束
+    {{#  }else if(d.status == 3){  }}
+    已关闭
+    {{#  }  }}
+</script>
+<!-- 分类链接 -->
+<style>
+    .goods-category-list .layui-table td {
+        border-left: 0;
+        border-right: 0;
+    }
+    .goods-category-list .layui-table .switch {
+        font-size: 16px;
+        cursor: pointer;
+        width: 12px;
+        line-height: 1;
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .goods-category-list .layui-table img {width: 40px;}
+</style>
+
+<script type="text/html" id="category_html">
+    <div class="goods-category-list layui-form">
+        <table class="layui-table ns-pithy-table">
+            <colgroup>
+                <col width="5%">
+                <col width="3%">
+                <col width="37%">
+                <col width="25%">
+                <col width="30%">
+            </colgroup>
+            <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th>分类名称</th>
+                <th>简称</th>
+                <th>图片</th>
+            </tr>
+            </thead>
+            <tbody>
+            {if condition="$category_list"}
+            {foreach name="$category_list" item="vo"}
+            <tr class='category-line'>
+                <td><input type="checkbox" name="category_select_id" data-category_select_id = "{$vo['category_id']}"lay-skin="primary" value='{:json_encode($vo)}' lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $vo['category_id']}checked{/if}></td>
+                <td>
+                    {notempty name="$vo['child_list']"}
+                    <span class="switch ns-text-color js-switch" data-category-id="{$vo['category_id']}" data-level="{$vo['level']}" data-open="0">+</span>
+                    {/notempty}
+                </td>
+                <td>{$vo['category_name']}</td>
+                <td>{$vo['short_name']}</td>
+                <td>
+                    {notempty name="$vo['image']"}
+                    <div class="ns-img-box">
+                        <img layer-src src="{:img($vo['image'])}"/>
+                    </div>
+                    {/notempty}
+                </td>
+
+            </tr>
+            {notempty name="$vo['child_list']"}
+            {foreach name="$vo['child_list']" item="second"}
+            <tr class='category-line' data-category-id-1="{$second['category_id_1']}" style="display:none;">
+                <td><input type="checkbox" name="category_select_id" lay-skin="primary"data-category_select_id = "{$second['category_id']}" value='{:json_encode($second)}' lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $second['category_id']}checked{/if}></td>
+                <td></td>
+                <td style="padding-left: 20px;">
+                    <span class="switch ns-text-color js-switch" data-category-id="{$second['category_id']}" data-level="{$second['level']}" data-open="1" style="padding-right: 20px;">-</span>
+                    <span>{$second['category_name']}</span>
+                </td>
+                <td>{$second['short_name']}</td>
+                <td>
+                    {notempty name="$second['image']"}
+                    <img layer-src src="{:img($second['image'])}"/>
+                    {/notempty}
+                </td>
+            </tr>
+            {notempty name="$second['child_list']"}
+            {foreach name="$second['child_list']" item="third"}
+            <tr class='category-line'data-category-id-1="{$third['category_id_1']}" data-category-id-2="{$third['category_id_2']}" style="display:none;">
+                <td><input type="checkbox" name="category_select_id" lay-skin="primary" value='{:json_encode($third)}' data-category_select_id = '{$third['category_id']}'lay-filter="category_select_id"{if !empty($link_array.category_id) && $link_array.category_id == $third['category_id']}checked{/if}></td>
+                <td></td>
+                <td style="padding-left: 80px;">
+                    <span>{$third['category_name']}</span>
+                </td>
+                <td>{$third['short_name']}</td>
+                <td>
+                    {notempty name="$third['image']"}
+                    <img layer-src src="{:img($third['image'])}"/>
+                    {/notempty}
+                </td>
+            </tr>
+            {/foreach}
+            {/notempty}
+            {/foreach}
+            {/notempty}
+            {/foreach}
+            {else/}
+            <tr>
+                <td colspan="9" style="text-align: center">无数据</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</script>
+

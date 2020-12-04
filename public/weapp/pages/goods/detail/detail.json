@@ -1,0 +1,17 @@
+{
+  "navigationBarTitleText": "",
+  "usingComponents": {
+    "uni-count-down": "/components/uni-count-down/uni-count-down",
+    "ns-goods-promotion": "/components/ns-goods-promotion/ns-goods-promotion",
+    "ns-fenxiao-goods-detail": "/components/ns-fenxiao-goods-detail/ns-fenxiao-goods-detail",
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "ns-goods-sku": "/components/ns-goods-sku/ns-goods-sku",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-login": "/components/ns-login/ns-login",
+    "ns-goods-action": "/components/ns-goods-action/ns-goods-action",
+    "ns-goods-action-icon": "/components/ns-goods-action-icon/ns-goods-action-icon",
+    "ns-goods-action-button": "/components/ns-goods-action-button/ns-goods-action-button",
+    "ns-goods-recommend": "/components/ns-goods-recommend/ns-goods-recommend",
+    "to-top": "/components/toTop/toTop"
+  }
+}

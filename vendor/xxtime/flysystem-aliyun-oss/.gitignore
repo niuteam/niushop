@@ -1,0 +1,10 @@
+# System Files
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+
+# project
+composer.lock
+vendor/

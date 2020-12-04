@@ -1,0 +1,69 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-form {
+		margin-top: 0;
+	}
+	.tips {
+		padding: 10px;
+		margin-bottom: 15px;
+		background: #ffe1d2;
+		color: #ff8143;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+
+	<p class="tips">还未注册牛云短信？<a href="{:addon_url('niusms://shop/sms/register')}">去注册</a></p>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">用户名：</label>
+		<div class="layui-input-block">
+			<input type="text" name="username" lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">密码：</label>
+		<div class="layui-input-block">
+			<input type="password" name="password" lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">登录</button>
+	</div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function () {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function (data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("niusms://shop/sms/login"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function (res) {
+					if (res.code == 0) {
+						layer.msg("登录成功");
+						location.href = ns.url("niusms://shop/sms/index");
+					} else {
+						layer.msg(res.message);
+						repeat_flag = false;
+					}
+				}
+			});
+		});
+	});
+</script>
+{/block}

@@ -1,0 +1,192 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>用户名：</label>
+		<div class="layui-input-block">
+			<input name="username" type="text" lay-verify="required" class="layui-input ns-len-long" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+		</div>
+		<div class="ns-word-aux">用于登录，添加成功后不可编辑，请认真填写</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>昵称：</label>
+		<div class="layui-input-block">
+			<input name="nickname" type="text" lay-verify="required" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">会员名称</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">手机号：</label>
+		<div class="layui-input-block">
+			<input name="mobile" type="text" lay-verify="mobile" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">已进行手机号验证，请填写正确的手机号</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>密码：</label>
+		<div class="layui-input-block">
+			<input type="password" name="password" lay-verify="required" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label img-upload-lable ns-short-label">头像：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block square">
+				<div class="upload-img-box">
+					<div class="ns-upload-default" id="headImg">
+						<div class="upload">
+							<img src="SHOP_IMG/upload_img.png" />
+							<p>点击上传</p>
+						</div>
+					</div>
+					<div class="operation"  >
+						<div >
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="headimg" />
+				</div>
+				<!-- <p id="headImg" class="no-replace">替换</p>
+				<i class="del">x</i> -->
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>会员等级：</label>
+		<div class="layui-input-inline ns-len-mid">
+			<select class="member_level" name="member_level" lay-verify="required" lay-filter="member_level">
+				<option value="">请选择</option>
+				{volist name="member_level_list" id="member_level"}
+				<option value="{$member_level.level_id}">{$member_level.level_name}</option>
+				{/volist}
+			</select>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">真实姓名：</label>
+		<div class="layui-input-inline">
+			<input name="realname" type="text" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">性别：</label>
+		<div class="layui-input-inline">
+			<input type="radio" name="sex" value="0" title="未知" checked="">
+			<input type="radio" name="sex" value="1" title="男">
+			<input type="radio" name="sex" value="2" title="女">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">生日：</label>
+		<div class="layui-input-inline">
+			<input name="birthday" type="text" id="laydate" class="layui-input ns-len-mid" autocomplete="off">
+		</div>
+	</div>
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'laydate'], function() {
+		var form = layui.form,
+			laydate = layui.laydate,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		laydate.render({
+			elem: '#laydate'
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			mobile: function(value) {
+				var reg = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/;
+				if (value == '') {
+					return;
+				}
+				if (!reg.test(value)) {
+					return '请输入正确的手机号码!';
+				}
+			},
+			isemail: function(value) {
+				var reg = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/;
+				if (value == '') {
+					return;
+				}
+				if (!reg.test(value)) {
+					return '请输入正确的邮箱!';
+				}
+			}
+		});
+
+		var upload = new Upload({
+			elem: '#headImg'
+		});
+		
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			
+			data.field.member_level_name = $(".member_level").find("option[value=" + data.field.member_level + "]").text();
+
+			// 删除图片
+			if(!data.field.headimg) upload.delete();
+			
+			if(repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/member/addMember"),
+				data: data.field,
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('添加成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function(){
+								location.href = ns.url("shop/member/memberList")
+							},
+							btn2: function () {
+								location.href = ns.url("shop/member/addMember")
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+	});
+	
+	function back() {
+		location.href = ns.url("shop/member/memberList");
+	}
+</script>
+{/block}

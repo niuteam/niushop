@@ -1,0 +1,133 @@
+.ns-screen{
+	margin-top: 15px;
+}
+.ns-evaluate-table {
+	border-width: 0 !important;
+}
+
+.ns-evaluate-table[lay-size=lg] th,
+.ns-evaluate-table[lay-size=lg] td {
+	padding: 15px 15px;
+}
+
+.ns-evaluate-title {
+	display: flex;
+}
+
+.ns-evaluate-title p {
+	margin-right: 30px;
+}
+
+.ns-evaluate-title p:last-child {
+	margin-right: 0;
+}
+
+.ns-text-align {
+	text-align: center!important;
+}
+
+/* 评价等级 */
+.ns-evaluate-box {
+	position: relative;
+	padding-left: 70px;
+}
+
+.ns-evaluate-title img {
+	margin-right: 5px;
+}
+
+.ns-evaluate-box p {
+	line-height: 24px;
+}
+
+.evaluate-level-good span {
+	color: #FFCA10;
+}
+
+.evaluate-level-middel span {
+	color: #F35C21;
+}
+
+.evaluate-level-bad span {
+	color: #FF0000;
+}
+
+.ns-evaluate-img {
+	margin-top: 5px;
+	padding-left: 70px;
+}
+
+/* 追加评价 */
+.ns-evaluate-again {
+	margin-top: 10px;
+}
+
+.again-evaluate {
+	display: inline-block;
+	margin-right: 5px;
+	float: left;
+}
+
+/* 操作 */
+.ns-btn-box {
+	text-align: center;
+}
+
+.ns-btn-box .layui-btn {
+	display: inline-block;
+	min-width: 54px;
+	height: 23px;
+	line-height: 23px;
+	border-radius: 50px;
+	background-color: #F3F3F3;
+	font-size: 13px;
+	color: #5A5A5A;
+	text-align: center;
+	padding: 2px 8px;
+	margin: 5px;
+}
+
+.ns-btn-box .layui-btn:hover {
+	color: #fff;
+	background-color: #f38421;
+}
+
+.ns-btn-box a:last-child {
+	margin-right: 0;
+}
+
+.ns-font-box {
+	line-height: 25px;
+	text-align: left;
+}
+
+/* 分页 */
+#laypage {
+	float: right;
+}
+
+.ns-evaluate-explain, .ns-evaluate-box, .ns-evaluate-again {
+	overflow: hidden;
+}
+
+.ns-evaluate-img .ns-title-pic {
+	margin-right: 5px;
+	margin-bottom: 5px;
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	line-height: 50px;
+}
+
+.ns-evaluate-img .ns-title-pic img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.ns-evaluate p, .ns-evaluate-explain p, .ns-evaluate-again p, .ns-evaluate-again-explain p {
+	width: 100%;
+	height: auto;
+	word-wrap: break-word;
+	word-break: break-all;
+}

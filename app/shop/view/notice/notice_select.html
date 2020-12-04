@@ -1,0 +1,172 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.notice-list {
+		padding: 0 20px;
+	}
+</style>
+{/block}
+{block name="body"}
+<div class="notice-list">
+	<!-- 列表 -->
+	<table id="notice_list" lay-filter="notice_list"></table>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="checkbox">
+	{{# if($.inArray(d.id.toString(), selected_id_arr) != -1){ }}
+	<input type="checkbox" data-notice-id="{{d.id}}" name="notice_checkbox" lay-skin="primary" lay-filter="notice_checkbox" checked>
+	{{# }else{ }}
+	<input type="checkbox" data-notice-id="{{d.id}}" name="notice_checkbox" lay-skin="primary" lay-filter="notice_checkbox">
+	{{# } }}
+	<input type="hidden" data-notice-id="{{d.id}}" name="notice_json" value='{{ JSON.stringify(d) }}' />
+</script>
+
+<script>
+	var table, form, laytpl,
+		select_id = "{$select_id}", //选中商品id
+		selected_id_arr = select_id.length ? select_id.split(',') : [],
+		select_list = []; //选中商品所有数据
+		
+		goodsIdArr = [],
+		goodsIdArr = selected_id_arr;
+	
+	$(function () {
+		layui.use(['form', 'laytpl'], function () {
+			form = layui.form;
+			laytpl = layui.laytpl;
+
+			table = new Table({
+				elem: '#notice_list',
+				url: ns.url("shop/notice/index"),
+				cols: [
+					[
+						{
+							unresize: 'false',
+							width: '10%',
+							templet: '#checkbox'
+						}, {
+							width: '55%',
+							title: '公告标题',
+							unresize: 'false',
+							templet: function(data) {
+								var html = data.is_top ? '<span class="required">[ 置顶 ] </span>' : '';
+								html += data.title;
+								return html;
+							}
+						}, {
+							width: '35%',
+							title: '创建时间',
+							unresize: 'false',
+							templet: function(data) {
+								return ns.time_to_date(data.create_time);
+							}
+						}
+					]
+				],
+				callback : function () {
+					// 更新商品复选框状态
+					for (var i=0;i<goodsIdArr.length;i++) {
+						var selected_notices = $("input[name='notice_checkbox'][data-notice-id='" + goodsIdArr[i] + "']");
+						
+						if (selected_notices.length) {
+							$("input[name='notice_checkbox'][data-notice-id='" + goodsIdArr[i] + "']").prop("checked", true);
+						}
+					}
+					
+					form.render();
+					initData();
+				}
+
+			});
+
+
+			// 勾选商品
+			form.on('checkbox(notice_checkbox)', function(data) {
+				var notice_id = $(data.elem).attr("data-notice-id"), json = {};
+				form.render();
+				
+				var noticeLen = $("input[name='notice_checkbox'][data-notice-id="+ notice_id +"]:checked").length;
+				if (noticeLen){
+					json = JSON.parse($("input[name='notice_json'][data-notice-id="+ notice_id +"]").val());
+					delete json.LAY_INDEX;
+					delete json.LAY_TABLE_INDEX;
+					delete json.create_time;
+					select_list.push(json);
+					goodsIdArr.push(notice_id);
+				} else{
+					select_list.remove(notice_id);
+					goodsIdArr.remove(notice_id);
+				}
+			});
+
+
+
+			//初始化数据
+			function initData(){
+				var noticeLen = $("input[name='notice_checkbox'][data-notice-id]:checked").length;
+				
+				for (var i = 0; i < noticeLen; i++){
+					var noticeId = $("input[name='notice_checkbox'][data-notice-id]:checked").eq(i).attr("data-notice-id");
+					var ident = false;
+					for (var k = 0; k < select_list.length; k++){
+						if(select_list[k].id == noticeId){
+							ident = true;
+							break;
+						}
+					}
+
+					if (ident) return;
+					json = JSON.parse($("input[name='notice_json'][data-notice-id="+ noticeId +"]").val());
+					delete json.LAY_INDEX;
+					delete json.LAY_TABLE_INDEX;
+					delete json.create_time;
+					
+					select_list.push(json);
+				}
+			}
+		});
+	});
+
+
+	function selectGoods(callback) {
+		var res = select_list;
+		callback(res);
+	}
+
+	Array.prototype.indexOf = function(val) {
+		for (var i = 0; i < this.length; i++) {
+			if (this[i].id){
+				if (this[i].id == parseInt(val)) return i;
+			} else {
+				if (this[i] == val) return i;
+			}
+		}
+		return -1;
+	};
+
+	Array.prototype.remove = function(val) {
+		var index = this.indexOf(val);
+		if (index > -1) {
+			this.splice(index, 1);
+		}
+	};
+
+	select_list.__proto__ = Array.prototype;
+
+
+	function removeDuplicates(arr){
+		if (!Array.isArray(arr)) {
+			console.log('type error!')
+			return
+		}
+		var array = [];
+		for (var i = 0; i < arr.length; i++) {
+			if (array.indexOf(arr[i]) === -1) {
+				array.push(arr[i])
+			}
+		}
+		return array;
+	};
+</script>
+{/block}

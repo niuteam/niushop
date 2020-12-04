@@ -1,0 +1,211 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-single-filter-box {
+		background-color: transparent;
+	}
+</style>
+{/block}
+{block name="main"}
+
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" id="order_file">立即导入</button>
+		<button class="layui-btn layui-btn-primary" onclick="downloadOrder()">下载待发货订单</button>
+		<button class="layui-btn layui-btn-primary" onclick="downloadExpressTemplate()">{if $addon_is_exit == 1}下载物流公司/电子面单对照表 {else/} 下载物流公司对照表 {/if}</button>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="solution_tab">
+<!--	<ul class="layui-tab-title">-->
+<!--		<li class="layui-this" data-status="">全部</li>-->
+<!--		<li data-status="1">正常</li>-->
+<!--		<li data-status="0">禁用</li>-->
+<!--	</ul>-->
+	<div class="layui-tab-content">
+		<table id="solution_list" lay-filter="solution_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+{/block}
+
+{block name="script"}
+<script>
+	var table, form, element, repeat_flag = false;// 防重复标识
+	layui.use(['form', 'element'], function () {
+		form = layui.form;
+		element = layui.element;
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(solution_tab)', function () {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': this.getAttribute('data-status')
+				}
+			});
+		});
+
+		//允许上传的文件后缀
+		var upload = new Upload({
+			elem: '#order_file',
+			url: ns.url("shop/upload/file"),
+			accept: 'file',
+			exts: 'xlsx',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$.ajax({
+						url: ns.url("shop/orderimportfile/importOrder"),
+						data: {
+							filename: res.data.name,
+							path:res.data.path
+						},
+						dataType: 'JSON',
+						type: 'POST',
+						success: function (res) {
+							layer.msg(res.message);
+							repeat_flag = false;
+							if (res.code == 0) table.reload();
+						}
+					});
+				}
+			}
+		});
+
+		table = new Table({
+			elem: '#solution_list',
+			url: ns.url("shop/orderimportfile/lists"),
+			cols: [
+				[{
+					field: 'filename',
+					title: '文件名称',
+					unresize: 'false',
+					width:'25%'
+				}, {
+                    field: 'order_num',
+					title: '导入订单数',
+                    unresize: 'false'
+				}, {
+                    field: 'success_num',
+                    title: '成功数',
+                    unresize: 'false'
+                }, {
+                    field: 'error_num',
+                    title: '失败数',
+                    unresize: 'false'
+                }, {
+                    title: '导入时间',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return ns.time_to_date(data.create_time);
+                    }
+                }, {
+					title: '操作',
+					toolbar:'#operation',
+					unresize:'false'
+				}]
+			]
+
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function (obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'detail':
+
+					orderImportFileLog(data.id);
+					break;
+				case 'delete': //删除
+                    deleteOrderImportFile(data.id);
+					break;
+
+			}
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function (data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		/**
+		 * 删除
+		 */
+		function deleteOrderImportFile(id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除吗?', function () {
+				$.ajax({
+					url: ns.url("shop/orderimportfile/delete"),
+					data: {
+						id: id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function (res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) table.reload();
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+        /**
+         * 绑定会员
+         */
+        function orderImportFileLog(id)
+        {
+//            var url = ns.url("shop/orderimportfile/detail",{'file_id' : id});
+            location.href = ns.url("shop/orderimportfile/detail",{'file_id' : id});
+            //iframe层-父子操作
+//            var layerIndex = layer.open({
+//                title: "失败明细",
+//                type: 2,
+//                area: ['1200px', '800px'],
+//                // btn: '保存',
+//                content: url
+//            });
+        }
+
+	});
+
+	//下载待发货订单
+	function downloadOrder()
+	{
+        location.href = ns.url("shop/orderimportfile/exportDeliveryOrder");
+	}
+    //下载对照表
+    function downloadExpressTemplate()
+    {
+        location.href = ns.url("shop/orderimportfile/exportExpressTemplate");
+    }
+
+</script>
+{/block}

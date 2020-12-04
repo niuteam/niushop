@@ -1,0 +1,7 @@
+.vscode
+.settings
+.idea
+*.log
+composer.lock
+*.txt
+

@@ -1,0 +1,101 @@
+<nc-component v-bind:data="data[index]" class="top-search">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="preview-box" v-bind:style="{background: nc.backgroundColor}">
+			<!--<div class="left-img"><img v-bind:src="nc.left_img_url ? changeImgUrl(nc.left_img_url) : '{$resource_path}/search/img/category.png'" class="self-adaption"/></div>-->
+			<div class="top-search-form">
+				<input name="d_elem" type="hidden" value="{$shop_info.logo}" ref="d_elem" />
+				<div class="logo" v-if="nc.searchType == 2" :style="{backgroundImage:'url('+changeImgUrl(nc.searchImg)+')'}">
+					<!-- <img  :src="changeImgUrl(nc.imageUrl)" /> -->
+				</div>
+				<div class="top-search-box" v-bind:class="{'border-circle': nc.borderType == 2}" v-bind:style="{background: nc.bgColor, textAlign: nc.textAlign}">
+					<span class="top-search-intro" v-bind:style="{color: nc.textColor?nc.textColor:'rgba(0,0,0,0)'}">{{ nc.title }}</span>
+					<span class="top-search-icon"><i class="iconfont iconsousuo" v-bind:style="{color: nc.textColor?nc.textColor:'rgba(0,0,0,0)'}"></i></span>
+				</div>
+			</div>
+			<!--<div class="right-img"><img v-bind:src="nc.right_img_url ? changeImgUrl(nc.right_img_url) : '{$resource_path}/search/img/user.png'" class="self-adaption"/></div>-->
+		</div>
+
+	</template>
+
+	<!-- 编辑 -->
+	<template slot="edit">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">文本名</label>
+			<div class="layui-input-block">
+				<input type="text" v-model="nc.title" v-bind:id="'title_'+index" placeholder="请输入搜索内容" class="layui-input">
+			</div>
+		</div>
+		<template v-if="nc.lazyLoad">
+			<!-- <top-search></top-search> -->
+			<search-type></search-type>
+			<!-- <search-style></search-style> -->
+		</template>
+		
+		<!-- <h3 class="ns-margin-left">文本名</h3>
+		<div class="layui-form-item">
+			<input type="text" v-model="nc.title" v-bind:id="'title_'+index" placeholder="请输入搜索内容" class="layui-input ns-margin-left">
+		</div> -->
+		<div class="search_h3">
+			<h3 class="ns-margin-left">搜索样式</h3>
+			<span class="layui-nav-more"></span>
+		</div>
+		<div class="line"></div>
+		<color class="ns-margin-top" v-bind:data="{ 'defaultcolor': '#999999' }"></color>
+		<color v-bind:data="{ field : 'backgroundColor', 'label' : '背景颜色' }"></color>
+		<color v-bind:data="{ field : 'bgColor', 'label' : '框体颜色' }"></color>
+		
+		<template v-if="nc.lazyLoad">
+			<!-- <top-search></top-search> -->
+			<goods-search></goods-search>
+			<search-border></search-border>
+		</template>
+		
+	</template>
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="search_style" >
+			<div class="sytle">
+				<!-- 图一 -->
+				<div class="text-title" data-index="1" v-if="nc.searchType == 1" :class="{active:nc.searchStyle == 1}">
+					<img src="__STATIC__/ext/diyview/img/search/style3.png"/>
+				</div>
+				<div class="text-title" data-index="2" v-if="nc.searchType == 1" :class="{active:nc.searchStyle == 2}">
+					<img src="__STATIC__/ext/diyview/img/search/style4.png"/>
+				</div> 
+				<div class="text-title" data-index="1" v-if="nc.searchType == 2" :class="{active:nc.searchStyle == 1}">
+					<img src="__STATIC__/ext/diyview/img/search/style1.png"/>
+				</div>
+				<div class="text-title" data-index="2" v-if="nc.searchType == 2" :class="{active:nc.searchStyle == 2}">
+					<img src="__STATIC__/ext/diyview/img/search/style2.png"/>
+				</div> 
+				
+				<!-- <div class="text-title" onclick="changeStyle(2)" :class="{active:global.navStyle == 2}">
+					<img src="__STATIC__/ext/diyview/img/nav_style/nav_style2.png"/>
+				</div>-->
+				<!-- <div class="text-title" onclick="changeStyle(2)" :class="{active:parent.searchStyle == 1}">
+					<img src="__STATIC__/ext/diyview/img/nav_style/nav_style3.png"/>
+				</div>
+				<div class="text-title" onclick="changeStyle(3)" :class="{active:parent.searchStyle == 2}">
+					<img src="__STATIC__/ext/diyview/img/nav_style/nav_style4.png"/>
+				</div>
+				<div class="text-title" onclick="changeStyle(3)" :class="{active:parent.searchStyle == 2}">
+					<img src="__STATIC__/ext/diyview/img/nav_style/nav_style4.png"/>
+				</div> -->
+			</div>
+			
+		</div>
+	</template>
+	<!-- 资源 -->
+	<template slot="resource">
+		<js>
+			var searchResourcePath = "{$resource_path}";
+		</js>
+		<css src="{$resource_path}/search/css/design.css"></css>
+		<css src="{$resource_path}/search/css/iconfont.css"></css>
+		<js src="{$resource_path}/search/js/design.js"></js>
+		
+	</template>
+
+</nc-component>

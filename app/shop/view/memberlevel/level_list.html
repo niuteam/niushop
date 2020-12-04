@@ -1,0 +1,164 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>会员等级按照会员的成长值进行自动升级，请谨慎设置会员等级。</li>
+			<li>商城可以根据会员等级设置相应的活动优惠。</li>
+		</ul>
+	</div>
+</div>
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="addLevel()">添加等级</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入等级名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 会员等级列表 -->
+<table id="level_list" lay-filter="level_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# if(d.is_default==0){ }}
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{# } }}
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table,
+			form = layui.form,
+			repeat_flag = false; //防重复标识
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#level_list',
+			url: ns.url("shop/memberlevel/levelList"),
+			cols: [
+				[{
+					title: '会员等级',
+					width: '12%',
+					unresize: 'false',
+					templet: function (data) {
+						return "VIP"+data.LAY_INDEX;
+					}
+				}, {
+					field: 'level_name',
+					title: '等级名称',
+					width: '16%',
+					unresize: 'false'
+				}, {
+                    field: 'remark',
+                    title: '等级描述',
+                    width: '20%',
+                    unresize: 'false'
+                }, {
+					field: 'growth',
+					title: '成长值',
+					width: '12%',
+					unresize: 'false'
+				},{
+					field: 'consume_discount',
+					title: '等级折扣',
+					width: '10%',
+					unresize: 'false',
+					templet: function (data) {						
+						return data.consume_discount + "%";
+					}
+				}, {
+					title: '是否包邮',
+					width: '10%',
+					unresize: 'false',
+					templet: function (data) {
+						return data.is_free_shipping ? "是" : "否";
+					}
+				}, {
+					title: '操作',
+					width: '10%',
+					unresize: 'false',
+					toolbar: '#operation'
+				}]
+			]
+		});
+		
+		/**
+		 * 工具栏操作，编辑、删除
+		 */
+		table.tool(function(obj) {
+			var data = obj.data,
+				event = obj.event;
+				
+			switch (event) {
+				case 'edit': 
+					location.href = ns.url("shop/memberlevel/editLevel?level_id=" + data.level_id);
+					break;
+				case 'del':
+					delMemberLevel(data.level_id);
+			}
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload( {
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		// 删除方法
+		function delMemberLevel(level_ids) {
+			if(repeat_flag) return false;
+			repeat_flag = true;
+				
+			layer.confirm('确定要删除该等级吗?', function() {
+				$.ajax({
+					type: 'POST',
+					url: ns.url("shop/memberlevel/deleteLevel"),
+					data: {level_ids},
+					dataType: 'JSON',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if(res.code == 0){
+							table.reload();
+						}
+						
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+	});
+
+	/**
+	 * 点击跳转添加会员等级页面
+	 */
+	function addLevel() {
+		location.href = ns.url("shop/memberlevel/addLevel");
+	}
+</script>
+{/block}

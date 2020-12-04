@@ -1,0 +1,129 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-card:nth-child(-n+3){margin-top: 0;}
+	.ns-card-block .layui-card{background-color: #f7f9fb;box-shadow: inherit;}
+	.ns-card-block .ns-card-sev .layui-card-header{border: 0;}
+	.ns-sev-right button{margin-left: 5px;}
+	.layui-btn{height: 32px;line-height: 32px;padding: 0 12px;}
+	.layui-card{position: relative;}
+	.ns-reason-box{display: none;width: 350px;box-sizing: border-box;padding: 20px;border: 1px solid #AAAAAA;border-radius: 5px;background-color: #FFF;position: absolute;top: 80px;right: 0;z-index: 999;color: #999999;line-height: 30px;}
+	.ns-reason-box:before, .ns-reason-box:after{content: "";border: solid transparent;height: 0;position: absolute;width: 0;}
+	.ns-reason-box:before{border-width: 12px;border-bottom-color: #AAAAAA;top: -24px;right: 103px;}
+	.ns-reason-box:after{border-width: 10px;border-bottom-color: #FFF;top: -20px;right: 105px;}
+	.ns-reason {margin-left: 3px; margin-right: 3px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>申请中请联系平台客服进行审核</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form ns-card-block">
+	{foreach $service_name_arr as $service_key => $service_val}
+	<div class="layui-card ns-card-common ns-card-sev">
+		<div class="layui-card-header">
+			<div class="ns-sev-left">
+				<div class="ns-img-box">
+					{if condition="$service_val.icon"}
+					<img src="{:img($service_val.icon)}" />
+					{/if}
+				</div>
+				<div class="ns-text-box">
+					<p class="ns-card-title">{$service_val.name}</p>
+					<p class="ns-card-sub">{$service_val.desc}</p>
+				</div>
+			</div>
+			
+			<div class="ns-sev-right">
+				{if condition="$service_val.status == 1"}
+				<a class="ns-text-color" lay-submit="">已开通</a>
+				<button class="layui-btn ns-bg-color" lay-submit="" lay-filter="quit" data-key='{$service_val.key}'>退出</button>
+				{else/}
+					{if condition="$service_val.apply_status == 0"}
+					<a class="ns-text-color" lay-submit="" lay-filter="" data-key='{$service_val.key}'>申请中</a>
+					{elseif condition="$service_val.apply_status == -1"}
+					<a class="ns-red-color" lay-submit="" lay-filter="" data-key='{$service_val.key}'>平台拒绝</a>
+					<i class="iconfont iconwenhao ns-red-color ns-reason"></i>
+					<button class="layui-btn ns-bg-color" lay-submit="" lay-filter="apply" data-key='{$service_val.key}'>重新申请</button>
+					{else /}
+					<button class="layui-btn ns-bg-color" lay-submit="" lay-filter="apply" data-key='{$service_val.key}'>申请开通</button>
+					{/if}
+				{/if}
+			</div>
+		</div>
+		
+		<div class="ns-reason-box">
+			{$service_val.remark}
+		</div>
+	</div>
+	{/foreach}
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+
+		form.render();
+		
+		//申请开通
+		form.on('submit(apply)', function(data) {
+			var key = $(this).attr("data-key");
+			if (repeat_flag) return;
+			repeat_flag = true;
+			$.ajax({
+				dataType: "JSON",
+				type: "POST",
+				data: {
+					"service_key": key
+				},
+				url: ns.url("shop/shopservice/apply"),
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			})
+		});
+		//退出
+		form.on('submit(quit)', function(data) {
+			var key = $(this).attr("data-key");
+			if (repeat_flag) return;
+			repeat_flag = true;
+			layer.confirm('确定要退出吗?', function() {
+				$.ajax({
+					dataType: "JSON",
+					type: "POST",
+					data: {
+						"service_key": key
+					},
+					url: ns.url("shop/shopservice/quit"),
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							location.reload();
+						}
+					}
+				})
+			});
+
+		});
+		
+		$(".ns-reason").hover(function(e) {
+			$(this).parents(".layui-card").find(".ns-reason-box").show().stop();
+		}, function() {
+			$(this).parents(".layui-card").find(".ns-reason-box").hide().stop();
+		});
+	});
+</script>
+{/block}

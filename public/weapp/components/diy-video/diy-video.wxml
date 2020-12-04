@@ -1,0 +1,1 @@
+<block wx:if="{{value.url!=''}}"><view style="{{'padding:'+(value.padding+'rpx 0')+';'}}"><video id="{{value.id}}" src="{{$root.g0}}"></video></view></block>

@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

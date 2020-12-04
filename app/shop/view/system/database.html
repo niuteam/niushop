@@ -1,0 +1,276 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="__STATIC__/loading/msgbox.css">
+<style>
+	.ns-data-table {
+		border-width: 0 !important;
+	}
+
+	.ns-data-table[lay-size=lg] th,
+	.ns-data-table[lay-size=lg] td {
+		padding: 15px 15px;
+	}
+	.ns-data-table[lay-size=lg] th{
+		border: 0;
+	}
+
+	.ns-data-table[lay-size=lg] .ns-check-box {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.ns-check-box .layui-form {
+		text-align: center;
+	}
+
+	.layui-form-checkbox[lay-skin=primary] {
+		padding-left: 0;
+	}
+
+	.layui-table tr .toolbar a {
+	    display: inline-block;
+	    height: 23px;
+	    line-height: 23px;
+	    border-radius: 50px;
+	    background-color: #F3F3F3;
+	    font-size: 13px;
+	    color: #5A5A5A;
+	    text-align: center;
+	    padding: 2px 8px;
+	    margin: 5px;
+	}
+	
+	.layui-table tr .toolbar a:hover {
+	    color: #fff !important;
+	    background-color: #4685FD;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>展示数据库中所有的表</li>
+			<li>可以对表进行恢复、备份操作</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button type="button" class="layui-btn ns-bg-color" lay-filter="backups" lay-submit>备份</button>
+<!--	<button type="button" class="layui-btn ns-bg-color" lay-filter="datarepair" lay-submit>恢复</button>-->
+</div>
+
+<table class="layui-table ns-data-table" lay-skin="line" lay-size="lg">
+	<colgroup>
+		<col width="3%">
+		<col width="30%">
+		<col width="21%">
+		<col width="21%">
+		<col width="25%">
+		<!-- <col width="10%"> -->
+	</colgroup>
+	<thead>
+		<tr>
+			<th class="ns-check-box">
+				<div class="layui-form">
+					<input type="checkbox" class="selectAll" name="" lay-filter="selectAll" lay-skin="primary">
+				</div>
+			</th>
+			<th>表名</th>
+			<th>数据量</th>
+			<th>数据大小</th>
+			<th>创建时间</th>
+			<!-- <th class="toolbar">操作</th> -->
+		</tr>
+	</thead>
+	<tbody>
+		{foreach name=$list as $list_k => $list_v}
+		<tr>
+			<td class="ns-check-box">
+				<div class="layui-form">
+					<input type="checkbox" name="" lay-filter="select{$list_k}" lay-skin="primary">
+				</div>
+			</td>
+			<td class="ns-data-table-name">{$list_v.Name}</td>
+			<td class="ns-data-table-num">{$list_v.Rows}</td>
+			<td class="data-length">
+				<input type="hidden" value="{$list_v.Data_length / 1024}" />
+			</td>
+			<td>{$list_v.Create_time}</td>
+			<!-- <td class="toolbar">
+				<a class="default" lay-filter="tablerepair" lay-submit>恢复</a>
+			</td> -->
+		</tr>
+		{/foreach}
+	</tbody>
+</table>
+{/block}
+{block name="script"}
+<script type="text/javascript" src="__STATIC__/loading/msgbox.js"></script>
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false;
+		form.render();
+
+		$(".data-length").each(function(i) {
+			var data = $(this).find("input").val();
+			var dataNew = Math.round(data * 100) / 100;
+			$(this).text(dataNew + "KB");
+		});
+
+		/**
+		 * 监听全选按钮
+		 */
+		form.on('checkbox(selectAll)', function(data) {
+			if (data.elem.checked) {
+				$("tr .ns-check-box input:checkbox").each(function() {
+					$(this).prop("checked", true);
+				});
+			} else {
+				$("tr .ns-check-box input:checkbox").each(function() {
+					$(this).prop("checked", false);
+				});
+			}
+			form.render();
+		});
+
+		/**
+		 * 监听每一行的多选按钮
+		 */
+		var len = $("tbody tr").length;
+		for (var i = 0; i < len; i++) {
+			form.on('checkbox(select' + i + ')', function(data) {
+				if ($("tbody tr input:checked").length == len) {
+					$("input[lay-filter='selectAll']").prop("checked", true);
+				} else {
+					$("input[lay-filter='selectAll']").prop("checked", false);
+				}
+
+				form.render();
+			});
+		}
+
+		/**
+		 * 监听备份
+		 */
+		form.on('submit(backups)', function() {
+			var _selected = [];
+
+			$("tbody tr input:checked").each(function() {
+				_selected.push($(this).parents("td").siblings(".ns-data-table-name").text());
+			});
+
+			if (_selected.length == 0) {
+				layer.msg('请选择需要备份的数据表！');
+				return;
+			}
+
+			layer.confirm('是否备份?', function(index){
+				$.ajax({
+					url: ns.url("shop/system/backup"),
+					data: {
+						"tables": _selected
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.close(index);
+						if (res.status == 1 && res.message == "初始化成功") {
+							backup(res.tab);
+							ZENG.msgbox.show(res.message, 4, 3000);
+							return;
+						} else {
+							ZENG.msgbox.show(res.message, 5);
+						}
+					}
+				});
+			});
+		});
+
+		//备份数据库
+		function backup(tab, status) {
+			$.ajax({
+				url: ns.url("shop/system/backup"),
+				data: {
+					"id": tab.id,
+					"start": tab.start
+				},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					ZENG.msgbox.show("正在备份数据库，请不要关闭窗口", 6);
+
+					if (res.status == 1) {
+						if (!$.isPlainObject(res.tab)) {
+							ZENG.msgbox.show(res.message, 5);
+							return;
+						}else{
+							ZENG.msgbox.show("正在处理"+ res.tab.table +' ...', 6);
+						}
+						backup(res.tab, res.id != res.tab.id);
+					} else {
+						if(res.status == -1){
+							ZENG.msgbox.show(res.message, 5);
+						}else{
+							ZENG.msgbox.show("备份完成", 4, 3000);
+						}
+					}
+				}
+			});
+		}
+
+		/**
+		 * 监听数据表恢复
+		 */
+		form.on('submit(tablerepair)', function() {
+			var table_name = $(this).parents("tr").find(".ns-data-table-name").text();
+			repair(table_name);
+		});
+
+		/**
+		 * 批量操作
+		 */
+		form.on('submit(datarepair)', function() {
+			var tables = [];
+
+			$("tbody tr input:checked").each(function() {
+				tables.push($(this).parents("td").siblings(".ns-data-table-name").text());
+			});
+
+			if (tables.length == 0) {
+				layer.msg('请选择需要恢复的数据表！');
+				return;
+			}
+
+			repair(tables.toString());
+		});
+
+		function repair(tables) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要恢复改数据表吗?', function() {
+				$.ajax({
+					type: 'POST',
+					dataType: 'JSON',
+					url: ns.url("shop/system/tablerepair"),
+					data: {
+						"tables": tables
+					},
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+	})
+</script>
+{/block}

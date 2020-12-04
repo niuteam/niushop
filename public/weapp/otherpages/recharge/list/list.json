@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-payment": "/components/payment/payment"
+  }
+}

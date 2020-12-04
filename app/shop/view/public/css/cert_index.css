@@ -1,0 +1,41 @@
+.ns-body-content{
+    padding: 0;
+    margin: 10px;
+    background-color: #fff;
+}
+
+.cert-box{margin: auto;width: 720px;}
+/* 公共*/
+h2.apply-h2-title{margin-top: 80px;margin-bottom: 80px;font-size:34px;font-weight:400;color:rgba(93,93,93,1);text-align: center;}
+.apply-btn-box{margin-top: 50px;margin-bottom: 30px;text-align: center;}
+.ns-dis-input{background-color: #f7f7f7; cursor: no-drop;}
+.ns-dis-input:hover{border-color: #e6e6e6 !important;}
+/* 选择店铺等级 */
+.store-level{padding: 0 50px 50px;margin: auto;display: flex;flex-wrap: wrap;justify-content: center;}
+.store-level > li:first-of-type{margin-left: 0;}
+.store-level > li{margin-bottom: 30px;margin-left: 20px;padding: 50px 35px 30px;width: 260px;text-align: center;background-color: #fff;box-sizing: border-box;border: 1px solid #E9E9E9;border-radius: 2px;}
+.store-level > li:hover{border-color: transparent; box-shadow: 0 0 20px 0 rgba(0,0,0,.07);}
+.store-level .group_name{margin: 10px;font-size: 18px;font-weight: 400;line-height: 25px;color: #323233;}
+.store-level .remark{display: inline-block;margin: 0 -10px 20px;font-size: 12px;line-height: 19px;color: #646566;}
+.store-level-sublevel{padding-top: 20px;border-top: 1px solid #f2f2f2;}
+.store-level-sublevel li{text-align: left;height: 28px;line-height: 28px;color: #646566;}
+.store-level-sublevel li .is-checked{color: #ccc;}
+.store-level button{margin-top: 25px;}
+/* 申请类型*/
+.application-type h2{margin-bottom: 80px;height:34px;font-size:34px;font-weight:400;color:rgba(93,93,93,1);}
+.application-type .cert-type{display: flex;justify-content: center;}
+.application-type .cert-type li{margin-left: 40px;text-align: center;}
+.application-type .cert-type li:first-of-type{margin-left: 0;}
+.application-type .cert-type li{font-size: 16px;color: #D0D0D0;cursor: pointer;}
+.application-type .cert-type .cert-img-box{overflow: hidden;width: 81px;height: 81px;margin-bottom: 10px;}
+.application-type .cert-type .cert-img-box img{position: relative;}
+.application-type li:first-of-type img{left: -91px;}
+h2.apply-h2-title{margin-bottom: 80px;height:34px;font-size:34px;font-weight:400;color:rgba(93,93,93,1);text-align: center;}
+/* 审核*/
+.audit-status .status{display: flex;flex-direction: column;justify-content: center;align-items: center;margin-bottom: 100px;}
+.audit-status .status span{font-weight:400;color:rgba(93,93,93,1);}
+.audit-status .status-pic{margin-right: 5px;margin-bottom: 10px;width: 100px;height: 100px;line-height: 100px;text-align: center;}
+.audit-status .status-pic img{max-height: 100%;max-width: 100%;}
+/* 开店成功*/
+.shop-succeey{position: relative;top: 0;bottom: 0;left: 0;right: 0;margin: auto;text-align: center;}
+.shop-succeey p{font-size: 16px;margin-top: 20px;}

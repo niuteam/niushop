@@ -1,0 +1,98 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_menu.css">
+<script src="WECHAT_JS/common.js"></script>
+{/block}
+{block name="body"}
+	<!-- 内容 -->
+	{if $type == 1}
+	<div class="layui-tab layui-tab-brief" id="marterial_graphic_message">
+		<ul class="layui-tab-title">
+			<li class="layui-this">图文消息</li>
+			<!-- <li>高级图文</li> -->
+		</ul>
+		<div class="layui-tab-content">
+			<div class="layui-tab-item layui-show">
+				<table id="marterial_graphic_message_list" lay-filter="marterial_graphic_message"></table>
+				<!-- 标题 -->
+				<script type="text/html" id="graphic_message_title">
+					<div class="layui-row grid-demo">
+					{{# for (var index in d.value) { }}
+	     			 	<div class="layui-col-md12 layui-clear">
+							<div class="layui-col-md3 article-img" style="float:left;">
+								<span class="ns-bg-color" style="color: #fff;padding: 2px 4px">图文</span>&nbsp;&nbsp;
+							</div>
+							<div class="layui-col-md3 title" style="float:left;">
+								<a href="javascript:void(0);" onclick="preview({{d.id}}, {{index}})">{{d.value[index].title}}</a>
+							</div>
+						</div>
+					{{# } }}
+					{{# if (d.value.length == 1) { }}
+						<div class='layui-col-md12 read-all layui-clear' onclick="preview({{d.id}})">
+							<div class='layui-col-md4' style="float:left;">阅读全文</div>
+							<div class='layui-col-md4 layui-col-md-offset4'>  </div>
+						</div>
+					{{# } }}
+					</div>
+				</script>
+				<!-- 创建时间 -->
+				<script type="text/html" id="create_time">
+					<div>{{ ns.time_to_date(d.create_time) }}</div>
+				</script>
+				<!-- 修改时间 -->
+				<script type="text/html" id="update_time">
+					<div>{{ ns.time_to_date(d.update_time) }}</div>
+				</script>
+				<!-- 列表操作 -->
+				<script type="text/html" id="operation">
+					<a class="default layui-btn-sm" lay-event="choose">选取</a>
+				</script>
+			</div>
+		</div>
+	</div>
+	{else/}
+
+	<!-- 文本消息 -->
+	<div class="layui-tab layui-tab-brief" id="material_text">
+		<ul class="layui-tab-title">
+			<li class="layui-this">文本消息</li>
+		</ul>
+		<div class="layui-tab-content">
+			<div class="layui-tab-item layui-show">
+				<table id="material_text_list" lay-filter="material_text"></table>
+				<!-- 内容 -->
+				<script type="text/html" id="text_content">
+					<div class="layui-row grid-demo">
+						<div class="layui-col-md12 layui-clear">
+							<div class="layui-col-md12 article-img" style="text-align: left;">
+								<span class="ns-bg-color" style="color: #fff;padding: 2px 4px">文本</span>&nbsp;&nbsp;
+							</div>
+							<div class="layui-col-md12 title ns-line-hiding" style="float:left;">
+								<a href="javascript:void(0);" onclick="previewText('{{d.value.content}}')" title="{{d.value.content}}">{{d.value.content}}</a>
+							</div>
+						</div>
+					</div>
+				</script>
+				<!-- 创建时间 -->
+				<script type="text/html" id="create_time">
+					<div>{{ ns.time_to_date(d.create_time) }}</div>
+				</script>
+				<!-- 修改时间 -->
+				<script type="text/html" id="update_time">
+					<div>{{ ns.time_to_date(d.update_time) }}</div>
+				</script>
+				<!-- 列表操作 -->
+				<script type="text/html" id="operation">
+					<a class="default layui-btn-sm" lay-event="choose">选取</a>
+				</script>
+			</div>
+		</div>
+	</div>
+	{/if}
+{/block}
+{block name="script"}
+<script type="text/javascript" src="WECHAT_JS/wx_material_mannager.js"></script>
+<script type="text/javascript">
+    loadMaterialList({$type});
+</script>
+{/block}

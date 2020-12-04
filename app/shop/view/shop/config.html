@@ -1,0 +1,285 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div  class="layui-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">网站标题：</label>
+		<div class="layui-input-inline">
+			<input type="text" name="site_name" autocomplete="off" value="{$shop_info.site_name}" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label img-upload-lable">网站logo：</label>
+		<div class="layui-input-block img-upload">
+			<div class="upload-img-block">
+				<div class="upload-img-box {if condition="$shop_info.logo"}hover{/if} ">
+					<div class="ns-upload-default" id="logoUpload">
+						{if condition="$shop_info.logo"}
+							<div id="preview_logoUpload" class="preview_img">
+								<img layer-src src="{:img($shop_info.logo)}" class="img_prev"/>
+							</div>
+						{else/}
+						<div class="upload">
+							<img src="SHOP_IMG/upload_img.png" />
+							<p>点击上传</p>
+						</div>
+							
+						{/if}
+					</div>
+					<div class="operation"  >
+						<div >
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="logo" value="{$shop_info.logo}"/>
+				</div>
+				<!-- <p id="logoUpload" class=" {if condition="$shop_info.logo"} replace {else/} no-replace{/if}">替换</p>
+				<input type="hidden" name="logo" value="{$shop_info.logo}"/>
+				<i class="del {if condition="$shop_info.logo"}show{/if}">x</i> -->
+			</div>
+		</div>
+
+		<div class="ns-word-aux">
+			<p>建议图片尺寸：200*60像素；图片格式：jpg、png、jpeg。</p>
+		</div>
+	</div>
+
+	<!--<div class="layui-form-item">-->
+		<!--<label class="layui-form-label img-upload-lable">店铺头像：</label>-->
+		<!--<div class="layui-input-block img-upload">-->
+			<!--<div class="upload-img-block square">-->
+				<!--<div class="upload-img-box" id="avatarUpload">-->
+					<!--{if condition="$shop_info.avatar"}-->
+						<!--<img src="{:img($shop_info.avatar)}" />-->
+					<!--{else/}-->
+						<!--<div class="ns-upload-default">-->
+							<!--<img src="SHOP_IMG/upload_img.png" />-->
+							<!--<p>点击上传</p>-->
+						<!--</div>-->
+					<!--{/if}-->
+				<!--</div>-->
+			<!--</div>-->
+			<!--<input type="hidden" name="banner" value="{$shop_info.banner}"/>-->
+		<!--</div>-->
+
+		<!--<div class="ns-word-aux">-->
+			<!--<p>建议图片尺寸：800*800像素；图片格式：jpg、png、jpeg。</p>-->
+		<!--</div>-->
+	<!--</div>-->
+
+	<!--<div class="layui-form-item">-->
+		<!--<label class="layui-form-label img-upload-lable">店铺大图：</label>-->
+		<!--<div class="layui-input-block img-upload">-->
+			<!--<div class="upload-img-block">-->
+				<!--<div class="upload-img-box" id="bannerUpload">-->
+					<!--{if condition="$shop_info.avatar"}-->
+						<!--<img src="{:img($shop_info.banner)}" />-->
+					<!--{else/}-->
+						<!--<div class="ns-upload-default">-->
+							<!--<img src="SHOP_IMG/upload_img.png" />-->
+							<!--<p>点击上传</p>-->
+						<!--</div>-->
+					<!--{/if}-->
+				<!--</div>-->
+			<!--</div>-->
+			<!--<input type="hidden" name="avatar" value="{$shop_info.avatar}"/>-->
+		<!--</div>-->
+		<!--<div class="ns-word-aux">-->
+			<!--<p>建议图片高度：150像素；图片格式：jpg、png、jpeg。</p>-->
+		<!--</div>-->
+	<!--</div>-->
+	<div class="layui-form-item">
+		<label class="layui-form-label">网站描述：</label>
+		<div class="layui-input-block">
+			<textarea name="seo_description" class="layui-textarea ns-len-long">{$shop_info.seo_description}</textarea>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">网站关键字：</label>
+		<div class="layui-input-block">
+			<input type="text" name="seo_keywords" autocomplete="off" value="{$shop_info.seo_keywords}" class="layui-input ns-len-long">
+			<span class="layui-word-aux">多个关键字之间用英文“,”隔开</span>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">手机网页端域名：</label>
+		<div class="layui-input-block">
+			<input type="text" name="domain_name" autocomplete="off" value="{$domain_name_h5}" class="layui-input ns-len-long">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">商城状态：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="shop_status" value="1" title="开启" {if isset($shop_status) && $shop_status == 1} checked {/if}>
+			<input type="radio" name="shop_status" value="0" title="关闭" {if isset($shop_status) && $shop_status == 0} checked {/if}>
+		</div>
+		<div class="ns-word-aux">
+			<p>商城状态为关闭时，用户将无法访问商城</p>
+		</div>
+	</div>
+	<!--<div class="layui-form-item">-->
+		<!--<label class="layui-form-label">工作日：</label>-->
+		<!--<div class="layui-input-block" id="work_week">-->
+			<!--<input type="checkbox" name="work_week1" value="1" title="周一" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week2" value="2" title="周二" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week3" value="3" title="周三" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week4" value="4" title="周四" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week5" value="5" title="周五" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week6" value="6" title="周六" lay-skin="primary">-->
+			<!--<input type="checkbox" name="work_week7" value="7" title="周日" lay-skin="primary">-->
+		<!--</div>-->
+	<!--</div>-->
+	<!--<div class="layui-form-item">-->
+	<!--<div class="layui-inline">-->
+		<!--<label class="layui-form-label">营业时间：</label>-->
+		<!--<div class="layui-input-inline">-->
+			<!--<input type="text" class="layui-input" id="start_time" placeholder="开始时间" autocomplete="off" value="{if $shop_info.start_time} {$shop_info.start_time} {/if}" readonly>-->
+			<!--<i class="ns-calendar"></i>-->
+			<!--<input type="hidden" class="layui-input start-time" name="start_time">-->
+		<!--</div>-->
+		<!--<div class="layui-input-inline">-</div>-->
+		<!--<div class="layui-input-inline">-->
+			<!--<input type="text" class="layui-input" id="end_time" placeholder="结束时间" autocomplete="off" value="{if $shop_info.end_time} {$shop_info.end_time} {/if}" readonly>-->
+			<!--<i class="ns-calendar"></i>-->
+			<!--<input type="hidden" class="layui-input end-time" name="end_time">-->
+		<!--</div>-->
+	<!--</div>-->
+	<!--</div>-->
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	/**
+	 * 初始化营业时间
+	 */
+	var startTime = "{$shop_info.start_time}",
+			endTime = "{$shop_info.end_time}";
+	if (Number(startTime)){
+		$("#start_time").val(ns.time_to_date(startTime, "h:m:s"));
+		$(".start-time").val(startTime);
+	}
+
+	if (Number(endTime)){
+		$("#end_time").val(ns.time_to_date(endTime, "h:m:s"));
+		$(".end-time").val(endTime);
+	}
+
+	layui.use(['form', 'laydate'], function(){
+		var form = layui.form,
+			laydate = layui.laydate,
+			repeat_flag = false; //防重复标识
+			
+		form.render();
+
+		//初始化工作日
+		var workWeek = "{$shop_info.work_week}",
+				workArr = workWeek.split(",");
+
+		for (var i = 0; i < workArr.length; i++){
+			$("input[name=work_week"+ workArr[i] +"]").prop("checked",true);
+		}
+
+		//获取 - 开始时间
+		var start_hours, start_minutes, start_seconds;
+		laydate.render({
+			elem: '#start_time',
+			type: 'time',
+			done: function(value, date){
+				start_hours = date.hours;
+				start_minutes = date.minutes;
+				start_seconds = date.seconds;
+				$(".start-time").val(ns.date_to_time(date.year + "-" + date.month + "-" + date.date + " " + date.hours + ":" + date.minutes + ":" + date.seconds))
+			}
+		});
+
+		//获取 - 结束时间
+		laydate.render({
+			elem: '#end_time',
+			type: 'time',
+			done: function(value, date){
+				$(".end-time").val(ns.date_to_time(date.year + "-" + date.month + "-" + date.date + " " + date.hours + ":" + date.minutes + ":" + date.seconds))
+			}
+		});
+
+		form.render();
+
+		form.on('submit(save)', function(data){
+
+			//工作日
+			var week_arr = [];
+			$("#work_week input").each(function () {
+				if ($(this).is(":checked")) {
+					week_arr.push($(this).val());
+				}
+			});
+
+			data.field.work_week = week_arr.toString();
+
+			// 删除图片
+			if(!data.field.logo) logo_upload.delete();
+
+			// if ($("#start_time").val() > $("#end_time").val()) {
+			// 	layer.msg("结束时间不能小于开始时间！");
+			// 	return;
+			// }
+
+			if (repeat_flag) return;
+			repeat_flag = true;
+			$.ajax({
+				type: 'POST',
+				url: ns.url("shop/shop/config"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+
+		// 店铺LOGO
+		var logo_upload = new Upload({
+			elem: '#logoUpload'
+		});
+
+
+		// 店铺头像
+		// var avatar_upload = new Upload({
+		// 	elem: '#avatarUpload'
+		// });
+		//
+		// // 店铺大图
+		// var banner_upload = new Upload({
+		// 	elem: '#bannerUpload'
+		// });
+
+	});
+	
+	$("input[name='domain_name']").change(function(){
+		var domain_name = $("input[name='domain_name']").val();
+		$.ajax({
+			type: 'POST',
+			url: ns.url("shop/config/h5DomainName"),
+			data:{
+				"domain_name" : domain_name
+			},
+			dataType: 'JSON',
+			success: function(res) {
+				layer.msg(res.message);
+			}
+		})
+	})
+</script>
+{/block}

@@ -1,0 +1,82 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {
+	    margin-top: 0;
+	}
+	.ns-text-color-red:hover {
+		color: red;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>注销开关开启时会员才可申请注销</li>
+			<li>审核开关开启时，会员注销时需要审核；如果关闭审核开关，会员注销将直接注销成功。</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label ">是否允许注销：</label>
+		<div class="layui-input-block" id="isReg">
+			<input type="checkbox" name="is_enable" value="1" lay-filter="is_enable" lay-skin="switch" {if condition="$value.is_enable == 1"} checked {/if} >
+		</div>
+		<div class="ns-word-aux">设置为关闭，则无法注销会员账号</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label ">注销审核：</label>
+		<div class="layui-input-block" >
+			<input type="checkbox" name="is_audit" value="1"  lay-filter="is_enable" lay-skin="switch" {if condition="$value.is_audit== 1"} checked {/if} >
+		</div>
+		<div class="ns-word-aux">设置为关闭，会员将直接注销成功。</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button type="button" class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复
+		form.render();
+
+		form.on('submit(save)', function(data) {
+		    field = data.field;
+			if (field.is_enable == undefined) {
+				field.is_enable = 0;
+			}
+
+            if (field.is_audit == undefined) {
+                field.is_audit = 0;
+            }
+
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("membercancel://shop/membercancel/cancelConfig"),
+				data: field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+		
+	});
+</script>
+{/block}

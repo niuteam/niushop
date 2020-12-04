@@ -1,0 +1,397 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_fans.css">
+{/block}
+{block name="main"}
+
+<div class="nc-function-search"  lay-filter="search_form">
+	<button class="layui-btn layui-btn-xs nc-mb15" onclick="refresh()">同步粉丝信息</button>
+	<div class="layui-form">
+		<div class="layui-input-inline nc-len-small">
+			<select name="is_subscribe">
+				<option value="">全部</option>
+				<option value="1">已关注</option>	
+				<option value="0">取消关注</option>
+			</select>
+		</div>
+		<div class="layui-input-inline" >
+			<input type="text" name="nickname" placeholder="请输入粉丝名称" autocomplete="off" class="layui-input nc-len-small">
+		</div>
+		
+		<button class='layui-btn layui-btn-primary' lay-submit lay-filter="searchForm">筛选</button>
+	</div>
+	<!-- <div class="ns-form-row sm">
+		<button class='layui-btn' lay-submit lay-filter="searchForm">筛选</button>
+		<button type="reset" class='reset nc-text-color' onclick="reset()">重置搜索条件</button>
+	</div> -->
+</div>
+
+<div class="progress-layer">
+	<h3>正在同步中，已完成...</h3>
+	<div class="layui-progress layui-progress-big" lay-showPercent="true" lay-filter="progress">
+		<div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+	</div>
+</div>
+<div class="nc-table-box">
+    <table id="wechat_fans" lay-filter="wechat_fans" class="layui-table"></table>
+</div>
+<script type="text/html" id="nickname">
+	<span>{{ d.nickname }}</span>
+	<div class="tag-list">
+		{{# if(d.tagid_list_arr != undefined) { }}
+			{{# for(var i = 0;i < d.tagid_list_arr.length; i++){ }}
+				<span class="nc-bg-color">{{ d.tagid_list_arr[i].tag_name }}</span>
+			{{# } }}
+		{{# } }}
+	</div>
+</script>
+<script type="text/html" id="headimgurl">
+	<div class="headimg-box">
+		<img src="{{d.headimgurl}}"/>
+	</div>
+</script>
+<script type="text/html" id="address">
+	<div>{{d.address}}</div>
+</script>
+<script type="text/html" id="is_subscribe">
+	{{#  if(d.is_subscribe==1){ }}
+	<span>已关注</span>
+	{{#  } else { }}
+	<span>已取消关注</span>
+	{{#  } }}
+</script>
+<script type="text/html" id="subscribe_time">
+	<div>{{ ns.time_to_date(d.subscribe_time)}}</div>
+</script>
+<script type="text/html" id="unsubscribe_time">
+	<div>{{ ns.time_to_date(d.unsubscribe_time)}}</div>
+</script>
+<script type="text/html" id="operation">
+	<a class="default" lay-event="tagging">打标签</a>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-filter="sync" lay-submit>同步信息</button>
+	<button class="layui-btn layui-btn-primary" lay-filter="tagging" lay-submit>打标签</button>
+</script>
+
+<script type="text/html" id="selectTags">
+	<div class="layui-form" lay-filter="selectTags">
+    	{notempty name="tag_list"}
+        <div class="layui-form-item">
+            <div class="layui-input-inline">
+        		{foreach name="tag_list" item="vo"}
+        			<input type="checkbox" name="tagId" value="{$vo.tag_id}" lay-skin="primary" title="{$vo.tag_name}" {{ $.inArray('{$vo.tag_id}', d.checkedIds) >= 0 ? 'checked disabled' : '' }}>
+        		{/foreach}
+            </div>
+        </div>
+    	{/notempty}
+        <div class="layui-form-mid layui-word-aux">
+        	<a href="{:addon_url('Wechat://shop/fans/fansTag')}" class="default">新建标签</a>
+        </div>
+        <div class="layui-form-item align-center">
+            <button class="layui-btn" lay-submit="" lay-filter="taggingSubmit">保存</button>
+            <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="selectTagsAlone">
+	<div class="layui-form" lay-filter="selectTagsAlone">
+    	{notempty name="tag_list"}
+        <div class="layui-form-item">
+            <div class="layui-input-inline">
+        		{foreach name="tag_list" item="vo"}
+        			<input type="checkbox" name="tagId" value="{$vo.tag_id}" lay-skin="primary" title="{$vo.tag_name}" {{ $.inArray('{$vo.tag_id}', d.checkedIds) >= 0 ? 'checked' : '' }}>
+        		{/foreach}
+            </div>
+        </div>
+    	{/notempty}
+    	<input type="hidden" name="openid" value="{{d.openid}}">
+    	<input type="hidden" name="tagid_list" value="{{d.tagid_list}}">
+        <div class="layui-form-mid layui-word-aux">
+        	<a href="{:addon_url('Wechat://shop/fans/fansTag')}" class="default">新建标签</a>
+        </div>
+        <div class="layui-form-item align-center">
+            <button class="layui-btn" lay-submit="" lay-filter="taggingAloneSubmit">保存</button>
+            <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+        </div>
+    </div>
+</script>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+	var page_index = 0,
+		page_count = 0,
+		progress_element,
+		form,
+		laydate,
+		laytpl;
+	
+	var table = new Table({
+		elem : '#wechat_fans',
+		filter: "wechat_fans",
+		url : "{:addon_url('Wechat://shop/fans/index')}",
+		cols : [[
+			{type : 'checkbox',width: '3%',unresize : 'true'},
+			{field : 'headimgurl', title : '粉丝头像', templet : '#headimgurl', width: '9%', minWidth: '100px',unresize : 'true'},
+			{field : 'nickname', title : '粉丝名称', templet: '#nickname', width: '20%', minWidth: '150px',unresize : 'true'},
+			{field : 'address', title : '地址', templet: '#address', width: '20%', minWidth: '300px',unresize : 'true'},
+			{field : 'is_subscribe', title : '关注状态', templet : '#is_subscribe', width: '9%', minWidth: '100px',unresize : 'true'},
+			{field : 'subscribe_time', title : '关注时间', templet: '#subscribe_time', width: '15%', minWidth: '150px',unresize : 'true'},
+			{field : 'unsubscribe_time', title : '取消关注时间', templet: '#unsubscribe_time', width: '15%', minWidth: '150px',unresize : 'true'},
+			{title : '操作', toolbar : '#operation',unresize : 'true',align: 'right' }
+		]],
+		bottomToolbar : "#batchOperation"
+	});
+	
+	table.tool(function(obj){
+		var data = obj.data;
+		switch (obj.event) {
+			case 'tagging':
+				var checkedIds = [];
+				if (data.tagid_list != '') checkedIds = data.tagid_list.split(',');
+				laytpl($("#selectTagsAlone").html()).render({checkedIds : checkedIds, openid : data.openid, tagid_list : data.tagid_list}, function(html){
+					layer.open({
+						type: 1,
+						title: '选择标签',
+						skin: 'layer-tips-class',
+						area: ['550px','auto'],
+						content: html
+					});
+					form.render();
+				});
+				break;
+		}
+	});
+
+	layui.use([ 'form', 'laydate', 'laytpl'], function() {
+		form = layui.form;
+		laydate = layui.laydate;
+		progress_element = layui.element;
+		laytpl = layui.laytpl;
+		form.render();
+
+		var daterange = '{:date("Y-m-d h:m:s", strtotime("-6 days"))} 至 {:date("Y-m-d h:m:s")}';
+		//渲染时间
+	    laydate.render({
+			elem: '#daterange'
+			,type: 'datetime'
+			,range: '至'
+			,value: daterange
+		});
+		
+		form.on('submit(searchForm)', function(data){
+			var strs = $("#daterange").val().split(" - ");
+			var field = data.field;
+			field.start_time = strs[0];
+			field.end_time = strs[1];
+			table.reload({
+				where: field,
+				page: {
+					curr : 1
+				}
+			});
+			return false;
+		});
+
+		// 同步粉丝信息
+		form.on('submit(sync)', function(data){
+			var checkStatus = table.checkStatus();
+            if (checkStatus.data.length > 0) {
+            } else {
+            	refresh();
+            }
+		});
+
+		// 给粉丝打标签
+		form.on('submit(tagging)', function(data){
+			var checkStatus = table.checkStatus();
+            if (checkStatus.data.length > 0) {
+            	var checkedIds = [];
+            	$.each(checkStatus.data, function (index, el) {
+            		if(el.tagid_list != '') {
+            			checkedIds = concat(checkedIds, el.tagid_list.split(','));
+            		}
+            	});
+            	laytpl($("#selectTags").html()).render({checkedIds : checkedIds}, function(html){
+			        layer.open({
+			            type: 1,
+			            title: '选择标签',
+			            skin: 'layer-tips-class',
+			            area: ['550px','auto'],
+			            content: html
+			        });
+			        form.render();
+			    });
+            } else {
+            	layer.msg('请选择要操作的数据');
+            }
+		});
+
+		// 批量为粉丝设置标签
+		form.on('submit(taggingSubmit)', function(data){
+			var tagidArr =[], openidArr = [];
+			$('[lay-filter="selectTags"] [name="tagId"]:checked').each(function(index, el) {
+				tagidArr.push($(el).val()); 
+			});
+			var checkStatus = table.checkStatus();
+            if (checkStatus.data.length > 0) {
+            	$.each(checkStatus.data, function (index, el) {
+            		openidArr.push(el.openid);
+            	})
+            }
+            if (openidArr.length) {
+	            $.ajax({
+			        type : "post",
+			        async : false,
+			        url : '{:addon_url("Wechat://shop/fans/fansBatchTagging")}',
+			        dataType: 'json',
+			        data : {
+		        		tag_id : tagidArr.toString(),
+		        		openid : openidArr.toString()
+			        },
+			        success:function(res){
+			        	back();
+			            layer.msg(res.message);
+			            if(res.code == 0){
+			           		table.reload();
+			            }
+			        }
+			    })
+            }
+		});
+
+		form.on('submit(taggingAloneSubmit)', function(data){
+			var tagidArr = [], cancelTagidArr = [], 
+				original = data.field.tagid_list != '' ? data.field.tagid_list.split(',') : [];
+
+			$('[lay-filter="selectTagsAlone"] [name="tagId"]:checked').each(function(index, el) {
+				tagidArr.push($(el).val()); 
+			});
+
+			if (tagidArr.length != original.length) {
+				if (tagidArr.length == 0) {
+					cancelTagidArr = original;
+				} else {
+					original.forEach(function(val){
+						if ($.inArray(val, tagidArr) < 0) {
+							cancelTagidArr.push(val);
+						}
+					})
+				} 
+				$.ajax({
+			        type : "post",
+			        async : false,
+			        url : '{:addon_url("Wechat://shop/fans/fansTagging")}',
+			        dataType: 'json',
+			        data : {
+			        	tagid_list : tagidArr.toString(),
+			        	cancel_tagid_list : cancelTagidArr.toString(),
+		        		openid : data.field.openid
+			        },
+			        success:function(res){
+			        	back();
+			            layer.msg(res.message);
+			            if(res.code == 0){
+			           		table.reload();
+			            }
+			        }
+			    })
+			}
+		});
+	});
+
+	// 更新粉丝列表
+	var repeat_flag = false;//防重复标识
+	function refresh() {
+		if(repeat_flag) return;
+		repeat_flag = true;
+		$.ajax({
+			type : "post",
+			url : "{:addon_url('Wechat://shop/fans/updateWchatFansList')}",
+			data : {
+				"page" : page_index,
+			},
+			dataType : "JSON",
+			beforeSend : function() {
+				$(".progress-layer").fadeIn();
+			},
+			success : function(data) {
+				repeat_flag = false;
+				if (data.code != 0 && data.code != undefined) {
+					layer.msg(data.message);
+					$(".progress-layer").fadeOut();
+				} else if (data.code == 0) {
+					if (data.data == null) {
+						$(".progress-layer").fadeOut();
+					}
+					if (page_index == 0) {
+						page_count = data['data']["page_count"];
+					}
+					if (page_index <= page_count) {
+						var speed_of_progress = (page_index / page_count * 100).toFixed(2);
+						progress_element.progress('progress', speed_of_progress + '%');
+					}
+					if (page_index < page_count) {
+						page_index = parseInt(page_index) + 1;
+						refresh();
+					} else {
+						table.reload();
+					}
+				} else {
+					layer.msg('更新失败');
+					$(".progress-layer").fadeOut();
+				}
+			}
+		})
+	}
+	
+	function datePick(date_num,event_obj){
+	    $(".date-picker-btn").removeClass("selected");
+		$(event_obj).addClass('selected');
+	    Date.prototype.Format = function (fmt,date_num) {
+	        this.setDate(this.getDate()-date_num);
+	        var o = {
+	            "M+": this.getMonth() + 1, //月份
+	            "d+": this.getDate(), //日
+	            "H+": this.getHours(), //小时
+	            "m+": this.getMinutes(), //分
+	            "s+": this.getSeconds(), //秒
+	            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+	            "S": this.getMilliseconds() //毫秒
+	        };
+	        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+	        for (var k in o)
+	            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+	        return fmt;
+	    };
+	    var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+	    var before_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",date_num-1);//前几天日期
+
+		var daterange = before_time +' - ' + now_time;
+		$("#daterange").val(daterange);
+	}
+
+	function reset() {
+		form.render();
+		laydate.render({
+			elem: '#start_date',
+			type: 'datetime'
+		});
+		laydate.render({
+			elem: '#end_date',
+			type: 'datetime'
+		});
+	}
+	
+	function concat(arr1,arr2){  
+    	var arr = arr1.concat();  
+   	 	for(var i=0;i<arr2.length;i++){  
+        	arr.indexOf(arr2[i]) === -1 ? arr.push(arr2[i]) : 0;  
+    	}
+    	return arr;  
+	} 
+</script>
+{/block}

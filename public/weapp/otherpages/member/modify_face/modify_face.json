@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "img-cropping": "/components/img-cropping/cropping"
+  }
+}

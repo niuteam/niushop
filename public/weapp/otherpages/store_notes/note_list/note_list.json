@@ -1,0 +1,8 @@
+{
+  "disableScroll": true,
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "ns-login": "/components/ns-login/ns-login"
+  }
+}

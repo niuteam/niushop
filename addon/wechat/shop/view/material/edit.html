@@ -1,0 +1,103 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_graphic_message.css">
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示<i class="layui-icon layui-colla-icon"></i></h2>
+		<ul class="layui-colla-content layui-show">
+			<li>由于微信公众平台的接口规范，仅提供向微信认证服务号商家。如你的公众号同时具有微信支付权限，你还可以在正文内添加超级链接。</li>
+		</ul>
+	</div>
+</div>
+<div id='graphic_message'>
+	<div class='graphic-message'>
+		<img src='WECHAT_IMG/mobile_head.png'/>
+		<ul class='graphic-message-list'>
+			<template v-for="(value, index) in article_item_list">
+				<li @click.stop="chooseGraphicMessage(index)" @mouseenter="moveThis(index)" @mouseleave="leaveThis(index)">
+					<content>
+						<template v-if="value.cover.path == ''">
+							<div class='empty-img'></div>
+							<span class='empty-hint'>{{index == 0 ? '封面图片' : '缩略图'}}</span>
+						</template>
+						<img v-else :src="value.cover.path"/>
+						<div class='mask-layer'></div>
+						<h4 class='title'><span>{{value.title == '' ? '标题' : value.title}}</span></h4>
+					</content>
+					<div class='action'>
+						<template v-if="(index == 0 && index == current_msg_index) || (move_index == 0 && index == 0)">
+							<span class='edit' @click.stop="chooseGraphicMessage(index)">编辑</span>
+						</template>
+						<template v-else-if="move_index == index || index == current_msg_index">
+							<span class='edit' @click.stop="chooseGraphicMessage(index)">编辑</span>
+							<span class='delete' @click.stop="deleteGraphicMessage(index)">删除</span>
+						</template>
+					</div>
+				</li>
+			</template>
+		</ul>
+		<div class='add-graphic-message'>
+			<h4>
+				<a @click="addGraphicMessage" class="nc-text-color">新增</a>
+			</h4>
+		</div>
+		<div class='bottom-botton'>
+			<template v-if="material_id == 0">
+				<button class='layui-btn ns-bg-color' @click="saveGraphicMessage">保存</button>
+			</template>
+			<button class='layui-btn ns-bg-color' v-else @click="editGraphicMessage">保存</button>
+		</div>
+	</div>
+	<div class='editor-box' :style="'margin-top:' + editBoxTopPosition + 'px'">
+		<div class='arrow'></div>
+		<div class='editor-title'>
+			<label>标题<span class='hint'>（必填）</span></label>
+			<input class="layui-input" id="input_title" placeholder="请在这里输入标题" maxlength="64" v-model="inputTitle" max-length="70"/>
+		</div>
+		<div class='editor-author'>
+			<label>作者<span class='hint'>（选填）</span></label>
+			<input class="layui-input" id="input_autor" placeholder="请输入作者" maxlength="16" v-model="inputAutor" max-length="20"/>
+		</div>
+		<div class='editor-cover'>
+			<label>封面<span class='hint'>（图片建议尺寸：900 x 500像素 必填）</span></label>
+			<div class="choose-cover">
+				<div class="choose-cover-pic">
+					<img :src="coverImg"/>
+				</div>
+				<template v-if="coverImg == ''">
+					<a class="ns-text-color" id="uploadImg" href="javascript:;">上传图片...</a>
+				</template>
+				<template v-else>
+					<a id="uploadImg" style="margin-top: 15px;" href="javascript:;">更换封面图...</a>
+				</template>
+			</div>
+			<label class="editor-msg-label" :class="checkShowCoverPic ? 'selected' : ''" for="check_show_cover_pic">
+				<input type="checkbox" id="check_show_cover_pic" value="1" v-model="checkShowCoverPic"/>
+				封面图片显示在正文中
+			</label>
+		</div>
+		<div class='editor-content'>
+			<label>正文<span class='hint'>（必填）</span></label>
+			<script id="editor" type="text/plain" style="width:380px; height:300px;"></script>
+		</div>
+ 		<div class='editor-url'>
+			<label>原文链接<span class='hint'>（选填）</span></label>
+			<input class="layui-input" id="original_url" placeholder="例：http://www.example.com" maxlength="100" v-model="inputOriginalUrl"/>
+		</div>
+	</div>
+	<input type='hidden' id='edit_flag' value='{$flag}'/>
+	<input type='hidden' id='material_id' value='{$material_id}'/>
+	<div class="loading" :class="{ show: loading }"><i class=" layui-icon layui-icon-loading layui-icon layui-anim layui-anim-rotate layui-anim-loop"></i></div>
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+<script src='WECHAT_JS/wx_graphic_message.js'></script>
+
+<!-- 百度编辑器 -->
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+{/block}

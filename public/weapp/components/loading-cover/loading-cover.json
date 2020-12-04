@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-loading": "/components/ns-loading/ns-loading"
+  }
+}

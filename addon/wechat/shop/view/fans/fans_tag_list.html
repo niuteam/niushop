@@ -1,0 +1,164 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+    .layui-table {margin: 0}
+</style>
+{/block}
+
+{block name="main"}
+<div class="nc-function-search">
+    <button class="layui-btn ns-bg-color" onclick="addOrEditTag('添加标签')">添加标签</button>
+    <button class="layui-btn ns-bg-color" onclick="syncTag()">同步标签</button>
+</div>
+<div class="nc-table-box">
+    <table id="tag_list" lay-filter="tag_list" class="layui-table"></table>
+</div>
+
+<script type="text/html" id="operation">
+    <a class="default" lay-event="edit">编辑</a> |
+    <a class="default" lay-event="delete">删除</a> <br/>
+</script>
+
+<script type="text/html" id="addOrEditTag">
+    <div class="layui-form" lay-filter="otherInfo">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">标签名称</label>
+            <div class="layui-input-inline nc-len-mid">
+                <input type="text" name="tag_name" class="layui-input" value="{{d.tag_name}}" lay-verify="required">
+            </div>
+        </div>
+		<div class="ns-form-row sm">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="addOrEditTagSubmit">保存</button>
+				<button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+			</div>
+        <input type="hidden" name="id" value="{{d.id}}">
+        <input type="hidden" name="tag_id" value="{{d.tag_id}}">
+    </div>
+</script>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+    var form,laytpl,index,layer;
+    var table = new Table({
+        elem : '#tag_list',
+        filter : "tag_list",
+        url : "{:addon_url('wechat://shop/fans/fansTagList')}",
+        cols : [
+            [
+                {
+                    type : 'checkbox',
+                    unresize : 'true'
+                },
+                {
+                    field: 'tag_name',
+                    title: '标签名称',
+                    unresize : 'true'
+                },
+                {
+                    title : '操作',
+                    toolbar : '#operation',
+                    width : '30%',
+                    align : 'right',
+                    unresize : 'true'
+                }
+            ]
+        ]
+    });
+
+    table.tool(function(obj){
+        var data = obj.data;
+        switch (obj.event) {
+            case 'edit':
+                addOrEditTag('编辑标签', data);
+                break;
+            case 'delete':
+                deleteTag(data);
+                break;
+        }
+    });
+
+    layui.use([ 'form', 'laytpl'], function() {
+        laytpl = layui.laytpl;
+        form = layui.form;
+        form.render();
+
+        var repeat_flag = false;//防重复标识
+        form.on('submit(addOrEditTagSubmit)', function (data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+            var url = data.field.id > 0 ? '{:addon_url("wechat://shop/fans/editFansTag")}' : '{:addon_url("wechat://shop/fans/addFansTag")}';
+            $.ajax({
+                type: "post",
+                async: false,
+                url: url,
+                dataType: 'json',
+                data: data.field,
+                success: function (res) {
+                    back();
+                    layer.msg(res.message);
+                    if (res.code == 0) {
+                        table.reload();
+                    }
+                    repeat_flag = false;
+                }
+            })
+        });
+    });
+
+    function addOrEditTag(title, data) {
+        var tpl_data = data == undefined ? {tag_name: '', tag_id: 0, id: 0} : data;
+        laytpl($("#addOrEditTag").html()).render(tpl_data, function (html) {
+            index = layer.open({
+                type: 1,
+                title: title,
+                skin: 'layer-tips-class',
+                area: ['450px'],
+                content: html
+            })
+        });
+    }
+
+    var repeat_flag_delete = false;//防重复标识
+    function deleteTag(data){
+        if (repeat_flag_delete) return;
+        repeat_flag_delete = true;
+		layer.confirm('确定要删除该标签吗？',function () {
+			$.ajax({
+			    type : "post",
+			    async : false,
+			    url : '{:addon_url("wechat://shop/fans/deleteFansTag")}',
+			    dataType: 'json',
+			    data : data,
+			    success:function(res){
+			        layer.msg(res.message);
+			        if(res.code == 0){
+			            table.reload();
+			        }
+			        repeat_flag_delete = false;
+			    }
+			})
+		});
+      
+    }
+
+    function syncTag(){
+        $.ajax({
+            url : '{:addon_url("wechat://shop/fans/syncFansTag")}',
+            dataType: 'json',
+            async : false,
+            type : "post",
+            beforeSend : function(){
+                index = layer.load(2);
+            },
+            success:function(res){
+                back();
+                layer.msg(res.message);
+                if(res.code == 0){
+                    table.reload();
+                }
+            }
+        })
+    }
+</script>
+{/block}

@@ -1,0 +1,201 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>用户名：</label>
+		<div class="layui-input-block">
+			<p class="ns-input-text ns-len-mid">{$member_info.data.username}</p>
+		</div>
+		<div class="ns-word-aux">用于登录，不可编辑</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>昵称：</label>
+		<div class="layui-input-block">
+			<input name="nickname" type="text" lay-verify="required" value="{$member_info.data.nickname}" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">会员名称</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">手机号：</label>
+		<div class="layui-input-block">
+			<input name="mobile" type="text" lay-verify="mobile" value="{$member_info.data.mobile}" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">已进行手机号验证，请填写正确的手机号</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">状态：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="status" value="1" lay-skin="switch" {if condition="$member_info.data.status == 1"} checked {/if} >
+		</div>
+		<div class="ns-word-aux">当状态处于关闭时，该会员则不能登录。</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label img-upload-lable ns-short-label">头像：</label>
+		<div class="layui-input-inline">
+			<div class="upload-img-block square">
+				<div class="upload-img-box {if condition="$member_info.data.headimg"}hover{/if}">
+					<div class="ns-upload-default" id="headImg">
+						{if condition="$member_info.data.headimg"}
+							<div id="preview_headImg" class="preview_img">
+								<img layer-src src="{:img($member_info.data.headimg)}" class="img_prev"/>
+							</div>
+						{else/}
+							<div class="upload">
+								<img src="SHOP_IMG/upload_img.png" />
+								<p>点击上传</p>
+							</div>
+						{/if}
+					</div>
+					<div class="operation"  >
+						<div >
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="headimg" value="{$member_info.data.headimg}" />
+				</div>
+				<!-- <p id="headImg" class=" {if condition="$member_info.data.headimg"} replace {else/} no-replace{/if}">替换</p>
+				
+				<i class="del {if condition="$member_info.data.headimg"}show{/if}">x</i> -->
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>会员等级：</label>
+		<div class="layui-input-inline ns-len-mid">
+			<select class="member_level" name="member_level" lay-verify="required" lay-filter="member_level">
+				<option value="">请选择</option>
+				{volist name="member_level_list" id="member_level"}
+				<option value="{$member_level.level_id}" {$member_info.data.member_level == $member_level.level_id ? 'selected' : '' }>{$member_level.level_name}</option>
+				{/volist}
+			</select>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">性别：</label>
+		<div class="layui-input-inline">
+			<input type="radio" name="sex" value="0" title="未知" {$member_info.data.sex == 0 ? 'checked' : ''}>
+			<input type="radio" name="sex" value="1" title="男" {$member_info.data.sex == 1 ? 'checked' : ''}>
+			<input type="radio" name="sex" value="2" title="女" {$member_info.data.sex == 2 ? 'checked' : ''}>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">生日：</label>
+		<div class="layui-input-inline">
+			<input name="birthday" type="text" id="laydate" value="" class="layui-input ns-len-mid">
+		</div>
+	</div>
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+	
+	<!-- 隐藏域 -->
+	<input type="hidden" name="member_id" value="{$member_info.data.member_id}" />
+	<input type="hidden" class="birthday" value="{$member_info.data.birthday}" />
+</div>
+{/block}
+{block name="script"}
+<script>
+	var birthday = $(".birthday").val();
+	$("input[name=birthday]").attr("value", ns.time_to_date(birthday, "YYYY-MM-DD"));
+	
+	layui.use(['form', 'laydate'], function() {
+		var form = layui.form,
+			laydate = layui.laydate,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		laydate.render({
+			elem: '#laydate'
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			mobile: function(value) {
+				var reg = /^1([38][0-9]|4[579]|5[0-3,5-9]|6[6]|7[0135678]|9[89])\d{8}$/;
+				if (value == '') {
+					return;
+				}
+				if (!reg.test(value)) {
+					return '请输入正确的手机号码!';
+				}
+			},
+			isemail: function(value) {
+				var reg = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/;
+				if (value == '') {
+					return;
+				}
+				if (!reg.test(value)) {
+					return '请输入正确的邮箱!';
+				}
+			}
+		});
+
+		var upload = new Upload({
+			elem: '#headImg'
+		});
+		
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			
+			data.field.member_level_name = $(".member_level").find("option[value=" + data.field.member_level + "]").text();
+			
+			if (data.field.status == undefined) {
+				data.field.status = 0;
+			}
+
+			// 删除图片
+			if(!data.field.headimg) upload.delete();
+			
+			if(repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/member/editMember"),
+				data: data.field,
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/member/memberList")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+	});
+	
+	function back() {
+		location.href = ns.url("shop/member/memberList");
+	}
+</script>
+{/block}

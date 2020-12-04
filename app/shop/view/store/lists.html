@@ -1,0 +1,324 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-table-tab{margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>当前页面对门店的信息进行管理，可以添加门店，管理门店等。</li>
+			{if $store_is_exit == 1}
+			<li>通过以下链接前往门店管理中心<a href="{:addon_url('store://store/login/login')}" target="_blank" style="color: red"> {:addon_url('store://store/login/login')}</a></li>
+			{/if}
+		</ul>
+	</div>
+</div>
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加门店</button>
+	
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="keyword" placeholder="请输入门店名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab"  lay-filter="store_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部门店</li>
+		<li lay-id="0">已停业</li>
+		<li lay-id="1">营业中</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="store_list" lay-filter="store_list"></table>
+	</div>
+</div>
+
+<!-- 门店详情 -->
+<script type="text/html" id="store">
+	<div class="ns-table-title">
+		<div class="ns-title-pic">
+			{{#  if(d.store_image){  }}
+			<img layer-src src={{ns.img(d.store_image)}} alt="" onerror=src='__STATIC__/img/default_shop.png'>
+			{{#  }else{  }}
+			<img layer-src src="__STATIC__/img/default_shop.png" alt="">
+			{{#  }  }}
+		</div>
+		<div class="ns-title-content">
+			<p class="layui-elip">店铺名称：{{d.store_name}}</p>
+			<p class="layui-elip">联系方式：{{d.telphone}}</p>
+		</div>
+	</div>
+</script>
+
+
+<!-- 门店管理员 -->
+<script type="text/html" id="store_admin">
+	<div class="ns-table-title">
+		<div class="ns-title-pic">
+			<span>{{ d.username }}</span>
+			<a style="color: #FF6A00;cursor: pointer;" onclick="resetStorePassword({{ d.store_id }})" >重置密码</a>
+		</div>
+	</div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# if(d.is_frozen) { }}
+		<a class="layui-btn" lay-event="frozen">开启</a>
+		{{# } else{ }}
+		<a class="layui-btn" lay-event="frozen">关闭</a>
+		{{# } }}
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var layer_pass,laytpl,table,form,element;
+	layui.use(['form','element','laytpl'], function() {
+		form = layui.form;
+		element = layui.element;
+		laytpl = layui.laytpl;
+		repeat_flag = false; //防重复标识
+		form.render();
+		
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(store_tab)', function(){
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where:{
+					'status':this.getAttribute('lay-id')
+				}
+			});
+		});
+		
+		table = new Table({
+			elem: '#store_list',
+			url: ns.url("shop/store/lists"),
+			cols: [
+				[{
+					title: '门店',
+					unresize: 'false',
+					width: '23%',
+					templet: '#store'
+				}, {
+					field: 'full_address',
+					title: '门店地址',
+					unresize: 'false',
+					width: '32%',
+					templet: function(data) {
+						return '<span title="'+data.full_address+data.address+'">'+data.full_address+data.address+'</span>'; //创建时间转换方法
+					}
+				},{
+                    title: '管理员',
+                    unresize: 'false',
+                    width: '10%',
+                    templet:'#store_admin',
+                    hide: {$store_is_exit} ? false : true
+                },{
+					title: '创建时间',
+					unresize: 'false',
+					width: '10%',
+					templet: function(data) {
+						return ns.time_to_date(data.create_time); //创建时间转换方法
+					}
+				}, {
+					title: '门店状态',
+					unresize: 'false',
+					width: '10%',
+					templet: function(data) {
+						if (data.is_frozen == 1) {
+							return '关闭';
+						} else {
+							return '正常';
+						}
+					}
+				},{
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '15%'
+				}]
+			]
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/store/editStore",{"store_id":data.store_id});
+					break;
+				case 'delete': //删除
+					deleteCompany(data.store_id);
+					break;
+				case 'frozen'://冻结&解冻
+					frozenStore(data.store_id, data.is_frozen);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteCompany(store_id) {
+			layer.confirm('门店已开始运营，确认要删除吗?', function() {
+				$.ajax({
+					url: ns.url("shop/store/deleteStore"),
+					data: {store_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+		
+		/**
+		 * 删除
+		 */
+		function frozenStore(store_id, is_frozen) {
+			var msg = '门店已开始运营，确认要关闭吗?';
+			if(is_frozen == 1) {
+				msg = '确定要开启该门店吗？';
+			}
+			layer.confirm(msg, function() {
+				$.ajax({
+					url: ns.url("shop/store/frozenStore"),
+					data: {store_id:store_id, is_frozen:is_frozen},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		//重置密码
+        form.on('submit(repass)', function(data) {
+
+            if (repeat_flag) return false;
+            repeat_flag = true;
+
+            $.ajax({
+                type: "POST",
+                url: ns.url("shop/store/modifyPassword"),
+                data: data.field,
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    repeat_flag = false;
+
+                    if (res.code == 0) {
+                        layer.closeAll('page');
+                    }
+                }
+            });
+        });
+
+        /**
+         * 表单验证
+         */
+        form.verify({
+            repass: function(value) {
+                if (value != $(".new_pass").val()) {
+                    return "输入错误,两次密码不一致!";
+                }
+            }
+        });
+	});
+
+	function add() {
+		location.href = ns.url("shop/store/addStore");
+	}
+
+    /**
+     * 重置密码
+     */
+    function resetStorePassword(data) {
+
+        laytpl($("#pass_change").html()).render(data, function(html) {
+            layer_pass = layer.open({
+                title: '重置密码',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['550px'],
+                content: html
+            });
+        });
+    }
+
+    function closePass() {
+        layer.close(layer_pass);
+    }
+
+</script>
+
+<!-- 重置密码弹框html -->
+<script type="text/html" id="pass_change">
+	<div class="layui-form" id="reset_pass" lay-filter="form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="required" class="layui-input ns-len-mid new_pass" maxlength="18">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="repass|required" class="layui-input ns-len-mid" maxlength="18">
+			</div>
+			<div class="ns-word-aux mid">请再一次输入密码，两次输入密码须一致</div>
+		</div>
+
+		<div class="ns-form-row mid">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="repass">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+
+		<input class="reset-pass-id" type="hidden" name="store_id" value="{{d}}"/>
+	</div>
+</script>
+
+{/block}

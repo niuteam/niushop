@@ -1,0 +1,1 @@
+.diy-title{position:relative;height:88rpx;line-height:88rpx}.diy-title .back{vertical-align:middle;position:absolute;width:40rpx;left:20rpx}.diy-title .title{display:block;text-align:center}.diy-title .action{position:absolute;right:40rpx;top:0}

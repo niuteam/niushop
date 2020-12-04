@@ -1,0 +1,148 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+	.ns-progress-wrap {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		min-height: 120px;
+	}
+	
+	.ns-progress-point {
+		flex-grow: 1;
+	}
+	
+	.ns-progress-point-pic {
+		display: inline-block;
+		width: 30px;
+		height: 30px;
+		line-height: 30px;
+		text-align: center;
+		margin-top: 10px;
+		margin-bottom: 20px;
+	}
+	
+	.ns-progress-point-pic img {
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	.ns-item-block-wrap .new-tips{
+		width: 8px;
+		height: 8px;
+		background: #f00;
+		border-radius: 50%; 
+	    position: absolute;
+    	right: 15px;
+	}
+	.ns-item-content-desc{
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">微信小程序使用流程</span>
+	</div>
+	<div class="layui-card-body">
+		<ul class="ns-progress-wrap">
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WEAPP_IMG/register.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">注册微信小程序应用</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WEAPP_IMG/set_up.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">信息完善</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WEAPP_IMG/public_number.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">开发</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WEAPP_IMG/edition.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">提交审核</p>
+			</li>
+			<li class="ns-progress-point-arrow">
+				<img src="WEAPP_IMG/arrow.png" alt="">
+			</li>
+			<li class="ns-progress-point">
+				<div class="ns-progress-point-pic">
+					<img src="WEAPP_IMG/complete.png" alt="">
+				</div>
+				<p class="ns-progress-point-text">发布</p>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">微信小程序入口</span>
+	</div>
+	<div class="layui-card-body">
+		<div class="site_list ns-item-block-parent ns-item-five">
+			<a class="ns-item-block ns-item-block-hover-a" href="{:addon_url('weapp://shop/weapp/config')}">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="WEAPP_IMG/administration.png">
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">小程序管理</div>
+						<p class="ns-item-content-desc">小程序管理</p>
+					</div>
+				</div>
+			</a>
+			<a class="ns-item-block ns-item-block-hover-a" href="{:addon_url('weapp://shop/weapp/package')}">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="WEAPP_IMG/download.png">
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">小程序发布</div>
+						<p class="ns-item-content-desc">小程序发布</p>
+					</div>
+					{if $is_new_version}<span class="new-tips"></span>{/if}
+				</div>
+			</a>
+			{notempty name="$weapp_menu"}
+				{foreach name="$weapp_menu" item="vo"}
+					<a class="ns-item-block ns-item-block-hover-a" href="{:addon_url($vo.url)}">
+						<div class="ns-item-block-wrap">
+							<div class="ns-item-pic">
+								<img src="{:img($vo.icon)}">
+							</div>
+							<div class="ns-item-con">
+								<div class="ns-item-content-title">{$vo.title}</div>
+								<p class="ns-item-content-desc">{$vo.description}</p>
+							</div>
+						</div>
+					</a>
+				{/foreach}
+			{/notempty}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+{/block}

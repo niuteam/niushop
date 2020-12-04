@@ -1,0 +1,111 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+	.tree-line{padding:10px 0;background:#ededed;margin-bottom:2px;line-height: 1.8;}
+	.tree-line .layui-form{padding-left: 10px !important;}
+	.tree-line .layui-form-checkbox{margin:0 10px !important;vertical-align:middle;}
+	.ns-form {margin-top: 0;}
+	.group-tree-block .layui-table tbody tr:hover {background-color: white;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>用户组名：</label>
+		<div class="layui-input-block">
+			<input name="group_name" type="text" lay-verify="required" class="layui-input ns-len-long" placeholder="请输入用户组名" value="{$group_info.group_name}" autocomplete="off">
+		</div>
+	</div>
+	
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">描述：</label>
+		<div class="layui-input-block">
+			<textarea name ="desc" class="layui-textarea ns-len-long" placeholder="请输入用户组的相关描述">{$group_info.desc}</textarea>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>设置权限：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline group-tree-block" id="tree_box"></div>
+		</div>
+	</div>
+	
+	<!-- 操作 -->
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+	
+	<!-- 隐藏域 -->
+	<input name="group_id" type="text"  class="layui-input layui-hide" value="{$group_id}">
+</div>
+{/block}
+{block name="script"}
+
+<script>
+	var tree_data = JSON.parse('{:json_encode($tree_data, JSON_UNESCAPED_UNICODE)}'),
+		form,
+		repeat_flag = false;//防重复标识
+	
+    layui.use('form', function() {
+        form = layui.form;
+		form.render();
+        
+        form.on('submit(save)', function (data) {
+
+            var obj = $("#tree_box input:checked"),
+				group_array = [];
+				
+            for (var i = 0; i < obj.length; i++) {
+                group_array.push(obj.eq(i).val());
+            }
+			
+            data.field.menu_array = group_array.toString();
+            
+			if (repeat_flag) return;
+            repeat_flag = true;
+            
+			$.ajax({
+				type: "POST",
+				dataType: "JSON",
+                url: ns.url("shop/user/editgroup"),
+                data: data.field,
+                success: function (res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/user/group")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						})
+					}else{
+						layer.msg(res.message);
+					}
+                }
+            });
+        });
+
+        form.verify({
+            title: function (value) {
+                if (value.length == 0) {
+                    return '请输入用户组名称';
+                }
+            }
+        });
+    });
+	
+	function back() {
+		location.href = ns.url("shop/user/group");
+	}
+</script>
+<script src="SHOP_JS/tree.js"></script>
+{/block}

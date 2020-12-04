@@ -1,0 +1,269 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-margin {margin-left: 5px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>用户列表展示，admin为系统用户，不可进行编辑</li>
+			<li>可以添加用户，用于登录、管理shop端后台</li>
+			<li>可对用户进行编辑，修改用户状态，当用户状态为锁定时，不可进行登录</li>
+			<li>添加时选择用户组，对用户的操作权限进行限制</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加用户</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="use_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		<li lay-id="1">正常</li>
+		<li lay-id="0">锁定</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="user_list" lay-filter="user_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		{{#  if(d.is_admin == 1){ }}
+		<span class="ns-cursor ns-text-color-dark-gray ns-margin">系统用户不可编辑</span>
+		{{#  }else if(d.uid == {$user_info['uid']}){ }}
+		<a class="layui-btn" lay-event="reset_pass">重置密码</a>
+		{{#  }else{ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+		<a class="layui-btn" lay-event="reset_pass">重置密码</a>
+		{{#  }  }}
+	</div>
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 1 ? '正常' : '锁定'}}
+</script>
+{/block}
+{block name="script"}
+<script>
+	var table, form, laytpl, element, layer_pass, repeat_flag = false; //防重复标识
+	layui.use(['form', 'laytpl', 'element'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		element = layui.element;
+		form.render();
+			
+
+		table = new Table({
+			elem: '#user_list',
+			url: ns.url("shop/user/user"),
+			cols: [
+				[{
+					field: 'username',
+					title: '用户名',
+					width: '20%',
+					unresize: 'false'
+				}, {
+					field: 'group_name',
+					title: '用户组',
+					width: '15%',
+					unresize: 'false'
+				}, {
+					field: 'login_ip',
+					title: '最后登录IP',
+					width: '18%',
+					unresize: 'false'
+				}, {
+					field: 'login_time',
+					title: '最后登录时间',
+					width: '18%',
+					unresize: 'false',
+					templet: function(data) {
+						return ns.time_to_date(data.login_time); //创建时间转换方法
+					}
+				}, {
+					field: 'status',
+					title: '用户状态',
+					width: '12%',
+					unresize: 'false',
+					templet: '#status'
+				}, {
+					title: '操作',
+					width: '17%',
+					toolbar: '#operation',
+					unresize: 'false'
+				}]
+			]
+		});
+		
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(use_tab)', function(){
+		    table.reload({
+		        page: {curr: 1},
+		        where:{'status':this.getAttribute('lay-id')}
+		    });
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/user/editUser", {"uid": data.uid});
+					break;
+				case 'delete': //删除
+					deleteUser(data.uid);
+					break;
+				case 'reset_pass': //重置密码
+					resetPassword(data);
+					break;
+			}
+		});
+		
+		
+		/**
+		 * 删除
+		 */
+		function deleteUser(uid) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			layer.confirm('确定要删除该用户吗?', function() {
+				$.ajax({
+					url: ns.url("shop/user/deleteUser"),
+					data: {uid},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		 * 重置密码
+		 */
+		function resetPassword(data) {
+			laytpl($("#pass_change").html()).render(data, function(html) {
+				layer_pass = layer.open({
+					title: '重置密码',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['500px'],
+					content: html,
+				});
+			});
+		}
+		
+		form.on('submit(repass)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/user/modifyPassword"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+		
+					if (res.code == 0) {
+						layer.closeAll('page');
+					}
+				}
+			});
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data){
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+		
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			repass: function(value) {
+				if (value != $("input[name='password']").val()) {
+					return "输入错误,两次密码不一致!";
+				}
+			}
+		});
+	});
+
+	function add() {
+		location.href = ns.url("shop/user/addUser");
+	}
+	
+	function closePass() {
+		layer.close(layer_pass);
+	}
+</script>
+
+<!-- 重置密码弹框html -->
+<script type="text/html" id="pass_change">
+	<div class="layui-form" id="reset_pass">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="new_pass" name="password" placeholder="请输入密码" class="layui-input ns-len-mid" lay-verify="required"  maxlength="18" autocomplete="off">
+			</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" placeholder="请输入密码" lay-verify="repass" class="layui-input ns-len-mid" maxlength="18" autocomplete="off">
+			</div>
+			<div class="ns-word-aux mid">
+				<p>请再一次输入密码，两次输入密码须一致</p>
+			</div>
+		</div>
+		
+		<div class="ns-form-row mid">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="repass">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+
+		<input class="reset-pass-id" type="hidden" name="uid" value="{{d.uid}}"/>
+	</div>
+</script>
+{/block}

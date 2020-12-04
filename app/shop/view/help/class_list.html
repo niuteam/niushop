@@ -1,0 +1,192 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-prompt-block, .ns-prompt-block .ns-prompt {
+		display: inline-block;
+	}
+	.ns-prompt-block .ns-prompt {
+		width: 18px;
+		height: 18px;
+		line-height: 18px;
+		position: relative;
+	}
+	
+	.layui-table-box {overflow: inherit;}
+	.layui-table-header {overflow: inherit;}
+	.layui-table-cell, .layui-table-tool-panel li {overflow: inherit;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>帮助内容的类型</li>
+			<li>帮助类型排序显示规则为排序小的在前，新增的在前</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加帮助分类</button>
+
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入分类名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="type_list" lay-filter="type_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<script type="text/html" id="sort">
+	<input name="sort" type="number" onchange="editSort({{d.class_id}},this)" value="{{d.sort}}" placeholder="请输入排序" class="layui-input edit-sort ns-len-short">
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var table,
+			form = layui.form,
+			repeat_flag = false;//防重复标识
+		form.render();
+
+		table = new Table({
+			elem: '#type_list',
+			url: ns.url("shop/help/classList"),
+			cols: [
+				[{
+					field: 'class_name',
+					title: '分类名称',
+					width: '60%',
+					unresize: 'false'
+				},{
+                    field: 'sort',
+                    title: `<div class="ns-prompt-block">排序
+							<div class="ns-prompt">
+								<i class="iconfont iconwenhao1 required ns-growth"></i>
+								<div class="ns-growth-box ns-reason-box ns-reason-growth ns-prompt-box">
+									<div class="ns-prompt-con">
+									<p>默认排序号为0，数字越小，排序越靠前，数字重复，则最新添加的靠前。</p>
+								</div>
+							</div>
+							</div>
+						</div>`,
+                    width: '20%',
+                    unresize: 'false',
+					sort:true,
+                    templet: '#sort'
+                },{
+					title: '操作',
+					width: '20%',
+					toolbar: '#operation',
+					unresize: 'false'
+				}]
+			],
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/help/editClass?class_id=" + data.class_id);
+					break;
+				case 'delete': //删除
+					deleteUser(data.class_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteUser(class_id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+		
+			layer.confirm('确定要删除该帮助类型吗?', function() {
+				$.ajax({
+					url: ns.url("shop/help/deleteClass"),
+					data: {
+						class_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+		
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			},function() {
+				repeat_flag = false;
+				layer.close();
+			});
+		}
+	});
+
+	// 监听单元格编辑
+	function editSort(id, event) {
+		var data = $(event).val();
+		if (!new RegExp("^-?[1-9]\\d*$").test(data)) {
+			layer.msg("排序号只能是整数");
+			return;
+		}
+		if(data<0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+		$.ajax({
+			type: 'POST',
+			url: ns.url("shop/help/modifyClassSort"),
+			data: {
+				sort: data,
+				class_id: id
+			},
+			dataType: 'JSON',
+			success: function(res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					location.reload();
+				}
+			}
+		});
+	}
+
+	function add() {
+		location.href = ns.url("shop/help/addClass");
+	}
+</script>
+{/block}

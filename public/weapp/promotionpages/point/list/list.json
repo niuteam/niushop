@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-login": "/components/ns-login/ns-login"
+  }
+}

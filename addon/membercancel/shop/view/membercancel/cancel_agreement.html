@@ -1,0 +1,78 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>协议内容展示使用该网站的一些注销相关规定</li>
+			<li>会员注销时需同意该协议才可继续注销</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">协议：</label>
+		<div class="layui-input-inline">
+			<input type="text" name="title" required lay-verify="required" placeholder="请输入协议标题" value="{$document_info.data.title}" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">内容：</label>
+		<div class="layui-input-inline">
+			<script id="editor" type="text/plain" class="ns-special-length" style="height:300px;"></script>
+		</div>
+	</div>
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+	
+	<input type="hidden" name="" id="agreementContent" value="{$document_info.data.content}" />
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+	//实例化富文本
+	var ue = UE.getEditor('editor');
+	
+	if($("#agreementContent").val()){
+		 ue.ready(function() {
+		     ue.setContent($("#agreementContent").val());
+		 });
+	}
+	
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		//表单提交
+		form.on('submit(save)', function(data) {
+			if(repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("membercancel://shop/membercancel/cancelAgreement"),
+				data: {
+					'title': data.field.title,
+					'content': ue.getContent(),
+				},
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+	});
+</script>
+{/block}

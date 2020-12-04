@@ -1,0 +1,62 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 列表 -->
+<table id="pay_list" lay-filter="pay_list"></table>
+
+<!-- 支付方式 -->
+<script type="text/html" id="payment">
+	<div class="ns-table-title">
+		<div class="ns-title-pic">
+			<img layer-src  src="{{ns.img(d.logo.split(',')[0])}}"/>
+		</div>
+		<div class="ns-title-content">
+			{{d.pay_type_name}}
+		</div>
+		</div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit" href="{{ns.url(d.shop_url)}}">配置</a>
+	</div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var table = new Table({
+		elem: '#pay_list',
+		url: ns.url("shop/config/pay"),
+		page: false,
+		parseData: function(data) { //res 即为原始返回的数据
+			return {
+				"code": data.code,
+				"msg": data.message,
+				"data": data.data,
+			};
+		},
+		cols: [
+			[{
+				field: 'pay_type_name',
+				title: '支付方式名称',
+				width: '30%',
+				unresize: 'false',
+				templet: '#payment'
+			}, {
+				field: 'desc',
+				title: '支付方式描述',
+				width: '60%',
+				unresize: 'false'
+			}, {
+				title: '操作',
+				width: '10%',
+				toolbar: '#operation',
+				unresize: 'false'
+			}]
+		],
+	});
+</script>
+{/block}

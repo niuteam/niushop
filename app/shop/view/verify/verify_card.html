@@ -1,0 +1,170 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/verify.css" />
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+    <div class="layui-form" style="margin: 0;">
+        <div class="layui-input-inline">
+            <input type="text" name="verify_code" placeholder="请输入核销码" autocomplete="off" class="layui-input ns-len-long">
+            <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="verify-block">
+
+    <div class="search-content-block">
+        <div class="search-content">
+            <!--<div class="verify-step-img"></div>-->
+            <div class="verify-step-text">
+                <ul class="layui-timeline">
+                    <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                            <h3 class="verify-step-text-title">搜索核销码</h3>
+                            <p class="verify-step-text-content">
+                                请顾客出示核销码并点击“核销台”，
+                                扫描二维码或输入二维码上方的核销码
+                            </p>
+                        </div>
+                    </li>
+                    <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                            <h3 class="verify-step-text-title">验证</h3>
+                            <p class="verify-step-text-content">提供有效期验证，其他信息请自行核对</p>
+                        </div>
+                    </li>
+                    <li class="layui-timeline-item">
+                        <i class="layui-icon layui-timeline-axis ns-text-color">&#xe63f;</i>
+                        <div class="layui-timeline-content layui-text">
+                            <h3 class="verify-step-text-title">验证完成</h3>
+                            <p class="verify-step-text-content">
+                                验证完成后，可在“核销记录”查看相关验证信息
+                            </p>
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="verify-no-block layui-hide">
+
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 核销数据展示 -->
+<script type="text/html" id="verify_html">
+    <div class="verify-info">
+        <div class="verify-info-inner">
+            {{#  layui.each(d.item_array, function(index, item){ }}
+            <div class="verify-info-item">
+                <div class="verify-info-img">
+                    <img src="{{ ns.img(item.img) }}" alt="">
+                </div>
+                <div class="verify-info-inner-item">
+                    <p class="verify-info-name">
+                        {{ item.name }}
+                    </p>
+                    {{#  layui.each(item.remark_array, function(remark_index, remark_item){ }}
+                    <p>
+                        {{ remark_item.title }}：<span>{{ remark_item.value }}</span>
+                    </p>
+                    {{#  }); }}
+                </div>
+            </div>
+            {{#  }); }}
+
+        </div>
+        <div class="verify-info-desc">
+            {{#  layui.each(d.remark_array, function(remark_array_index, remark_array_item){ }}
+            <p class="verify-info-desc-item">
+                {{ remark_array_item.title }}：{{ remark_array_item.value }}
+            </p>
+            {{#  }); }}
+            <button type="button" class="layui-btn ns-bg-color verify-button" onclick="verify();">验证使用</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    var form;
+    var submitting = false;
+    layui.use('form', function () {
+        form = layui.form;
+		form.render();
+        form.on('submit(search)', function(data){
+            var val = data.field;
+            if(submitting){return false;}
+            submitting = true;
+            $.ajax({
+                url: '{:addon_url("shop/verify/verifyCard")}',
+                data: data.field,
+                dataType: 'json',
+                type: "post",
+                success: function (res) {
+                    if(res.code == 0){
+                        $(".search-content").addClass("layui-hide");
+                        var data = res.data;
+
+                        //渲染模板引擎
+                        var getTpl = $("#verify_html").html();
+                        layui.use(['laytpl','form'], function(){
+                            var laytpl = layui.laytpl;
+                            laytpl(getTpl).render(data.data, function(html) {
+                                $(".verify-no-block").html(html);
+                            })
+                        });
+
+                        $(".verify-no-block").removeClass("layui-hide");
+                    }else{
+                        $(".verify-no-block").addClass("layui-hide");
+                        $(".search-content").removeClass("layui-hide");
+                        layer.msg(res.message);
+                    }
+                    submitting = false;
+                }
+            });
+            return false;
+        });
+    });
+    
+    /**
+     * 验证
+     */
+    var is_submit = true;
+    function verify(){
+        var verify_code = $("input[name='verify_code']").val();
+        if(verify_code == ""){
+            layer.msg("虚拟码不可为空!");
+            return false;
+        }
+        if(!is_submit){
+            return;
+        }
+        is_submit = false;
+        $.ajax({
+            url: '{:addon_url("shop/verify/verify")}',
+            data: {"verify_code" : verify_code},
+            dataType: 'json',
+            type: "post",
+            success: function (res) {
+                layer.msg(res.message);
+                if(res.code == 0){
+                    window.location.reload()
+                }else{
+                    is_submit = true;
+                }
+
+            }
+        })
+
+    }
+</script>
+{/block}

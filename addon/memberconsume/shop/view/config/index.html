@@ -1,0 +1,122 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作说明</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>启用返积分之后才可进行消费返积分活动</li>
+			<li>返积分事件表示订单处于何状态是返积分（如果返积分事件为订单收货，则表示订单状态为收货时才会返回积分）</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否开启消费奖励：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_use" lay-filter="is_use" value="1" lay-skin="switch" {if !empty($config) && $config.is_use==1 } checked {/if} >
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">返积分事件：</label>
+		<div class="layui-input-block ns-len-mid">
+			<select name="return_point_status" lay-verify="required">
+				<option value="">请选择</option>
+				{foreach $event_list as $list_k => $list_v}
+				<option value="{$list_v.name}" {if condition="!empty($config.value) && $config.value.return_point_status == $list_v['name']"} selected {/if}>{$list_v.title}</option>
+				{/foreach}
+			</select>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">返积分比率：</label>
+		<div class="layui-input-block">
+		<div class="layui-input-inline">
+			<input type="number" name="return_point_rate" value="{if condition="!empty($config.value)"}{$config.value.return_point_rate}{else/}0{/if}" lay-verify="positivEinteger" autocomplete="off" class="layui-input ns-len-short">
+		</div>
+			<span class="layui-form-mid">%</span>
+		</div>
+		<div class="ns-word-aux">比率必须为0-100的整数</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">返成长值比率：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="return_growth_rate" value="{if condition="!empty($config.value)"}{$config.value.return_growth_rate ?: 0}{else/}0{/if}" lay-verify="growthInteger" autocomplete="off" class="layui-input ns-len-short">
+			</div>
+			<span class="layui-form-mid">%</span>
+		</div>
+		<div class="ns-word-aux">比率必须为整数，例：当设置为100时，每消费1元增加1个成长值</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script >
+	layui.use('form', function(){
+		// 监听返积分是否启用
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function(data){
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("memberconsume://shop/config/index"),
+				data: data.field,
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/promotion/member")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+		
+		// 验证正整数
+		form.verify({
+			positivEinteger: function(value){
+				if(!new RegExp("^(\\d|[1-9]\\d|100)$").test(value)){
+					return '请输入0-100之间的正整数';
+				}
+			}
+		});
+
+		form.verify({
+			growthInteger: function (value) {
+				if(!new RegExp("(^[1-9]\\d*$)").test(value)){
+					return '请输入正整数';
+				}
+			}
+		})
+	});
+
+	function back(){
+		location.href = ns.url("shop/promotion/member");
+	}
+</script>
+{/block}

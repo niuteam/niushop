@@ -1,0 +1,36 @@
+.album-box{display: flex;justify-content: space-between;align-items: end;}
+.album-list{width: 176px;height: 530px;margin-right: 45px;padding-bottom: 70px;background-color: #F7F7F7;position: relative;display: flex;flex-direction: column;padding-bottom: 0}
+.album-list .btn-wrap {width: 176px;background: #fff;height: 50px;display: flex;align-content: center;justify-content: center;padding-top: 20px;}
+.album-list ul{flex: 1;overflow-y: scroll;}
+.album-list ul::-webkit-scrollbar { width:0px !important }
+.album-list ul::-webkit-scrollbar-track{border-radius: 10px;background-color: #F5F5F5;}
+.album-list ul::-webkit-scrollbar-thumb{border-radius: 10px;background-color: #FF6A00;}
+.album-list li{width: 100%;box-sizing: border-box;display: flex;justify-content: space-between;align-items: center;height: 50px;padding: 0 25px;cursor: pointer;}
+.album-list li.item-this{background-color: #E8E8E8;}
+.album-content{flex: 1;padding-top: 10px;}
+.album-content-title{height: 50px;line-height: 50px;}
+.album-content .album-content-title>span,
+.album-content .album-content-title>a{display: inline-block;margin-right: 5px;margin-bottom: 5px;}
+.album-content .album-content-bar{height: 34px;line-height: 34px;}
+.album-content .album-img-box{display: flex;flex-wrap: wrap;}
+.album-content .album-img-box li{margin: 0 20px 25px 0;width: 180px;text-align: center;}
+.album-content .album-img-box .album-pic{width: 130px;height: 130px;line-height: 130px;}
+.album-content .album-img-box .album-pic img{max-height: 100%;max-width: 100%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;}
+.album-content .album-img-box .album-img-select{height: 40px;line-height: 40px;text-align: left;margin-bottom: 5px;}
+.album-content .album-img-box .album-img-operation{display: flex;justify-content: space-between;}
+.layui-form-checkbox[lay-skin=primary]{width: 100%;}
+.album-img-select .layui-form-checkbox[lay-skin=primary] span{white-space: nowrap;overflow: hidden;text-overflow: ellipsis;display: block;padding-right: 0;}
+/* 本地图片上传*/.multuple-list{display: flex;flex-wrap: wrap;overflow-y: auto;height: 300px;padding-top: 10px;box-sizing: border-box;}
+.multuple-list-img{border-color: #DDDDDD!important;}
+.multuple-list li{position: relative;display: flex;margin-bottom: 10px;margin-right: 10px;flex-direction: column;justify-content: center;flex-wrap: wrap;align-items: center;width: 120px;height: 120px;border: 1px solid;}
+.multuple-list li img{max-width: 100%;max-height: 100%;}
+.upload-close-modal{display: none;position: absolute;top: -10px;right: -10px;height: 20px;width: 20px;font-size: 18px;line-height: 20px;text-align: center;color: #fff;background-color: rgba(0, 0, 0, .5);border-radius: 50%;z-index: 1;}
+.upload-image-curtain{display: none;position: absolute;top: 0;left: 0;right: 0;bottom: 0;text-align: center;line-height: 122px;font-size: 18px;color: #fff;background-color: rgba(0, 0, 0, .5);z-index: 1;}
+.multuple-list li:hover .upload-close-modal{display: block;}
+.multuple-list li span{cursor: pointer;width: 100%;text-align: center;}
+.multuple-list li span:first-of-type{width: 30px;height: 30px;font-size: 18px;margin-bottom: 10px;line-height: 30px;border-radius: 50%;color: #fff;}
+/* 图片操作*/.album-foot-operation{display: flex;margin-top: 15px;}
+.album-foot-operation .page{margin-left: auto;}
+.img-group{max-height: 300px;}
+.ns-link-input{display: inline-block!important;vertical-align: top;}
+.layui-layer.layui-layer-page .layui-layer-content{overflow-y:auto !important}

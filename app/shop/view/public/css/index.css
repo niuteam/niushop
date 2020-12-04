@@ -1,0 +1,441 @@
+.layui-layout-admin .layui-body .ns-body-content {
+	min-width: 1200px;
+	padding: 0 !important;
+}
+
+/* @media screen and (max-width: 1270px) {
+	.ns-survey-info .layui-card-body .ns-survey-detail-con {
+		flex-basis: 33% !important;
+	}
+} */
+
+/* 到期提示 */
+.expire-hint {
+	display: flex;
+	align-items: center;
+	padding: 15px 30px;
+	height: 75px;
+	line-height: 75px;
+	background-color: #fff9f5;
+	box-sizing: border-box;
+}
+
+.expire-hint .expire-logo {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-right: 15px;
+	width: 40px;
+	height: 40px;
+}
+
+.expire-hint .expire-logo img {
+	max-height: 100%;
+	max-width: 100%;
+}
+
+.expire-hint .expire-center {
+	line-height: 1;
+}
+
+.expire-hint .expire-center h3 {
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.expire-hint .expire-center p {
+	margin-top: 10px;
+	color: #5d5c5c;
+}
+
+.expire-hint .expire-center p span:nth-of-type(2) {
+	margin-left: 15px;
+}
+
+.expire-hint .expire-center h3 a {
+	font-size: 12px;
+	font-weight: normal;
+	margin-left: 5px;
+	cursor: pointer;
+}
+
+/* 内容 */
+.ns-survey {
+	display: flex;
+	padding: 30px 40px;
+}
+
+/* 营销插件 */
+.ns-card-common .ns-card-title {
+	font-weight: 500;
+}
+
+.ns-card-common .ns-card-sub {
+	margin-left: 12px;
+	color: #B7B8B7;
+}
+
+.ns-card-common .layui-card-header {
+	border: 0;
+	padding: 0;
+	height: auto;
+	line-height: 16px;
+	padding: 20px 0;
+}
+
+.ns-card-common .layui-card-body {
+	padding: 0;
+}
+
+.ns-item-block-parent .ns-item-block {
+	background-color: transparent;
+}
+
+.ns-item-block-parent .ns-item-pic {
+	overflow: hidden;
+	border-radius: 5px;
+}
+
+.ns-item-block-parent {
+	padding: 0;
+}
+
+/* 商家信息 */
+.ns-survey-item .ns-survey-info {
+	flex: 1;
+}
+
+.ns-survey-item {
+	display: flex;
+	justify-content: space-between;
+}
+
+.ns-survey-item .ns-survey-shop {
+	display: flex;
+	width: 350px;
+	padding: 20px;
+	box-sizing: border-box;
+	border: 1px solid #f1f1f1;
+}
+
+.ns-survey-item .ns-survey-shop .ns-item-pic {
+	display: flex;
+	width: 65px;
+	height: 65px;
+	justify-content: center;
+	align-items: center;
+}
+
+.ns-survey-item .ns-survey-shop .ns-item-pic img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.ns-survey-item .ns-survey-shop .ns-surver-shop-detail {
+	margin-left: 15px;
+	flex: 1;
+}
+
+.ns-survey-item .ns-survey-shop .ns-survey-shop-name {
+	font-size: 16px;
+	font-weight: 600;
+	color: rgba(38, 38, 38, 1);
+	height: 25px !important;
+	line-height: 25px !important;
+	margin-bottom: 10px;
+}
+
+.ns-survey-item .ns-survey-shop .ns-survey-shop-name span {
+	border: 1px solid #999;
+	padding: 1px 2px;
+	line-height: 1;
+	color: #999;
+	font-size: 12px;
+	margin-left: 10px;
+	border-radius: 2px;
+	cursor: pointer;
+}
+
+.ns-survey-item .ns-survey-shop .ns-surver-shop-detail p {
+	line-height: 30px;
+	color: #595959;
+}
+
+.ns-survey-item .ns-survey-shop .ns-surver-shop-detail p:nth-of-type(2) {
+	font-size: 12px;
+	color: #B7B8B7;
+}
+
+/* 概况信息 */
+.ns-survey-info {
+	margin: 0;
+}
+
+.ns-survey-info .layui-card-body {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.ns-survey-info .layui-card-body .ns-survey-detail-con {
+	/* flex-basis: 25%; */
+	display: inline-block;
+	width: calc((100% - 120px) / 4);
+	margin-right: 30px;
+	margin-bottom: 30px;
+	background-color: #FAFAFA;
+	padding: 0 20px;
+	box-sizing: border-box;
+	position: relative;
+}
+
+.ns-survey-info .layui-card-body .ns-survey-detail-con:last-child {
+	margin-right: 0;
+}
+
+.ns-survey-info .layui-card-body .ns-survey-detail-aco {
+	font-size: 16px;
+	line-height: 18px;
+	margin-top: 20px;
+	font-weight: 400;
+}
+
+.ns-survey-info .layui-card-body .ns-survey-detail-num {
+	margin: 10px 0;
+	font-size: 36px;
+	font-weight: 400;
+	margin-top: 48px;
+}
+
+.ns-survey-detail-rate {
+	font-size: 14px;
+	line-height: 30px;
+	display: flex;
+	align-items: center;
+	margin-top: 25px;
+}
+
+.ns-survey-detail-rate div i {
+	margin-left: 5px;
+}
+
+.ns-survey-detail-rate div:nth-child(2) {
+	margin-left: 25px;
+}
+
+.layui-icon-triangle-d {
+	font-size: 12px;
+	display: inline-block;
+	transform: scale(0.8, 0.9);
+	-webkit-transform: scale(0.8, 0.9);  /*兼容-webkit-引擎浏览器*/
+	-moz-transform: scale(0.8, 0.9);     /*兼容-moz-引擎浏览器*/
+	color: #5ED300;
+}
+
+.layui-icon-increase {
+	transform: scale(0.8, 0.9) rotate(180deg);
+	-ms-transform: rotate(180deg); 	/* IE 9 */
+	-moz-transform: scale(0.8, 0.9) rotate(180deg); 	/* Firefox */
+	-webkit-transform: scale(0.8, 0.9) rotate(180deg); /* Safari 和 Chrome */
+	-o-transform: rotate(180deg); 	/* Opera */
+}
+
+.layui-icon-triangle-d.is-null {
+	display: none;
+}
+
+.ns-survey-detail-split {
+	width: 100%;
+	height: 1px;
+	background-color: #FFFFFF;
+	margin-top: 25px;
+}
+
+.ns-survey-detail-total {
+	display: flex;
+	justify-content: space-between;
+	margin: 18px 0 15px;
+	font-size: 14px;
+	line-height: 16px;
+}
+
+.ns-prompt-block {
+	position: absolute;
+	top: 18px;
+	right: 20px;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.ns-prompt-block .ns-prompt {
+	width: auto;
+	height: auto;
+	line-height: unset;
+}
+
+.ns-prompt-block .ns-prompt-box {
+	top: 40px;
+	left: -53px;
+	width: 150px;
+	text-align: center;
+}
+
+.ns-prompt-block .ns-prompt-box:before, .ns-prompt-block .ns-prompt-box:after {
+	left: 62px;
+	top: unset;
+}
+
+.ns-prompt-block .ns-prompt-box:before {
+	border-bottom-color: #e4e4e4;
+	border-right-color: transparent;
+	top: -25px;
+}
+
+.ns-prompt-block .ns-prompt-box:after {
+	border-bottom-color: #FFFFFF;
+	border-right-color: transparent;
+	top: -23px;
+}
+
+.ns-survey-yesterday-btn {
+	font-size: 12px;
+	width: 44px;
+	height: 22px;
+	padding: 0;
+	line-height: 22px;
+}
+
+/* .ns-survey-info .layui-card-body .ns-survey-detail-yesterday {
+	font-size: 14px;
+	font-weight: 400;
+	color: rgba(175, 175, 175, 1);
+} */
+
+/*  */
+.ns-survey-right .layui-card {
+	border: 1px solid #f1f1f1;
+	box-shadow: inherit;
+}
+
+.ns-survey-right .layui-card .layui-card-body {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ns-shop-state {
+	margin: 30px 40px 0;
+	padding: 10px;
+	padding-right: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 35px;
+	background-color: rgba(255, 129, 67, 0.1);
+	color: #fff;
+	border: 1px solid red;
+}
+
+.ns-shop-state p {
+	color: #666;
+}
+
+.ns-shop-state p i {
+	margin-right: 6px;
+}
+
+.ns-shop-state button {
+	border: none;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+/* 常用功能 */
+.common-functions {
+	width: 100%;
+}
+
+.common-functions-item {
+	display: inline-block;
+	width: 215px;
+	background-color: #F7F9FA;
+	text-align: center;
+	margin-right: 10px;
+	margin-bottom: 15px;
+	padding: 24px 20px;
+	box-sizing: border-box;
+}
+
+.common-functions-item:last-child {
+	margin-right: 0;
+}
+
+.common-functions-box .ns-item-pic {
+	display: inline-block;
+	width: 40px;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+}
+
+.common-functions-box .ns-item-pic img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.common-functions-box .ns-item-content-title {
+	font-size: 14px;
+	line-height: 14px;
+	margin-top: 17px;
+}
+
+.common-functions-box .ns-item-content-desc {
+	font-size: 12px;
+	color: #666666;
+	line-height: 12px;
+	margin-top: 9px;
+	width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.addon-tool {
+	width: 100%;
+	display: flex;
+}
+
+.addon-tool .ns-card-common {
+	width: 50%;
+}
+
+.addon-tool .addon-tool-item {
+	width: 270px;
+	padding: 30px 0 30px 50px;
+	background-color: #FAFAFA;
+	box-sizing: border-box;
+	margin-right: 10px;
+	margin-bottom: 10px;
+}
+.ns-survey-left{
+	flex:1;
+}
+.ns-survey-left>.ns-card-common {
+	margin-top: 40px;
+}
+
+/* 图表 */
+.echarts-wrap {
+	display: flex;
+	justify-content: space-between;
+}
+
+.echarts-wrap>div {
+	width: 49%;
+	background-color: #FAFAFA;
+}
+
+.echarts-wrap>div h5 {
+	font-size: 16px;
+	padding-left: 20px;
+	padding-top: 20px;
+}

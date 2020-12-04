@@ -1,0 +1,267 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .ns-member-block{display: flex;justify-content: space-between;}
+    .ns-member-block .layui-card{box-shadow: initial;margin-bottom: 0;width: calc((100% - 30px) / 3);margin-right: 9px;height: 180px;box-sizing: border-box;}
+    .ns-member-block .layui-card:last-child{margin-right: 0}
+    .ns-member-num{color: red;font-size: 30px;line-height: 50px;}
+    .ns-member-title{color: #666666;font-size: 16px;}
+    .layui-card-body{width: 100%;height: 100%;box-sizing: border-box;padding-left: 20px;display: flex;justify-content: space-between;align-items: center;}
+    .ns-card-member{align-items: flex-start;}
+    #china_echart{width: 600px;height: 600px;flex-shrink: 0;margin: 0 50px}
+    .ns-member-table{flex: 1;}
+    .layui-table-view .layui-table thead tr{background-color: #F5F5F5;}
+    .ns-split{width: 30px;}
+    .ns-member-block .layui-card{border: 1px solid #f1f1f1}
+    .ns-member-table{max-width: 600px;}
+    @media screen and (max-width: 1330px){.ns-member-block .layui-card:nth-child(3){width: 420px;}
+        #china_echart{width: 500px;height: 500px;}}
+</style>
+{/block}
+
+{block name="main"}
+<div class="ns-member-block">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="ns-member">
+                <p class="ns-member-num">{$data.total_count}</p>
+                <p class="ns-member-title">累计会员数</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="ns-member">
+                <p class="ns-member-num">{$data.newadd_count}</p>
+                <p class="ns-member-title">今日新增会员数</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="ns-member">
+                <p class="ns-member-num">{$data.buyed_count}</p>
+                <p class="ns-member-title">下单会员数</p>
+            </div>
+            <div id="main" style="width: 250px; height: 160px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <span class="ns-card-title">会员分布</span>
+    </div>
+    <div class="layui-card-body ns-card-member">
+        <div id="china_echart"></div>
+        <div class="ns-split"></div>
+        <div class="ns-member-table">
+            <table id="member_list" lay-filter="member_list" class="layui-table"></table>
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script src="SHOP_JS/echarts.min.js"></script>
+<script src="SHOP_JS/china.js"></script>
+<script>
+    layui.use('form', function() {
+        var table, form = layui.form;
+        form.render();
+
+        table = new Table({
+            elem: '#member_list',
+            url: ns.url("shop/member/areaCount"),
+            where: {
+                handle: true
+            },
+            parseData: function(res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.message, //解析提示文本
+                    "count": res.data.list.length, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+            },
+            page: false,
+            cols: [
+                [
+                    {
+                        field: 'LAY_INDEX',
+                        title: '排名',
+                        unresize: 'false',
+                        width: '20%',
+                        templet: function (data) {
+                            return data.LAY_INDEX;
+                        }
+                    }, {
+                    field: 'name',
+                    title: '地区',
+                    unresize: 'false',
+                    width: '30%'
+                }, {
+                    field: 'value',
+                    title: '会员数',
+                    unresize: 'false',
+                    width: '25%'
+                }, {
+                    field: 'ratio',
+                    title: '会员占比',
+                    unresize: 'false',
+                    width: '25%',
+                    templet: function (data) {
+                        return data.ratio + '%';
+                    }
+                }
+                ]
+            ]
+        });
+    });
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // 指定图表的配置项和数据
+    option = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 0,
+            data: ['下单会员数', '未下单会员数']
+        },
+        color: ['#ff8143', '#eee'],
+        series: [{
+            width: 120,
+            height: 120,
+            top: 30,
+            left: 130,
+            name: '',
+            type: 'pie',
+            radius: ['50%', '70%'],
+            avoidLabelOverlap: false,
+            label: {
+                show: false,
+                position: 'center'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: '12',
+                    color: '#ff8143'
+                }
+            },
+            labelLine: {
+                show: false
+            },
+            data: [
+                {
+                    value: {$data.buyed_count},
+                name: '下单会员数',
+        tooltip: {
+        trigger: 'item',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            borderColor: '#999',
+            borderWidth: 1,
+            padding: 10,
+            textStyle: {
+            fontSize: 12,
+                color: '#333'
+        }
+    }
+    },
+    {
+        value: {$data.total_count - $data.buyed_count},
+        name: '未下单会员数',
+            tooltip: {
+        trigger: 'item',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            borderColor: '#999',
+            borderWidth: 1,
+            padding: 10,
+            textStyle: {
+            color: '#333',
+                fontSize: 12
+        }
+    }
+    }
+    ]
+    }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+
+    var china_echart = echarts.init(document.getElementById('china_echart'));
+    var china_option = {
+        tooltip: {
+            formatter: function(params, ticket, callback) {
+                return params.seriesName + '<br />' + params.name + '：' + params.value
+            }
+        },
+        visualMap: {
+            min: 0,
+            max: 1500,
+            left: 'left',
+            top: 'bottom',
+            text: ['高', '低'],
+            inRange: {
+                color: ['#F5F5F5', '#ff8143']
+            },
+            show: false
+        },
+        geo: {
+            map: 'china',
+            roam: false,
+            zoom: 1.23,
+            label: {
+                normal: {
+                    show: true,
+                    fontSize: '10',
+                    color: 'rgba(0,0,0,0.7)'
+                }
+            },
+            itemStyle: {
+                normal: {
+                    borderColor: 'rgba(0, 0, 0, 0.2)'
+                },
+                emphasis: {
+                    areaColor: '#e0ffff',
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    shadowBlur: 20,
+                    borderWidth: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        },
+        series: [{
+            name: '会员数',
+            type: 'map',
+            geoIndex: 0,
+            data: [{"name":"北京","value":0},{"name":"天津","value":0},{"name":"河北","value":0},{"name":"山西","value":0},{"name":"内蒙古","value":0},{"name":"辽宁","value":0},{"name":"吉林","value":0},{"name":"黑龙江","value":0},{"name":"上海","value":0},{"name":"江苏","value":0},{"name":"浙江","value":0},{"name":"安徽","value":0},{"name":"福建","value":0},{"name":"江西","value":0},{"name":"山东","value":0},{"name":"河南","value":0},{"name":"湖北","value":0},{"name":"湖南","value":0},{"name":"广东","value":0},{"name":"广西","value":0},{"name":"海南","value":0},{"name":"重庆","value":0},{"name":"四川","value":0},{"name":"贵州","value":0},{"name":"云南","value":0},{"name":"西藏","value":0},{"name":"陕西","value":0},{"name":"甘肃","value":0},{"name":"青海","value":0},{"name":"宁夏","value":0},{"name":"新疆","value":0},{"name":"香港","value":0},{"name":"澳门","value":0},{"name":"台湾","value":0}]
+        }]
+    };
+    china_echart.setOption(china_option);
+
+    function areaCount(){
+        $.ajax({
+            url: ns.url("shop/member/areaCount"),
+            dataType: 'JSON',
+            type: 'POST',
+            success : function(res) {
+                if (res.data.list.length > 0) {
+                    china_option.series[0].data = res.data.list;
+                }
+                china_echart.setOption(china_option);
+            }
+        })
+    }
+    areaCount();
+</script>
+{/block}

@@ -1,0 +1,129 @@
+{extend name="base"/}
+
+{block name="resources"}
+<style type="text/css">
+    .auth-form {padding-top: 150px;text-align: center;}
+    .auth-form .layui-input {display: inline-block;}
+    .auth-tips {font-size: 12px;color: #666;width: 544px;margin: 5px auto;}
+</style>
+{/block}
+
+{block name="main"}
+{if condition="$auth_info['code'] == 0"}
+<div class="index-box">
+    <div class="index-content">
+        <div class="system-function">
+            <table class="layui-table">
+                <colgroup>
+                    <col width="20%">
+                    <col width="30%">
+                    <col width="20%">
+                    <col width="30%">
+                </colgroup>
+                <tbody>
+                <tr>
+                    <td class="ns-bg-color-light-gray">产品名称</td>
+                    <td>{$auth_info['data']['product_name']}</td>
+                    <td class="ns-bg-color-light-gray">授权状态</td>
+                    <td>已授权</td>
+                </tr>
+                <tr>
+                    <td class="ns-bg-color-light-gray">授权码</td>
+                    <td>{$auth_info['data']['devolution_code']}</td>
+                    <td class="ns-bg-color-light-gray">授权类型</td>
+                    <td>{$auth_info['data']['devolution_version_name']}</td>
+                </tr>
+                <tr>
+                    <td class="ns-bg-color-light-gray">当前版本</td>
+                    <td>{$app_info.version}</td>
+                    <td class="ns-bg-color-light-gray">最新版本</td>
+                    <td>
+                        {$auth_info['data']['newest_version'] ?? ''}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="ns-bg-color-light-gray">授权时间</td>
+                    <td>{:date('Y-m-d H:i:s', $auth_info['data']['devolution_date'])}</td>
+                    <td class="ns-bg-color-light-gray">服务到期时间</td>
+                    <td>
+                        {:date('Y-m-d H:i:s', $auth_info['data']['devolution_expire_date'])}
+                        {if condition="$auth_info['data']['devolution_expire_date'] > time()"}
+                        <span style="color:red;">可更新</span>
+                        {else/}
+                        {/if}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="ns-bg-color-light-gray">授权归属</td>
+                    <td>{$auth_info['data']['devolution_attribution']}</td>
+                    <td class="ns-bg-color-light-gray">授权域名</td>
+                    <td>{$auth_info['data']['devolution_url']}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{else/}
+<div class="index-box">
+    <div class="index-content">
+        <div class="system-function">
+            <table class="layui-table">
+                <colgroup>
+                    <col width="20%">
+                    <col width="30%">
+                    <col width="20%">
+                    <col width="30%">
+                </colgroup>
+                <tbody>
+                <tr>
+                    <td class="ns-bg-color-light-gray">产品名称</td>
+                    <td>单商户V4</td>
+                    <td class="ns-bg-color-light-gray">授权状态</td>
+                    <td>未授权 <a href="https://www.niushop.com" class="ns-text-color" target="_blank">去授权</a> </td>
+                </tr>
+                <tr>
+                    <td class="ns-bg-color-light-gray">套餐版本</td>
+                    <td>免费版</td>
+                    <td class="ns-bg-color-light-gray">当前版本</td>
+                    <td>{$app_info.version}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{/if}
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+    var isSub = false;
+    function auth(){
+        var authCode = $('.auth-form [name="auth_code"]').val();
+        if (!/[\S]+/.test(authCode)) {
+            layer.msg('请输入您的授权码')
+            return;
+        }
+        if (isSub) return;
+        isSub = true;
+
+        $.ajax({
+            type: 'POST',
+            url: ns.url("shop/upgrade/auth"),
+            data: {
+                code: authCode
+            },
+            dataType: 'JSON',
+            success: function (res) {
+                if (res.code == 0) {
+                    location.reload();
+                } else {
+                    isSub = false;
+                    layer.msg('未查找到该授权码');
+                }
+            }
+        });
+    }
+</script>
+{/block}

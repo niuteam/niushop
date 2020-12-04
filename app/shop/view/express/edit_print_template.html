@@ -1,0 +1,337 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .design-sketch {
+        border: 1px solid #ccc;
+        position: relative;
+    }
+	
+    .design-sketch div {
+        display: inline-block;
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 8px;
+        border-radius: 2px;
+        color: #555;
+        white-space: nowrap;
+        user-select: none;
+        background-color: #fff;
+        line-height: 1;
+    }
+	
+	.design-sketch div i {
+		position: absolute;
+		top: -10px;
+		right: -10px;
+		display: none;
+		width: 20px;
+		height: 20px;
+		border-radius: 10px;
+		background-color: rgba(0, 0, 0, .5);
+		color: #FFFFFF;
+		text-align: center;
+		line-height: 20px;
+		z-index: 99;
+	}
+	
+    .print-option {
+        display: inline-block;
+        border: 1px solid;
+        line-height: 1;
+        padding: 10px;
+        margin-left: 5px;
+        margin-bottom: 8px;
+        border-radius: 2px;
+        color: #545454;
+        cursor: pointer;
+    }
+	
+	.ns-bg-color-gray {
+		background-color: #E5E5E5!important;
+	}
+	
+	.ns-border-color-gray {
+		border-color: #E5E5E5!important;
+	}
+	
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+    <input type="hidden" name="company_id" value="{$company_id}">
+    <input type="hidden" name="id" value="{$id}">
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">打印字体大小：</label>
+        <div class="layui-input-block">
+			{if condition="$info.font_size"}
+            <input type="number" name="font_size" value="{$info.font_size}" class="layui-input print-size ns-len-short" autocomplete="off">
+			{else/}
+			<input type="number" value="14" name="font_size" class="layui-input print-size ns-len-short" autocomplete="off">
+			{/if}
+        </div>
+		<div class="ns-word-aux">
+			<p>请输入字体大小，字体单位：px，用于控制打印模板的文字大小</p>
+		</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">显示尺寸：</label>
+        <div class="layui-input-block">
+            <div class="layui-input-inline">
+				{if condition="$info.width"}
+                <input name="width" type="number" value="{$info.width}" lay-verify="int" class="layui-input show-width ns-len-short" autocomplete="off">
+				{else/}
+				<input name="width" type="number" value="766" lay-verify="int" class="layui-input show-width ns-len-short" autocomplete="off">
+				{/if}
+            </div>
+            <div class="layui-form-mid">-</div>
+            <div class="layui-input-inline">
+				{if condition="$info.height"}
+				<input name="height" type="number" value="{$info.height}" lay-verify="int" class="layui-input show-height ns-len-short" autocomplete="off">
+				{else/}
+                <input name="height" type="number" value="510" lay-verify="int" class="layui-input show-height ns-len-short" autocomplete="off">
+				{/if}
+            </div>
+        </div>
+		<div class="ns-word-aux">
+			<p>尺寸单位：px，用于控制打印模板的尺寸</p>
+		</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">打印选项：</label>
+        <div class="layui-input-block">
+            {foreach $print_item_list as $print_k=>$print_v}
+            <span class="print-option ns-border-color-gray" data-print-name="{$print_v.item_name}">{$print_v.item_title}</span>
+            {/foreach}
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">效果图预览：</label>
+        <div class="layui-input-block design-sketch"></div>
+    </div>
+	
+	<div class="layui-form-item">
+	    <label class="layui-form-label img-upload-lable">打印背景图：</label>
+	    <div class="layui-input-block">
+	        <div class="upload-img-block">
+	            <div class="upload-img-box">
+	                {if empty($info.background_image)}
+		                <div class="upload">
+		                    <img src="SHOP_IMG/upload_img.png" />
+		                    <p>点击上传</p>
+		                </div>
+	                {else/}
+	                 <img layer-src src="{:img($info.background_image)}" alt="">
+	                {/if}
+	            </div>
+				<p id="printBackground" class=" {if condition="$info.background_image"} replace {else/} no-replace{/if}">替换</p>
+		        <input type="hidden" class="bg-img-pri" name="background_image" value="{$info.background_image}" />   <!-- 预览背景图 -->
+		        <i class="del {if !empty($info.background_image)}show{/if}">x</i>
+	        </div>
+	    </div>
+		<p class="ns-word-aux">上传打印背景图会在打印时以背景形式显示在打印纸上，可在效果预览图中查看效果</p>
+	</div>
+
+    <div class="ns-form-row">
+        <button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+        <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+    </div>
+
+    <input type="hidden" class="print-con" value="{$info.content_json}" />   <!-- 打印内容 -->
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/Tdrag.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var img = $(".bg-img-pri").val();
+        $(".design-sketch").css({
+			"background": "url("+ img +") no-repeat center/ cover",
+			"width": $("input[name=width]").val(),
+			"height": $("input[name=height]").val()
+		});
+
+        if ($(".print-con").val() != '') {
+            var arr = JSON.parse($(".print-con").val());
+            var fontSize = $("input[name=font_size]").val();
+			if (fontSize == '') {
+				fontSize = 14;
+			}
+            for (index in arr) {
+                var class_name = arr[index].item_name,
+                    span_text = arr[index].item_title,
+                    top = arr[index].top,
+                    left = arr[index].left;
+				
+				$(".print-option").each(function () {
+					var print_name = $(this).attr("data-print-name");
+					if (class_name == print_name) {
+						$(this).addClass("ns-bg-color-gray");
+						$(this).css("cursor", "not-allowed");
+					}
+				});
+				
+                var html = '<div class="span_' + class_name + '" style="top: '+ top +'px; left: '+ left +'px; font-size: '+ fontSize +'px;">'+
+								'<span>' + span_text + '</span>'+
+								'<i class="iconfont iconclose_light" onclick="remove(this)"></i>'+
+							'</div>';
+                $(".design-sketch").append(html);
+				
+				$(".span_" + arr[index].item_name).hover(function () {
+					$(this).find("i").show();
+				}, function () {
+					$(this).find("i").hide();
+				});
+
+                $(".span_" + arr[index].item_name).Tdrag({
+                    scope: ".design-sketch"
+                });
+            }
+        }
+    });
+</script>
+<script>
+    layui.use(['form'],function() {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+		form.render();
+
+		var upload = new Upload({
+			elem: '#printBackground',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$(".design-sketch").css("background", "url("+ ns.img(res.data.pic_path) +") no-repeat center/ cover");
+				}
+			},
+			deleteCallback:function () {
+				$(".design-sketch").css("background", "");
+			}
+		});
+
+        /**
+         * 监听提交
+         */
+        form.on('submit(save)', function(data) {
+            var content = [];
+            $(".design-sketch div").each(function () {
+                var item = {};
+                item.item_name = $(this).attr("class").substring(5);
+                item.item_title = $(this).text();
+                item.left = $(this).position().left;
+                item.top = $(this).position().top;
+                content.push(item);
+            });
+
+            data.field.content_json = JSON.stringify(content);
+
+			// 删除图片
+			if(!data.field.background_image) upload.delete();
+			
+            if (repeat_flag) return;
+            repeat_flag = true;
+
+            $.ajax({
+                url: ns.url("shop/express/editprinttemplate"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res){
+                    repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/express/expressCompany");
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+                }
+            });
+        });
+
+        /**
+         * 预览内容添加
+         */
+        $(".print-option").click(function(){
+            var dataValue = $(this).text(),
+                dataId = $(this).attr("data-print-name");
+            var fontSize = $("input[name=font_size]").val();
+            if (fontSize == '') {
+                fontSize = 14;
+            }
+		
+            if ($(".span_"+ dataId).length > 0) {
+                return false;
+            } else {
+				$(this).addClass("ns-bg-color-gray");
+				$(this).css("cursor", "not-allowed");
+			}
+			
+            var html = '<div class="span_' + dataId + '" style="font-size: '+ fontSize +'px;">'+
+							'<span>' + dataValue + '</span>'+
+							'<i class="iconfont iconclose_light" onclick="remove(this)"></i>'+
+						'</div>';
+            $(".design-sketch").append(html);
+			
+			$(".span_" + dataId).hover(function () {
+				$(this).find("i").show();
+			}, function () {
+				$(this).find("i").hide();
+			});
+
+            $(".span_" + dataId).Tdrag({
+                scope: ".design-sketch"
+            });
+        });
+
+        /**
+         * 改变效果图宽和高
+         */
+        $(".show-width").blur(function(){
+            $(".design-sketch").css("width", $(this).val());
+            $("#realWidth").text($(this).val() * $(".proportion").val() + "px");
+        });
+
+        $(".show-height").blur(function(){
+            $(".design-sketch").css("height", $(this).val());
+            $("#realHeight").text($(this).val() * $(".proportion").val() + "px");
+        });
+
+        /**
+         *  打印字体大小
+         */
+        $(".print-size").blur(function(){
+            $(".design-sketch span").css("font-size", $(this).val() + "px");
+        });
+    });
+	
+	function remove(e) {
+		var that = e;
+		$(that).parent().remove();
+		
+		var attr_name = $(that).parent().attr("class").substring(5);
+		$(".print-option").each(function () {
+			var print_name = $(this).attr("data-print-name");
+			if (attr_name == print_name) {
+				$(this).removeClass("ns-bg-color-gray");
+				$(this).css("cursor", "pointer");
+			}
+		});
+	}
+
+    function back(){
+        location.href = ns.url("shop/express/expressCompany");
+    }
+</script>
+{/block}

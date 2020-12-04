@@ -1,0 +1,230 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.add-distribution{cursor: pointer;}
+	.area-modal{
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		padding: 25px 0;
+	}
+	.area-modal .area-list{
+		width: 255px;
+		height: 375px;
+		align-items: center;
+		border: 1px solid #ccc;
+	}
+	.area-modal .title{
+		height: 35px;
+		line-height: 35px;
+		text-align: center;
+	}
+	.area-modal .add{
+		background-color: transparent;
+		border: 1px solid #ccc;
+		padding: 5px 10px;
+		cursor: pointer;
+	}
+	.area-modal .box{
+		overflow-y: auto;
+		padding: 10px 0;
+		height: 340px;
+		box-sizing: border-box;
+	}
+	.modal-operation{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 50px;
+	}
+	.area-list .box{
+		height: 314px;
+		margin: 10px 0;
+		overflow-y:auto;
+		overflow-x:hidden;
+	}
+	.area-list .box ul li{
+		line-height: 30px;
+		cursor: pointer;
+		background-color:#fff;
+	}
+	.area-list .box ul li .title-div{
+		position:relative;
+		padding-left:20px;
+	}
+	.area-list .box ul li[data-level='2'] .title-div{
+		margin-left:10px;
+	}
+	.area-list .box ul li[data-level='3'] .title-div{
+		margin-left:20px;
+	}
+	.area-list .box ul li[data-level='4'] .title-div{
+		margin-left:30px;
+	}
+	.area-list.all-area .box ul li.selected{
+		background: #d7d7d7;
+	}
+	.area-list .area-btn,.area-list .area-btn-null,.area-list .area-delete{
+		position:absolute;
+		top:9px;
+		display:block;
+		width: 15px;
+		height: 15px;
+		border-radius: 50%;
+		background-color: #d7d7d7;
+		color: #fff;
+		line-height: 15px;
+		text-align: center;
+		cursor: pointer;
+	}
+	.area-list .area-btn{
+		left:3px;
+	}
+	.area-list .area-btn-null{
+		background-color:transparent;
+		left:3px;
+	}
+	.area-list .area-delete{
+		right:6px;
+	}
+	.area-list.all-area .area-delete{
+		display:none;
+	}
+	.area-list.all-area .area-btn.selected{
+		background-color: #fff;
+		color: #d7d7d7;
+	}
+	.right-opt {
+		float: right;
+	}
+	.right-opt span {
+		/* color: #FF6A00; */
+		cursor: pointer;
+	}
+	.ns-bg-color-gray {
+		background-color: #E5E5E5!important;
+	}
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form" >
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>模版名称：</label>
+		<div class="layui-input-block">
+			<input value="{$info['template_name']}" name="template_name" type="text" placeholder="请输入模版名称" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">计费方式：</label>
+		<div class="layui-input-block">
+			{foreach $fee_type_obj as $fee_type_k => $fee_type_v}
+			<input type="radio" name="json" lay-filter="fee_type" value="{$fee_type_k}" title="{$fee_type_v.name}" {if $fee_type_k == $info['fee_type']} checked {/if}>
+			{/foreach}
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否默认：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_default" lay-filter="is_default" value="1" lay-skin="switch" {if condition="$info.is_default == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>配送区域：</label>
+		<div class="layui-input-block">
+			<table id="distributionArea" class="layui-table">
+				<colgroup>
+					<col width="40%">
+					<col width="15%">
+					<col width="15%">
+					<col width="15%">
+					<col>
+				</colgroup>
+				<thead>
+				<tr>
+					<th>可配送区域</th>
+					{if $info['fee_type'] eq 1}
+					<th data-name="snum">首重（Kg）</th>
+					{elseif $info['fee_type'] eq 2}
+					<th data-name="snum">首体积(m³)</th>
+					{else/}
+					<th data-name="snum">首件（个）</th>
+					{/if}
+					<th >运费（元）</th>
+					{if $info['fee_type'] eq 1}
+					<th data-name="xnum">续重（Kg）</th>
+					{elseif $info['fee_type'] eq 2}
+					<th data-name="xnum">续体积(m³)</th>
+					{else/}
+					<th data-name="xnum">续件（个）</th>
+					{/if}
+					<th >续费（元）</th>
+				</tr>
+				</thead>
+				<tbody>
+				{volist name="$info['template_item']" id="item" key="key"}
+				<tr data-selected="{$key}">
+					<td>
+						<p class="area-show">
+							{$item.area_names}
+							<span class="right-opt">
+							<span class="opt-update" data-selected="{$key}">修改</span>&nbsp;
+							<span class="opt-delete" data-selected="{$key}">删除</span>
+						</span>
+						</p>
+					</td>
+					<td>
+						<div class="layui-input-inline">
+							<input type="text" name="snum" data-selected="{$key}" class="layui-input" value="{$item.snum}">
+						</div>
+					</td>
+					<td>
+						<div class="layui-input-inline">
+							<input type="text" name="sprice" data-selected="{$key}" class="layui-input" value="{$item.sprice}">
+						</div>
+					</td>
+					<td>
+						<div class="layui-input-inline">
+							<input type="text" name="xnum" data-selected="{$key}" class="layui-input" value="{$item.xnum}">
+						</div>
+					</td>
+					<td>
+						<div class="layui-input-inline">
+							<input type="text" name="xprice" data-selected="{$key}" class="layui-input" value="{$item.xprice}">
+						</div>
+					</td>
+					<input type="hidden" value="{$item.area_ids}" data-selected="{$key}" data-snum="{$item.snum}" data-sprice="{$item.sprice}" data-xnum="{$item.xnum}" data-xprice="{$item.xprice}" class="area_ids" data-name="{$item.area_names}">
+				</tr>
+
+
+				{/volist}
+
+				<tr>
+					<td colspan="5" class="ns-text-color add-distribution js-add-record">指定可配送区域和运费</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick=" window.history.go(-1);">返回</button>
+	</div>
+</div>
+
+<input type="hidden" value='{$info['template_id']}' id="template_id"/><!-- 模板id 添加为0 -->
+<input type="hidden" value='{$fee_type_json}' id="fee_type_json"/><!-- 计费方式相关数据 -->
+<input type="hidden" value='{$info.fee_type}' id="fee_type"/><!-- 计费方式 -->
+<input type="hidden" value='{$area_level}' id="area_level"/><!-- 配送地区等级 -->
+<input type="hidden" value='{$info['template_item']|count}' id="opt_total"/><!-- 模板项的总数 在修改的时候作为操作序列的起点 -->
+<input type="hidden" value='{$info['surplus_area_ids']}' id="surplus_area_ids"/>
+<input type="hidden" value="{$info['is_default']}" id="is_default">
+
+{/block}
+
+{block name="script"}
+<script type='text/javascript' src='SHOP_JS/express_add_template.js'></script>
+{/block}

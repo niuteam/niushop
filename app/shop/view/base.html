@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta name="renderer" content="webkit" />
+	<meta http-equiv="X-UA-COMPATIBLE" content="IE=edge,chrome=1" />
+	<title>{$menu_info['title']|default=""} - {$shop_info['site_name']|default=""}</title>
+	<meta name="keywords" content="{$shop_info['seo_keywords']}">
+	<meta name="description" content="{$shop_info['seo_description']}">
+	<link rel="icon" type="image/x-icon" href="__STATIC__/img/shop_bitbug_favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="STATIC_CSS/iconfont.css" />
+	<link rel="stylesheet" type="text/css" href="__STATIC__/ext/layui/css/layui.css" />
+	<link rel="stylesheet" type="text/css" href="SHOP_CSS/common.css" />
+	<script src="__STATIC__/js/jquery-3.1.1.js"></script>
+	<script src="__STATIC__/js/jquery.cookie.js"></script>
+	<script src="__STATIC__/ext/layui/layui.js"></script>
+	<script>
+		layui.use(['layer', 'upload', 'element'], function() {});
+
+		window.ns_url = {
+			baseUrl: "ROOT_URL/",
+			route: ['{:request()->module()}', '{:request()->controller()}', '{:request()->action()}'],
+			shop_module: '{$shop_module}',
+			SHOPIMG: 'SHOP_IMG'
+		};
+	</script>
+	<script src="__STATIC__/js/common.js"></script>
+	<script src="SHOP_JS/common.js"></script>
+	<style>
+		.ns-calendar{background: url("__STATIC__/img/ns_calendar.png") no-repeat center / 16px 16px;}
+		.layui-logo{height: 100%;display: flex;align-items: center;}
+		.layui-logo a{display: flex;justify-content: center;align-items: center;width: 200px;height: 50px;}
+		.layui-logo a img{max-height: 100%;max-width: 100%;}
+		.goods-preview .qrcode-wrap {max-width: 130px; max-height: 130px; overflow: hidden;}
+		.goods-preview .qrcode-wrap input {margin-top: 30px;}
+		@media only screen and (max-width: 1340px) {
+			.layui-nav .layui-nav-item a {
+				padding: 0 15px;
+			}
+			.layui-nav.ns-head-account .layui-nav-item a{
+				padding: 0 20px;
+			}
+		}
+		@media only screen and (max-width: 1200px) {
+			.layui-nav .layui-nav-item a {
+				padding: 0 10px;
+			}
+			.layui-nav.ns-head-account .layui-nav-item a{
+				padding: 0 20px;
+			}
+		}
+		@media only screen and (max-width: 920px) {
+			.layui-nav .layui-nav-item a {
+				padding: 0 5px;
+			}
+			.layui-nav.ns-head-account .layui-nav-item a{
+				padding: 0 20px;
+			}
+		}
+		@media only screen and (max-width: 1090px) {
+			.ns-shop-ewm {
+				display: none;
+			}
+		}
+	</style>
+	{block name="resources"}{/block}
+</head>
+
+<body>
+{block name="body"}
+	<div class="layui-layout layui-layout-admin">
+		{block name='head'}
+		<div class="layui-header">
+			<div class="layui-logo">
+				<a href="{:url('shop/index/index')}">
+					{notempty name='$shop_info.logo'}
+					<img src="{:img($shop_info.logo)}" />
+					{else/}
+					<img src="SHOP_IMG/shop_logo.png">
+					{/notempty}
+				</a>
+			</div>
+			<ul class="layui-nav layui-layout-left">
+				{foreach $menu as $menu_k => $menu_v}
+				<li class="layui-nav-item">
+					<a href="{$menu_v.url}" {if $menu_v.selected}class="active"{/if}>
+						<span>{$menu_v.title}</span>
+					</a>
+				</li>
+				{if $menu_v.selected}
+					{php}
+					$second_menu = $menu_v["child_list"];
+					{/php}
+				{/if}
+				{/foreach}
+			</ul>
+
+			<!-- 账号 -->
+			<div class="ns-login-box layui-layout-right">
+				<div class="ns-shop-ewm">
+					<a href="#" onclick="releaseNow()">立即发布</a>
+					<a href="#" onclick="getShopUrl()">访问店铺</a>
+				</div>
+
+				<ul class="layui-nav ns-head-account">
+					<li class="layui-nav-item layuimini-setting">
+						<a href="javascript:;">
+							{$user_info['username']}</a>
+						<dl class="layui-nav-child">
+							<dd class="ns-reset-pass" onclick="resetPassword();">
+								<a href="javascript:;">修改密码</a>
+							</dd>
+							<dd>
+								<a onclick="clearCache()" href="javascript:;">清除缓存</a>
+							</dd>
+							<dd>
+								<a href="{:addon_url('shop/login/logout')}" class="login-out">退出登录</a>
+							</dd>
+						</dl>
+					</li>
+				</ul>
+			</div>
+		</div>
+		{/block}
+
+		{block name='side_menu'}
+		{notempty name='$second_menu'}
+		<div class="layui-side ns-second-nav">
+			<div class="layui-side-scroll">
+
+				<!--二级菜单 -->
+				<ul class="layui-nav layui-nav-tree">
+					{foreach $second_menu as $menu_second_k => $menu_second_v}
+					<li class="layui-nav-item {if $menu_second_v.selected}layui-this layui-nav-itemed{/if}">
+						<a href="{empty name=" $menu_second_v.child_list"}{$menu_second_v.url}{else /}javascript:;{/empty}" class="layui-menu-tips">
+							<div class="stair-menu{if $menu_v.selected} ative{/if}">
+								<img src="__ROOT__/{$menu_second_v.icon}" alt="">
+							</div>
+							<span>{$menu_second_v.title}</span>
+						</a>
+
+						{notempty name="$menu_second_v.child_list"}
+						<dl class="layui-nav-child">
+							{foreach $menu_second_v["child_list"] as $menu_third_k => $menu_third_v}
+							<dd class="{if $menu_third_v.selected} layui-this{/if}">
+								<a href="{$menu_third_v.url}" class="layui-menu-tips">
+									<span class="layui-left-nav">{$menu_third_v.title}</span>
+								</a>
+							</dd>
+							{/foreach}
+						</dl>
+						{/notempty}
+					</li>
+					{/foreach}
+				</ul>
+			</div>
+		</div>
+		{/notempty}
+		{/block}
+
+		<!-- 面包屑 -->
+		{block name='crumbs'}
+		{notempty name="$second_menu"}
+		<div class="ns-crumbs{notempty name='$second_menu'} submenu-existence{/notempty}">
+			<span class="layui-breadcrumb" lay-separator="-">
+				{foreach $crumbs as $crumbs_k => $crumbs_v}
+				{if count($crumbs) >= 3}
+					{if $crumbs_k == 1}
+					<a href="{$crumbs_v.url}">{$crumbs_v.title}</a>
+					{/if}
+					{if $crumbs_k == 2}
+					<a><cite>{$crumbs_v.title}</cite></a>
+					{/if}
+				{else/}
+					{if $crumbs_k == 1}
+					<a><cite>{$crumbs_v.title}</cite></a>
+					{/if}
+				{/if}
+				{/foreach}
+			</span>
+		</div>
+		{/notempty}
+		{/block}
+
+		{empty name="$second_menu"}
+		<div class="ns-body layui-body" style="left: 0; top: 60px;">
+		{else /}
+		<div class="ns-body layui-body">
+		{/empty}
+			<!-- 内容 -->
+			<div class="ns-body-content">
+				<!-- 四级导航 -->
+				{if condition="isset($forth_menu) && !empty($forth_menu)"}
+				<div class="fourstage-nav layui-tab layui-tab-brief" lay-filter="edit_user_tab">
+					<ul class="layui-tab-title">
+						{volist name="$forth_menu" id="menu"}
+						<li class="{$menu.selected == 1 ? 'layui-this' : ''}" lay-id="basic_info"><a href="{$menu.parse_url}">{$menu.title}</a></li>
+						{/volist}
+					</ul>
+				</div>
+				{/if}
+
+				{block name="main"}{/block}
+			</div>
+
+			<!-- 版权信息 -->
+			<div class="ns-footer">
+				<a class="ns-footer-img" href="#"><img src="{if !empty($copyright.logo)} {:img($copyright.logo)} {else /}__STATIC__/img/copyright_logo.png{/if}" /></a>
+				<!--<p>{notempty name="$copyright.company_name"}{$copyright.company_name}{else/}上海牛之云网络科技有限公司{/notempty} {notempty name="$copyright.icp"}<a href="{notempty name='$copyright.copyright_link'}{$copyright.copyright_link}{/notempty}">&nbsp;&nbsp;备案号{$copyright.icp}</a>{/notempty}</p>-->
+				<!--{notempty name="$copyright.gov_record"}<a class="gov-box" href={$copyright.gov_url}><img src="HOME_IMG/gov_record.png" alt="">公安备案{$copyright.gov_record}</a>{/notempty}-->
+			</div>
+		</div>
+		</div>
+	</div>
+
+	<!-- 重置密码弹框html -->
+	<div class="layui-form" id="reset_pass" style="display: none;">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>原密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="old_pass" name="old_pass" required class="layui-input ns-len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="new_pass" name="new_pass" required class="layui-input ns-len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码</label>
+			<div class="layui-input-block">
+				<input type="password" id="repeat_pass" name="repeat_pass" required class="layui-input ns-len-mid" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+			</div>
+		</div>
+
+		<div class="ns-form-row mid">
+			<button class="layui-btn ns-bg-color" onclick="repass()">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		layui.use('element',function () {
+			var element = layui.element;
+			element.render('breadcrumb');
+		});
+
+        function clearCache () {
+            $.ajax({
+                type: 'post',
+                url: ns.url("shop/Login/clearCache"),
+                dataType: 'JSON',
+                success: function(res) {
+                    layer.msg(res.message);
+                    location.reload();
+                }
+            })
+        }
+
+		/**
+		 * 重置密码
+		 */
+		var index;
+		function resetPassword() {
+			index = layer.open({
+				type:1,
+				content:$('#reset_pass'),
+				offset: 'auto',
+				area: ['500px']
+			});
+
+			setTimeout(function() {
+				$(".ns-reset-pass").removeClass('layui-this');
+			}, 1000);
+		}
+
+		var repeat_flag = false;
+		function repass(){
+			var old_pass = $("#old_pass").val();
+			var new_pass = $("#new_pass").val();
+			var repeat_pass = $("#repeat_pass").val();
+
+			if (old_pass == '') {
+				$("#old_pass").focus();
+				layer.msg("原密码不能为空");
+				return;
+			}
+
+			if (new_pass == '') {
+				$("#new_pass").focus();
+				layer.msg("新密码不能为空");
+				return;
+			} else if (new_pass == old_pass) {
+				$("#new_pass").focus();
+				layer.msg("新密码不能与原密码一致");
+				return;
+			} else if ($("#new_pass").val().length < 6) {
+				$("#new_pass").focus();
+				layer.msg("密码不能少于6位数");
+				return;
+			}
+			if (repeat_pass == '') {
+				$("#repeat_pass").focus();
+				layer.msg("密码不能为空");
+				return;
+			} else if ($("#repeat_pass").val().length < 6) {
+				$("#repeat_pass").focus();
+				layer.msg("密码不能少于6位数");
+				return;
+			}
+			if (new_pass != repeat_pass) {
+				$("#repeat_pass").focus();
+				layer.msg("两次密码输入不一致，请重新输入");
+				return;
+			}
+
+			if(repeat_flag)return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				dataType: 'JSON',
+				url: ns.url("shop/login/modifypassword"),
+				data: {"old_pass": old_pass,"new_pass": new_pass},
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.close(index);
+						location.reload();
+					}
+				}
+			});
+		}
+
+		function closePass() {
+			layer.close(index);
+		}
+
+		layui.use('element', function() {
+			var element = layui.element;
+			element.init();
+		});
+
+		function getShopUrl(e) {
+			$.ajax({
+				type: "POST",
+				dataType: 'JSON',
+				url: ns.url("shop/shop/shopUrl"),
+				success: function (res) {
+					if (res.data.path.h5.status == 1) {
+						layui.use('laytpl', function () {
+							var laytpl = layui.laytpl;
+							$.ajax({
+								type: 'get',
+								url: res.data.path.h5.url + "?preview=1",
+								dataType: 'json',
+								error: function (obj) {
+									laytpl($("#h5_preview").html()).render(res.data, function (html) {
+										var layerIndex = layer.open({
+											title: '访问店铺',
+											skin: 'layer-tips-class',
+											type: 1,
+											area: ['600px', '600px'],
+											content: html,
+											success: function () {
+												if(obj.status == 0 || obj.status == 200){
+													$("#iframe").show();
+													$(".goods-preview .phone-wrap .iframe-wrap .empty").hide();
+												} else {
+													$(".goods-preview .phone-wrap .iframe-wrap .empty").show();
+													$("#iframe").hide();
+												}
+												var url = res.data.path.h5.url + "?preview=1"
+												$("iframe").attr("src",url);
+											}
+										});
+									});
+								}
+							});
+						})
+					} else {
+						layer.msg(res.data.path.h5.message);
+					}
+				}
+			});
+		}
+
+		function releaseNow(){
+			{if empty($base_weapp_config) || empty($base_weapp_config['appid']) }
+			layer.open({
+				title: '立即发布',
+				skin: 'release-layer',
+				type: 1,
+				area: ['360px', '410px'],
+				content: $('#weapp_release').html(),
+			});
+			{else/}
+				location.href = "{:addon_url('weapp://shop/weapp/package')}";
+			{/if}
+		}
+	</script>
+
+	<!-- 店铺预览 -->
+	<script type="text/html" id="h5_preview">
+		<div class="goods-preview">
+			<div class="qrcode-wrap">
+				<img src="{{ ns.img(d.path.h5.img) }}" alt="推广二维码">
+				<p class="tips ns-text-color">扫码访问店铺 <a class="ns-text-color" href="javascript:ns.copy('h5_preview_1');">复制链接</a></p>
+				<input type="text" id="h5_preview_1" value="{{d.path.h5.url}}" readonly />
+			</div>
+			<div class="phone-wrap">
+				<div class="iframe-wrap">
+					<iframe id="iframe" src="{{ d.path.h5.url }}?preview=1" frameborder="0"></iframe>
+					<div class="empty">
+						<img src="__STATIC__/img/wap_not_found.png" />
+						<p>当前手机页面无法访问</p>
+						<a href="https://www.kancloud.cn/niucloud/niushop_b2c_v4/1842146" class="ns-text-color" target="_blank">请检查手机端域名配置以及伪静态</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/html" id="weapp_release">
+		<div class="weapp-release">
+			<h3 class="title">小程序发布</h3>
+			<div class="desc">发布小程序需先配置小程序，请配置好之后再进行该操作</div>
+			<div class="operation-btns">
+				<div>
+					<a href="{:addon_url('weapp://shop/weapp/config', [])}" class="layui-btn ns-bg-color">立即配置</a>
+				</div>
+				<div>
+					<a href="https://mp.weixin.qq.com/" target="_blank" class="layui-btn layui-btn-primary">注册小程序账号</a>
+				</div>
+			</div>
+		</div>
+	</script>
+{/block}
+{block name="script"}
+{/block}
+</body>
+
+</html>

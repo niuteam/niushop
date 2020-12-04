@@ -1,0 +1,131 @@
+.colorSelector{display: inline-block;vertical-align: middle;}
+.layui-fluid{overflow: initial;}
+#bottomNav{position: relative;}
+#bottomNav .preview{width: 320px;background-repeat: no-repeat;background-size: 100%;float: left;padding-left: 20px;}
+#bottomNav .preview .preview-head{background: url("../img/preview_head_old.png") no-repeat;position: relative;}
+#bottomNav .preview .preview-head>span{color: #ffffff;font-size: 16px;display: block;text-align: center;margin-left: 50px;height: 64px;line-height: 82px;margin-right: 40px;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;cursor: pointer;}
+#bottomNav .preview .preview-block{border-left: 1px solid #e5e5e5;border-right: 1px solid #e5e5e5;border-bottom: 1px solid #e5e5e5;min-height: 100px;position: relative;}
+.preview-block ul{overflow: hidden;display: flex;position: absolute;bottom: 0;width: 100%;border-top:1px solid #e5e5e5;}
+.preview-block ul li{text-align: center;flex: 1;margin: 5px 0;}
+.preview-block ul li div{margin-bottom: 2px;height: 30px;line-height: 30px;}
+.preview-block ul li img{width: 20px;max-height: 100%;}
+.preview-block ul li span{text-overflow: ellipsis;white-space: nowrap;overflow: hidden;display: block;}
+#bottomNav .edit-attribute{position: relative;background: #ffffff;border: 1px solid #e5e5e5;width:400px;padding: 10px;float: left;margin-left: 20px;}
+.edit-attribute:before,.edit-attribute:after{right: 100%;top: 20px;border: solid transparent;content: " ";height: 0;width: 0;position: absolute;pointer-events: none;}
+.edit-attribute:before{border-color: transparent;border-right-color: #e5e5e5;border-width: 8px;margin-top: -6px;}
+.edit-attribute:after{border-color: transparent;border-right-color: #ffffff;border-width: 7px;margin-top: -5px;}
+.del{background: #999;color: #FFFFFF;position: absolute;border-radius: 50%;width: 20px;height: 20px;font-size: 12px;font-style: normal;line-height: 18px;text-align: center;right: -10px;top: -10px;cursor: pointer;z-index: 1;display: none;}
+.edit-attribute .img-block{width: 50px;height: 48px;    display: inline-block;padding: 8px;margin-right: 10px;cursor: pointer;vertical-align: top; line-height: 1;background-color: #EEEEEE;text-align: center;font-size: 12px;}
+.edit-attribute .img-block i.add{display:block;font-style: normal;text-align: center;font-size:30px;line-height: 48px;}
+.edit-attribute .img-block i.del{display: block;}
+.edit-attribute .img-block.has-choose-image{width: 66px;height: 64px;margin-right:0;background-color: #EEEEEE;display: inline-block;vertical-align: top;position: relative;line-height: 64px;text-align: center;padding: 0;}
+.edit-attribute .img-block:last-child{margin-top:15px;}
+.edit-attribute .img-block.has-choose-image>div{width: 66px;height: 64px;}
+
+.edit-attribute .img-block.has-choose-image img{width: auto;height: auto;max-width: 100%;max-height: 100%;margin-bottom: 10px;}
+.edit-attribute .img-block.has-choose-image span{position: absolute;bottom: 0;left: 0;width: 100%;text-align: center;font-size:12px;background: rgba(0,0,0,.6);color:#ffffff;line-height: initial;cursor:pointer;}
+.edit-attribute .bottom-menu-config>ul>li{display: flex; padding: 10px;background: #ffffff; border: 1px dashed #e5e5e5;position: relative;margin-top: 16px;}
+.edit-attribute .bottom-menu-config>ul>li:first-child{margin-top:0;}
+.edit-attribute .bottom-menu-config>ul>li .image-block{    display: flex;flex-direction: column;margin-right:20px;cursor:pointer;vertical-align: top;line-height: 1;text-align: center;}
+.edit-attribute .bottom-menu-config>ul>li .content-block{display:inline-block;width:71%;}
+.edit-attribute .bottom-menu-config>ul>li .content-block .layui-form-label{width:70px;color: #909399 !important;font-size: 14px;}
+.edit-attribute .bottom-menu-config>ul>li .content-block .layui-input-block{margin-left:80px;}
+.edit-attribute .bottom-menu-config>ul>li .content-block div{margin-top:10px;}
+.edit-attribute .bottom-menu-config>ul>li .content-block div:last-child{margin-top:0;}
+.edit-attribute .bottom-menu-config>ul>li:hover .del{display:block;}
+.edit-attribute .bottom-menu-config>ul>li .img-hover-block{clear: both;}
+.edit-attribute .bottom-menu-config>ul>li .img-hover-block .img-block{margin-top: 10px;}
+.edit-attribute .bottom-menu-config .add-item{text-align:center;padding: 10px;border: 1px dashed #e5e5e5;margin: 10px 0;cursor: pointer;}
+.edit-attribute .bottom-menu-config .add-item i{font-size: 18px;vertical-align: middle;margin-right: 10px;font-style: normal;}
+.edit-attribute .bottom-menu-config .add-item span{vertical-align: middle;}
+.edit-attribute .bottom-menu-config p.hint{font-size: 12px;color: #999;margin: 10px;}
+.edit-attribute .bottom-menu-config .error-msg{margin-top: 5px;color: #f44;display: none;}
+.edit-attribute .bottom-menu-config .layui-form-checkbox span{height: initial;}
+/*.ump-btn-reset{border: 1px solid #0d73f5; background-color: transparent; color: #0d73f5; padding: 3px 10px; font-size: 12px; border-radius: 2px; cursor: pointer;}*/
+.custom-save{margin-top: 20px;text-align:center;}
+.layui-btn.layui-btn-primary.sm{margin-top: 5px;padding: 5px 10px !important;height: auto; font-size: 12px;vertical-align: baseline;line-height: 1}
+.layui-form-label, .layui-form-radiot, .layui-input, .layui-select, .layui-textarea{font-size: 12px;}
+.layui-input-block span.sm{display: flex; align-items: center; line-height: 34px;color: #909399;cursor: pointer;float: right;}
+.layui-input-block span.sm span {display: inline-block; max-width: 165px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.flex{justify-content: space-between;display: flex;align-items: center;}
+.flex .flex_fill{flex:1;text-align: right;}
+.flex .flex_left{display: flex;align-items: center;}
+.flex .flex_left .curr_color{color:#303133}
+.color-selector-reset {color: #555555;display: inline-block;line-height: 34px;cursor: pointer;margin-right: 20px;color: #FF6A00;}
+
+/* 单选 */
+.ns-icon-radio .ns-icon {
+	float: right;
+}
+.ns-icon-radio .ns-icon li {
+	display: inline-block;
+	width: 50px;
+	height: 32px;
+	line-height: 30px;
+	text-align: center;
+	border: 1px solid #EEEEEE;
+	border-right: 1px solid transparent;
+	cursor: pointer;
+	float: left;
+}
+
+.template-edit-title {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 1px solid #EEEEEE;
+	padding-top: 15px;
+	margin-bottom: 15px;
+}
+
+.template-edit-title h3 {
+	font-size: 14px;
+	padding: 8px 10px;
+	color: #303133;
+}
+
+.template-edit-title i {
+	display: inline-block;
+	font-size: 12px;
+	color: #818181;
+	cursor: pointer;
+	transition: transform .3s;
+	-webkit-transition: transform .3s; /* Safari */
+}
+
+.template-edit-title i.closed-right {
+	transform: rotate(-90deg);
+	-ms-transform: rotate(-90deg); /* IE 9 */
+	-webkit-transform: rotate(-90deg); /* Safari and Chrome */
+}
+
+
+
+/* 复选 */
+.ns-checkbox-wrap .layui-form-checkbox, .ns-checkbox-wrap .layui-input-inline-checkbox .layui-form-checkbox {
+	float: right;
+}
+
+.ns-checkbox-wrap .layui-form-item .layui-form-checkbox[lay-skin=primary] {
+	margin-top: -4px;
+}
+
+.ns-checkbox-wrap .layui-input-inline-checkbox span {
+	color: #909399;
+}
+
+.ns-checkbox-wrap .layui-input-block {
+	margin-left: 15px;
+}
+
+.ns-checkbox-wrap .layui-form-item .layui-input-inline-checkbox .layui-form-checkbox[lay-skin=primary] {
+	margin-top: 4px;
+}
+.layui-form-item .layui-form-checkbox{
+	margin-top: 8px !important;
+	padding-left: 0 !important;
+}
+.bottom-menu-config .layui-form-label.sm{
+	color: #909399 !important;
+	font-size: 14px;
+}

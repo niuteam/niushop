@@ -1,0 +1,361 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	#goods thead th{ background-color: #e6e6e6;}
+	/* 优惠商品 */
+	.goods-empty { width: 100%; display: flex; justify-content: center; align-items: center; }
+	.goods-title{display: flex;align-items: center;}
+	.goods-title .goods-img{display: flex;align-items: center;justify-content: center;width: 55px;height: 55px;margin-right: 5px;}
+	.goods-title .goods-img img{max-height: 100%;max-width: 100%;}
+	.goods-title .goods-name{flex: 1;line-height: 1.6;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>每个活动可添加2到6个商品</li>
+			<li>凡选择指定优惠的商品，在这个商品的详细页将出现发布的优惠套装</li>
+			<li>特殊商品不能参加该活动</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form" id="add_active">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>活动名称：</label>
+		<div class="layui-input-block">
+			<input type="text" name="bl_name" value="{$info.bl_name}" lay-verify="required" autocomplete="off" placeholder="请输入活动名称" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">
+			<p>请认真填写优惠套餐名称，使顾客能从名称了解该套餐</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>商品：</label>
+		<div class="layui-input-block">
+			<table class="layui-table" id="goods" lay-skin="line" lay-size="lg">
+				<colgroup>
+					<col width="45%">
+					<col width="20%">
+					<col width="20%">
+					<col width="15%">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>商品名称</th>
+						<th>价格</th>
+						<th>优惠价</th>
+						<th class="operation">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					{if condition="$info.bundling_goods"}
+						{foreach name=$info.bundling_goods as $k => $v}
+							<tr data-sku_id="{$v.sku_id}">
+								<td>
+									<div class="goods-title">
+										<div class="goods-img">
+											{if condition="$v.sku_image"}
+											<img layer-src src="{:img($v.sku_image)}" alt="">
+											{else/}
+											<img layer-src src="" alt="">
+											{/if}
+										</div>
+										<p class="ns-multi-line-hiding goods-name">{$v.sku_name}</p>
+									</div>
+								</td>
+								<td class="price-one">{$v.price}</td>
+								<td>{$v.promotion_price}</td>
+								<td class="operation">
+									<div class="ns-table-btn">
+										<a href="javascript:;" class="layui-btn" onclick="deleteGoods(this)">删除商品</a>
+									</div>
+								</td>
+							</tr>
+						{/foreach}
+					{else/}
+						<tr>
+							<td colspan="4">
+								<div class="goods-empty"><span>未添加商品</span></div>
+							</td>
+						</tr>
+					{/if}
+				</tbody>
+			</table>
+			<button class="layui-btn ns-bg-color" onclick="addGoods()">添加商品</button>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">套餐价格：</label>
+		<div class="layui-input-block ns-form-row">
+			<div class="layui-input-inline">
+				<input type="number" name="bl_price" lay-verify="flo" value="{$info.bl_price}" autocomplete="off" class="layui-input ns-len-small combined-price" min="0.00">
+			</div>
+			<span class="layui-form-mid">元</span>
+		</div>
+		<div class="ns-word-aux">
+			<p>价格不能小于0，可保留两位小数</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">原价：</label>
+		<div class="layui-input-block">
+			<p class="ns-input-text"><span class="original-price">{$info.goods_money}</span>元</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">节省价：</label>
+		<div class="layui-input-block">
+			<p class="ns-input-text"><span class="save-prices"></span>元</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">运费承担：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="shipping_fee_type" value="1" title="卖家承担运费" {$info.shipping_fee_type == 1 ? 'checked' : ''}>
+			<input type="radio" name="shipping_fee_type" value="2" title="买家承担运费（快递）" {$info.shipping_fee_type == 2 ? 'checked' : ''}>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否上下架：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="status" lay-filter="isOpen" value="1" lay-skin="switch" {if $info.status==1}checked{/if} />
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+
+	<input type="hidden" name="bl_id" value="{$bl_id}" />
+</div>
+{/block}
+{block name="script"}
+<script>
+	var priceAll = $(".original-price").text();
+	var priceBl = $("input[name=bl_price]").val();
+	$(".save-prices").text((parseFloat(priceAll) - parseFloat(priceBl)).toFixed(2));  //优惠价
+	var table, form, selectGoodsSkuId = [];
+
+	$("#goods").find("tbody tr").each(function (i) {
+		var id = $(this).attr("data-sku_id");
+		selectGoodsSkuId.push(id);
+	});
+
+	layui.use(['form'], function() {
+		form = layui.form;
+		var	repeat_flag = false; //防重复标识
+
+		table = new Table({
+			elem: '#goods_list',
+			url: ns.url("bundling://shop/bundling/lists"),
+			cols: [
+				[{
+					unresize: 'false',
+					width: '8%',
+					templet: '#checkbox'
+				}, {
+					title: '商品',
+					unresize: 'false',
+					width: '37%',
+					templet: '#goodIntro'
+				}, {
+					field: 'stock',
+					title: '商品库存',
+					unresize: 'false',
+					width: '15%'
+				}, {
+					field: 'goods_class_name',
+					title: '商品类型',
+					unresize: 'false',
+					width: '12%'
+				}, {
+					field: 'goods_state_name',
+					title: '状态',
+					unresize: 'false',
+					width: '8%'
+				}, {
+					field: 'create_time',
+					title: '创建时间',
+					unresize: 'false',
+					width: '20%',
+					align: 'right',
+					templet: function (data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}]
+			]
+		});
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			var num = $("#goods").find("tbody tr").length;
+			if (num < 2) {
+				layer.msg("商品数不可小于2个！");
+				return;
+			}
+
+			if (data.field.status == undefined) {
+				data.field.status = 0;
+			}
+
+			var selectGoodsSkuId = []; //商品id
+			$("#goods").find("tbody tr").each(function (i) {
+				var id = $(this).attr("data-sku_id");
+				selectGoodsSkuId.push(id);
+			});
+			data.field.sku_ids = selectGoodsSkuId.toString();
+
+			if(repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("bundling://shop/bundling/edit"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("bundling://shop/bundling/lists");
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+		form.verify({
+			flo: function (value) {
+				if (value == '') {
+					return;
+				}
+				var reg = /^(0|[1-9]\d*)(\s|$|\.\d{1,2}\b)/;
+				if (!reg.test(value)) {
+					return '价格不能小于0，可保留两位小数！'
+				}
+			}
+		});
+	});
+
+	/**
+	 * 添加商品
+	 */
+	function addGoods() {
+		goodsSelect(function (res) {
+			if (!res.length) return false;
+			var price = 0.00;
+			var html = $("#goods tbody .goods-empty").length ? '' : $("#goods tbody").html();
+			for (var i = 0; i < res.length; i++) {
+				for (var k = 0; k < res[i].selected_sku_list.length; k++) {
+					var item = res[i].selected_sku_list[k];
+					html += `<tr data-sku_id="${item.sku_id}">`;
+					html += `
+						<td>
+							<div class="goods-title">
+								<div class="goods-img">
+									<img layer-src src="${item.sku_image ? ns.img(item.sku_image) : ''}" alt="">
+								</div>
+								<p class="ns-multi-line-hiding goods-name">${item.sku_name}</p>
+							</div>
+						</td>
+					`;
+					html += `<td class='price-one'>${item.price }</td>`;
+					html += `<td>${item.stock}</td>`;
+					html += `<td class='operation'> <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='deleteGoods(this)'>删除商品</a></div></td>`;
+					html += `</tr>`;
+
+					price += Number(item.price);
+					selectGoodsSkuId.push(item.sku_id);
+				}
+			}
+
+			$("#goods tbody").html(html);
+			$(".original-price").text(price.toFixed(2));
+			$(".combined-price").val(price.toFixed(2));
+			$(".save-prices").text(0);
+
+		}, selectGoodsSkuId, {mode: "sku", max_num: 6, min_num: 2});
+	}
+
+	/**
+	 * 删除商品
+	 */
+	function deleteGoods(data){
+		var obj = $(data).parent().parent().parent();
+		$(obj).remove();
+		priceCount();  //计算出当前总价格
+		for (var i in selectGoodsSkuId){
+			if(selectGoodsSkuId[i] == Number($(obj).attr("data-sku_id"))){
+				selectGoodsSkuId.splice(i,1);
+			}
+		}
+	}
+
+	/**
+	 * 计算总价
+	 */
+	function priceCount() {
+		var price_count = 0;
+		$("#goods").find("tbody td.price-one").each(function (i) {
+			var price_one = Number($(this).text());
+			price_count += price_one;
+		});
+
+		$(".original-price").text(price_count.toFixed(2));
+		$(".save-prices").text(0);
+		$(".combined-price").val(price_count.toFixed(2));
+
+		if (price_count == 0) {
+			var html = '<tr>'+
+							'<td colspan="4">'+
+								'<div class="goods-empty">优惠套装还未选择添加商品</div>'+
+							'</td>'+
+						'</tr>';
+
+			$("#goods tbody").html(html);
+		}
+	}
+
+	/**
+	 * 计算组合套餐价格、原价、节省价
+	 */
+	$(".combined-price").blur(function () {
+		var combinedPrice = $(this).val(),
+			originalPrice = Number($(".original-price").text());
+
+		if(combinedPrice > originalPrice){
+			$(this).val(originalPrice);
+			layer.msg("组合套餐价格不能高于原价");
+			$(".save-prices").text(0);
+		}else{
+			$(".save-prices").text((originalPrice - combinedPrice).toFixed(2));
+		}
+	});
+
+	function back() {
+		location.href = ns.url("bundling://shop/bundling/lists");
+	}
+</script>
+{/block}

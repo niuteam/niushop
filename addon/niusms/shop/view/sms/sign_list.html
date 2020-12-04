@@ -1,0 +1,217 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.addsign{
+		margin-left:10px
+	}
+</style>
+{/block}
+{block name="body"}
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color addsign" onclick="add()">添加短信签名</button>
+
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="sign_tab">
+
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="sign_list" lay-filter="sign_list"></table>
+		<input class="signature" type="hidden" value="{$sms_config['signature']}" />
+	</div>
+</div>
+
+<!-- 时间 -->
+<script type="text/html" id="use_status">
+	{{# if(d.sign == "{$sms_config['signature']}" ){ }}
+	使用中
+	{{# }else { }}
+	未使用
+	{{# } }}
+
+</script>
+
+<!-- 审核状态 -->
+<script type="text/html" id="status">
+	{{#  if(d.auditResult == 1){  }}
+	<span style="color:red">待审核</span>
+	{{#  }else if(d.auditResult == 2){  }}
+	<span style="color:green">审核通过</span>
+	{{#  }else if(d.auditResult == 3){  }}
+	<span style="color:grey">审核不通过</span>
+	{{#  }  }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		{{# if(d.sign == "{$sms_config['signature']}" ){ }}
+
+		{{# }else { }}
+		<a class="layui-btn" lay-event="use">使用</a>
+		{{# } }}
+	</div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+
+	var table,laytpl,element,repeat_flag,form;
+	layui.use(['form', 'element', 'laytpl'], function() {
+        	laytpl = layui.laytpl;
+			form = layui.form;
+			element = layui.element;
+			repeat_flag = false; //防重复标识
+			form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(sign_tab)', function() {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': this.getAttribute('data-status')
+				}
+			});
+		});
+
+		table = new Table({
+			elem: '#sign_list',
+			url: ns.url("niusms://shop/sms/signlist"),
+            parseData: function(res){ //res 即为原始返回的数据
+                return {
+                    "code": 0, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.page.total, //解析数据长度
+                    "data": res.data.signatures //解析数据列表
+                };
+            },
+			cols: [
+				[{
+			    	field:'sign',
+					title: '签名名称',
+					unresize: 'false',
+					width: '23%'
+				}, {
+                    title: '使用状态',
+                    unresize: 'false',
+                    width: '10%',
+                    templet: '#use_status'
+                }, {
+					title: '审核状态',
+					unresize: 'false',
+					width: '10%',
+					templet: '#status'
+				}, {
+                    title: '添加时间',
+                    unresize: 'false',
+                    width: '18%',
+                    templet: function(data){
+                        return ns.millisecond_to_date(data.createTime);
+                    }
+                }, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '12%'
+
+				}]
+			]
+
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'use': //使用
+                    changeSign(data.sign);
+					break;
+			}
+		});
+		
+		/**
+		 * 使用签名
+		 */
+		function changeSign(sign) {
+
+			layer.confirm('确定要使用该签名?', function() {
+				if (repeat_flag) return;
+				repeat_flag = true;
+
+				$.ajax({
+					url: ns.url("niusms://shop/sms/changeSignature"),
+					data: {
+                        signature: sign
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+                            location.reload();
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+	});
+
+
+	//添加短信签名
+	function add() {
+        layer.prompt({
+            formType: 2,
+            value: '',
+            title: '添加短信签名',
+            area: ['400px', '100px'], //自定义文本域宽高
+            yes: function(index, layero){
+                var value = layero.find(".layui-layer-input").val();
+                if(value.trim().length == 0){
+                    layer.msg("请填写短信签名！");
+                    return false;
+                }
+                $.ajax({
+                    type: "post",
+                    url: ns.url("niusms://shop/sms/addChildSignature"),
+                    async: true,
+                    dataType: 'json',
+                    data: {signature : value},
+                    success: function (res) {
+                        layer.msg(res.message, {}, function () {
+                            if (res.code == 0) {
+                                layer.close(index);
+                                location.reload();
+                            }
+                        });
+                    }
+                })
+            }
+        });
+	}
+
+</script>
+{/block}

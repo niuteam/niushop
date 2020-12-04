@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "ns-adv": "/components/ns-adv/ns-adv",
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

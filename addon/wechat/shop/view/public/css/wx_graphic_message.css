@@ -1,0 +1,339 @@
+#graphic_message {
+    /*width: 760px;*/
+    margin-bottom: 90px;
+    padding: 20px;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.layui-elem-quote{
+    margin: 0 0 20px;
+}
+
+#graphic_message .graphic-message {
+    position: relative;
+    width: 320px;
+    min-height: 310px;
+    float: left;
+    border: 1px solid #C5C5C5;
+}
+
+#graphic_message .editor-box {
+    position: relative;
+    margin-top: 80px;
+    width: 380px;
+    min-height: 400px;
+    float: left;
+    padding: 15px;
+    margin-left: 20px;
+    border: 1px solid #d1d1d1;
+    border-radius: 5px;
+}
+
+#graphic_message .arrow, #graphic_message .arrow::after {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 7px 7px 6px 0;
+    border-color: transparent #d1d1d1 transparent transparent;
+    position: absolute;
+    left: -7px;
+    top: 19px;
+}
+
+#graphic_message .arrow::after {
+    content: "";
+    border-right-color: #f8f8f8;
+    left: 1px;
+    top: -7px;
+}
+
+#graphic_message .graphic-message-list {
+    padding: 15px;
+}
+
+#graphic_message .graphic-message-list li {
+    border: 1px solid #AAA;
+    border-top-color: #FFF;
+    border-bottom-color: #DDD;
+    background: #FFF;
+    box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+}
+
+#graphic_message .graphic-message-list li:first-child {
+    border-top-color: #AAA;
+}
+
+#graphic_message .graphic-message-list li:last-child {
+    border-bottom-color: #AAA;
+}
+
+#graphic_message .graphic-message-list li content {
+    display: block;
+    margin: 10px;
+    position: relative;
+    overflow: hidden;
+    height: 50px;
+}
+
+#graphic_message .graphic-message-list li:first-child content {
+    height: 150px;
+}
+
+#graphic_message .graphic-message-list li .title {
+    padding-right: 70px;
+    max-height: 48px;
+    word-break: break-all;
+    overflow: hidden;
+}
+
+#graphic_message .graphic-message-list li:first-child .title {
+    position: absolute;
+    display: block;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background: rgba(0, 0, 0, .5);
+    color: #FFF;
+    z-index: 2;
+    line-height: 30px;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-all;
+    max-height: unset;
+}
+
+#graphic_message .graphic-message-list li:first-child .title span {
+    padding: 2px 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 26px;
+}
+
+#graphic_message .graphic-message-list li .title span {
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+#graphic_message .graphic-message-list li .action {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+#graphic_message .action span.edit, #graphic_message .action span.delete {
+    background: rgba(0, 0, 0, .4);
+    color: #FFF;
+    font-size: 14px;
+    padding: 0 5px;
+    display: inline-block;
+    margin-left: 1px;
+}
+
+#graphic_message .graphic-message-list li content img {
+    height: auto;
+    max-width: 100%;
+    vertical-align: middle;
+    border: 0;
+    float: right;
+    width: 50px;
+    height: 50px;
+    background: #EEE;
+}
+
+#graphic_message .graphic-message-list li content .empty-img {
+    width: 50px;
+    height: 50px;
+    float: right;
+    background: #EEE;
+}
+
+#graphic_message .graphic-message-list li:first-child content img {
+    width: 268px;
+    height: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+}
+
+#graphic_message .graphic-message-list li:first-child content .empty-img {
+    width: 268px;
+    height: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    position: absolute;
+}
+
+#graphic_message .graphic-message-list li content .empty-hint {
+    height: 20px;
+    width: 60px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    right: -5px;
+    bottom: 0;
+    margin: auto;
+    color: #AAA;
+    font-size: 12px;
+}
+
+#graphic_message .graphic-message-list li:first-child content .empty-hint {
+    height: 20px;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 7px;
+    margin: auto;
+    color: #AAA;
+    font-size: 16px;
+}
+
+#editor {
+    margin: 0 auto;
+}
+
+#graphic_message .add-graphic-message h4::before {
+    top: -19px;
+    position: absolute;
+    content: ' ';
+    border: 8px solid transparent;
+    border-bottom-width: 10px;
+    border-bottom-color: #ddd;
+    left: 148px;
+}
+
+#graphic_message .add-graphic-message h4::after {
+    position: absolute;
+    content: ' ';
+    border: 8px solid transparent;
+    border-bottom-width: 10px;
+    border-bottom-color: #f8f8f8;
+    top: -16px;
+    left: 148px;
+}
+
+#graphic_message .add-graphic-message h4 {
+    position: relative;
+    left: 0;
+    top: 0;
+    border-top: 1px solid #ddd;
+    -webkit-box-shadow: 0 0 0 1px #ddd;
+    box-shadow: 0 0 0 1px #ddd;
+    padding: 0 6px 4px 10px;
+    width: 304px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#graphic_message .add-graphic-message h4 a {
+    display: inline-block;
+    text-align: center;
+    font-size: 14px;
+    line-height: 40px;
+    font-weight: bold;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+#graphic_message .layui-input {
+    width: 270px;
+}
+
+#graphic_message .editor-box label {
+    display: inline-block;
+    margin-bottom: 7px;
+}
+
+#graphic_message .editor-box label .hint {
+    color: #AAA;
+}
+
+#graphic_message .editor-box .editor-cover,
+#graphic_message .editor-box .editor-author,
+#graphic_message .editor-box .editor-title,
+#graphic_message .editor-box .editor-content {
+    margin-bottom: 20px;
+}
+
+#graphic_message .editor-box .editor-cover .editor-msg-label {
+    position: relative;
+    padding-left: 17px;
+}
+
+#graphic_message .editor-box .editor-cover #check_show_cover_pic {
+    position: absolute;
+    top: 4px;
+    left: 1px;
+    height: 13px;
+}
+
+#graphic_message .editor-box .editor-cover .choose-cover {
+    margin-bottom: 7px;
+}
+
+#graphic_message .editor-box .editor-cover .choose-cover a {
+    cursor: pointer;
+    display: block;
+}
+
+#edui1_bottombar.edui-editor-bottomContainer.edui-default {
+    display: none;
+}
+
+.bottom-botton {
+    position: absolute;
+    padding: 20px 0;
+    width: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -80px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.loading {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    text-align: center;
+    top: 0;
+    padding-top: 20%;
+    display: none;
+}
+
+.loading .layui-icon {
+    font-size: 39px;
+}
+
+.show {
+    display: block !important;
+}
+.choose-cover-pic{
+    margin-bottom: 10px;
+    width: 160px;
+    height: 160px;
+    text-align: center;
+    line-height: 160px;
+}
+.choose-cover-pic img{
+    max-height: 100%;
+    max-width: 100%;
+}

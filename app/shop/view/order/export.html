@@ -1,0 +1,224 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .layui-card-header{background-color:#f8f8f8}
+    .export-view{
+        /*width:1000px;*/
+        margin:30px 0 30px 0;
+
+    }
+    .apply-time{
+        float:left;
+    }
+    .export-select{float:left;}
+    .download-button{
+        float:right;
+    }
+    .export-list-view{
+        font-size:12px;
+    }
+    .empty-content{margin:20px auto;text-align:center;}
+    .export-foot-operation{overflow:hidden;margin-top:15px;}
+
+    .export-page{
+        float:right;
+    }
+    .export-content-bar{
+        float:left;
+        padding-top: 6px;
+        margin-left: 15px;
+    }
+    .export-foot-operation .layui-btn {
+        padding: 0px 5px;
+        font-size: 12px;
+        line-height: 2 !important;
+        height: auto;
+        display: inline-block;
+    }
+    .layui-unselect.layui-form-checkbox{
+        margin-top:-5px;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-layout layui-layout-admin">
+    <div class="export-view">
+        <div class="ns-body-content">
+            <div id="export_list"></div>
+
+            <div class="export-foot-operation">
+                <div class="export-content-bar layui-form ns-bg-color-light-gray">
+                    <input type="checkbox" name="export_select" lay-filter="allChoose" lay-skin="primary" title="全选">
+                </div>
+                <button class="layui-btn layui-btn-primary" onclick="deleteExport()">批量删除</button>
+                <div class='export-page'id="export_page"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<script type="text/html" id="exportHtml">
+    {{#  layui.each(d.data.list, function(index, item){ }}
+    <div class="layui-card export-list-view">
+        <div class="layui-card-header">
+
+            <div class="layui-form export-select">
+                <input type="checkbox" name="check[]" value="{{item.export_id}}" lay-skin="primary" title="">
+            </div>
+            <div class="apply-time">
+                导出时间：{{ ns.time_to_date(item.create_time) }}
+                &nbsp;&nbsp;&nbsp;导出主体：{{ item.type == 1 ? '订单' :  '商品'}}
+            </div>
+            <div class="download-button">
+                {{# if(item.status == 0){ }}
+                <span>正在导出中，请耐心等待…</span>
+                {{# }else{ }}
+                {{# if(item.path != ''){ }}
+                <a class="ns-text-color" href="{{ ns.img(item.path) }}">下载</a>
+                {{#}}}
+
+                {{#}}}
+                &nbsp;&nbsp;<a class="ns-text-color" href="javascript:void(0)"data-export_id ="{{item.export_id}}" onclick="deleteExport(this)">删除</a>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space10">
+                {{#  layui.each(JSON.parse(item.condition), function(condition_index, condition_item){ }}
+                <div class="layui-col-md3">
+                    {{condition_item.name}}：{{condition_item.value || '-'}}
+                </div>
+                {{#  }); }}
+            </div>
+        </div>
+    </div>
+    {{#  }); }}
+    {{#  if(d.data.list.length === 0){ }}
+    <div class="layui-card export-list-view">
+        <div class="layui-card-header">
+            <div class="apply-time">
+                订单导出记录
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-row layui-col-space10">
+                <div class="layui-col-md3">
+                    暂无导出记录
+                </div>
+            </div>
+        </div>
+    </div>
+    {{#  } }}
+
+</script>
+<script>
+    var laypage,form;
+    layui.use(['form', 'laytpl', 'laypage'], function() {
+        form = layui.form;
+        laytpl = layui.laytpl;
+        form.render();
+        exportList(1,10);
+
+        laypage = layui.laypage;
+
+
+        /**
+         * 全选
+         */
+        form.on("checkbox(allChoose)", function(data) {
+            $("input[name='check[]']").each(function() {
+                this.checked = data.elem.checked;
+            });
+            form.render('checkbox');
+        })
+    });
+
+    function exportList(page, limit){
+        $.ajax({
+            url: '{:addon_url("shop/order/export")}',
+            data: {
+                limit,
+                page
+            },
+            dataType: 'JSON',
+            type: 'POST',
+            success: function(res) {
+                var export_template = $("#exportHtml").html();
+
+                if(res.code >= 0){
+                    laytpl(export_template).render(res, function (html) {
+                        $("#export_list").html(html);
+                    })
+                }
+                //执行一个laypage实例
+                laypage.render({
+                    elem: 'export_page', //注意，这里的 test1 是 ID，不用加 # 号
+                    count: res.data.count,
+                    curr: page, //当前页
+                    limit: limit,
+                    jump: function(obj, first){
+                        //obj包含了当前分页的所有参数，比如：
+                        console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+                        console.log(obj.limit); //得到每页显示的条数
+                        //首次不执行
+                        if(!first){
+                            exportList(obj.curr, obj.limit);
+                            //do something
+                            form.render();
+                        }
+                    }
+                });
+                form.render();
+            }
+        });
+    }
+
+
+
+    /**
+     * 删除图片
+     */
+    var flag_delete = false;
+
+    function deleteExport(data) {
+        var export_ids = [];
+
+        if (!data) {
+            $("input[name='check[]']:checked").each(function(index, item) {
+                export_ids.push($(item).val());
+            });
+        }else{
+            export_ids.push($(data).attr("data-export_id"));
+        }
+        export_ids = export_ids.toString();
+
+        layer.confirm('确定要删除选择的订单导出记录吗。', {
+            btn: ['确定', '取消']
+        }, function() {
+            if (flag_delete) return;
+            flag_delete = true;
+            $.ajax({
+                type: "POST",
+                async: true,
+                url: ns.url("shop/order/deleteExport"),
+                data: {
+                    export_ids: export_ids,
+                },
+                dataType: "JSON",
+                success: function(data) {
+                    layer.msg(data.message);
+                    if (data.code == 0) {
+                        location.reload();
+                    }else{
+                        flag_delete = false;
+                    }
+                }
+            });
+        }, function() {
+            layer.close();
+        });
+    }
+</script>
+{/block}

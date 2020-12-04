@@ -1,0 +1,172 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .ns-card-brief:nth-child(1){
+        margin-top: 0;
+    }
+    .layui-card-body{
+        display: flex;
+        flex-wrap: wrap;
+        padding-bottom: 0 !important;
+        padding-left: 50px !important;
+        padding-right: 50px !important;
+    }
+    .layui-card-body .content{
+        width: 33.3%;
+        margin-bottom: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .layui-card-body .money{
+        font-size: 20px;
+        color: #000;
+        font-weight: bold;
+        margin-top: 10px;
+        max-width: 250px;
+    }
+    .layui-card-body .subhead{
+        font-size: 12px;
+        margin-left: 3px;
+        cursor: pointer;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="ns-card-title">订单概况</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+
+        <div class="content">
+            <p class="title">订单总额（元）</p>
+            <p class="money">{$order_total_money}</p>
+        </div>
+        <div class="content">
+            <p class="title">退款订单总额（元）</p>
+            <p class="money">{$refund_total_money}</p>
+        </div>
+        <div class="content">
+            <p class="title">订单总数</p>
+            <p class="money">{$order_total_count}</p>
+        </div>
+        <div class="content">
+            <p class="title">退款订单总数</p>
+            <p class="money">{$refund_total_count}</p>
+        </div>
+
+    </div>
+</div>
+
+{if $is_addon_fenxiao == 1}
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="ns-card-title">分销概况</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+
+        <div class="content">
+            <div class="title ns-prompt-block">
+                分销订单总金额（元）
+                <div class="ns-prompt">
+                    <i class="iconfont iconwenhao1"></i>
+                    <div class="ns-prompt-box">
+                        <div class="ns-prompt-con">
+                            分销商的订单总金额统计
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="money">{$fenxiao_order_money.real_goods_money}</p>
+        </div>
+        <div class="content">
+            <div class="title ns-prompt-block">
+                分销总佣金（元）
+                <div class="ns-prompt">
+                    <i class="iconfont iconwenhao1"></i>
+                    <div class="ns-prompt-box">
+                        <div class="ns-prompt-con">
+                            分销商累计总佣金统计
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="money">{$fenxiao_account}</p>
+        </div>
+        <div class="content">
+            <div class="title ns-prompt-block">
+                提现中佣金（元）
+                <div class="ns-prompt">
+                    <i class="iconfont iconwenhao1"></i>
+                    <div class="ns-prompt-box">
+                        <div class="ns-prompt-con">
+                            分销商提现待审核佣金统计
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="money">{$account_data.account_withdraw_apply}</p>
+        </div>
+        <div class="content">
+            <div class="title ns-prompt-block">
+                已提现佣金（元）
+                <div class="ns-prompt">
+                    <i class="iconfont iconwenhao1"></i>
+                    <div class="ns-prompt-box">
+                        <div class="ns-prompt-con">
+                            分销商已提现的佣金统计
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="money">{$account_data.account_withdraw}</p>
+        </div>
+        
+    </div>
+</div>
+{/if}
+
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <div>
+            <span class="ns-card-title">会员概况</span>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        {if $is_memberwithdraw == 1}
+        <div class="content">
+            <p class="title">会员可提现余额（元）</p>
+            <p class="money">{$member_balance_sum.balance_money}</p>
+        </div>
+        <div class="content">
+            <p class="title">会员已提现余额（元）</p>
+            <p class="money">{$member_balance_sum.balance_withdraw}</p>
+        </div>
+        <div class="content">
+            <p class="title">会员提现中余额（元）</p>
+            <p class="money">{$member_balance_sum.balance_withdraw_apply}</p>
+        </div>
+        <div class="content">
+            <p class="title">不可提现余额（元）</p>
+            <p class="money">{$member_balance_sum.balance}</p>
+        </div>
+
+        {else /}
+        <div class="content">
+            <p class="title">会员总余额（元）</p>
+            <p class="money">{$member_balance}</p>
+        </div>
+        {/if}
+
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+{/block}

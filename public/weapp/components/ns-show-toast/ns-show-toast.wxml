@@ -1,0 +1,1 @@
+<block wx:if="{{showToastValue.title}}"><view data-event-opts="{{[['touchmove',[['',['$event']]]]]}}" class="show-toast data-v-01b77830" catchtouchmove="__e"><view class="show-toast-box data-v-01b77830">{{showToastValue.title}}</view></view></block>

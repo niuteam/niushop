@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "sx-rate": "/components/sx-rate/index"
+  }
+}

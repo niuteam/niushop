@@ -1,0 +1,1 @@
+<view style="{{'padding-left:'+(value.padding*2+'rpx')+';'+('padding-right:'+(value.padding*2+'rpx')+';')+('margin:'+(value.margin*2+'rpx 0')+';')}}"><view style="{{'border-top:'+('2rpx '+value.borderStyle+' '+value.color)+';'}}"></view></view>

@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "ns-goods-sku": "/components/ns-goods-sku/ns-goods-sku",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-login": "/components/ns-login/ns-login",
+    "uni-number-box": "/components/uni-number-box/uni-number-box",
+    "to-top": "/components/toTop/toTop"
+  }
+}

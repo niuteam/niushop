@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "个人资料",
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "uni-nav-bar": "/components/uni-nav-bar/uni-nav-bar",
+    "ns-empty": "/components/ns-empty/ns-empty"
+  }
+}

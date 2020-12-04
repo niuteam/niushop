@@ -1,0 +1,344 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.contraction{display: inline-block;margin-right: 5px;}
+	.contraction span{cursor: pointer;display: inline-block;width: 17px;height: 17px;text-align: center;line-height: 14px;/* border: 1px solid #e9e9e9; */user-select: none;/* background: #fff; */}
+	.sku-list{overflow: hidden;padding: 0 45px;}
+	.sku-list li{float: left;display: flex;padding: 10px;margin-right: 10px;margin-bottom: 10px;border: 1px solid #EFEFEF;width: 294px;height: 140px;align-items: center;}
+	.sku-list li .img-wrap{vertical-align: middle;margin-right: 8px;width: 120px;height: 120px;text-align: center;line-height: 120px;}
+	.sku-list li .img-wrap img{max-width: 100%;max-height: 100%;}
+	.sku-list li .info-wrap span:first-of-type{font-weight: bold;}
+	.sku-list li .info-wrap span{display: -webkit-box;margin-bottom: 5px;overflow: hidden;text-overflow: ellipsis;white-space: normal;word-break: break-all;-webkit-box-orient: vertical;-webkit-line-clamp: 1;}
+	.sku-list li .info-wrap span.sku-name{-webkit-line-clamp: 2;margin-bottom: 5px;}
+	.sku-list li .info-wrap span:last-child{margin-bottom: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-tips layui-collapse">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>被删除的商品会在回收站进行展示</li>
+			<li>回收站列表中的商品点击删除将会彻底删除，不可恢复</li>
+			<li>点击恢复可将商品重新展示在商品列表中</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 筛选面板 -->
+<div class="ns-single-filter-box">
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="请输入商品名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="goods_list" lay-filter="goods_list"></table>
+
+<!-- 商品信息 -->
+<script type="text/html" id="goods_info">
+	<div class="ns-table-title">
+		<div class="contraction" data-goods-id="{{d.goods_id}}" data-open="0">
+			<span>+</span>
+		</div>
+		<div class="ns-title-pic">
+			<img layer-src src="{{ns.img(d.goods_image.split(',')[0], 'small')}}"/>
+		</div>
+		<div class="ns-title-content">
+			<a href="javascript:;" class="ns-multi-line-hiding ns-text-color"
+				title="{{d.goods_name}}">{{d.goods_name}}</a>
+		</div>
+	</div>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="delete">删除</a>
+		<a class="layui-btn" lay-event="recovery">恢复</a>
+	</div>
+</script>
+
+<!-- 批量操作 -->
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+	<button class="layui-btn layui-btn-primary" lay-event="recovery">恢复</button>
+</script>
+
+<!-- 批量操作 -->
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+	<button class="layui-btn layui-btn-primary" lay-event="recovery">恢复</button>
+</script>
+
+<!-- SKU商品列表 -->
+<script type="text/html" id="skuList">
+	<tr class="js-sku-list-{{d.index}}">
+		<td></td>
+		<td colspan="8">
+			<ul class="sku-list">
+				{{# for(var i=0;i<d.list.length;i++){ }}
+				<li>
+					<div class="img-wrap">
+						<img src="{{ns.img(d.list[i].sku_image, 'small')}}">
+					</div>
+					<div class="info-wrap">
+						<span class="sku-name">{{d.list[i].sku_name}}</span>
+						<span class="price">价格：￥{{d.list[i].price}}</span>
+						<span class="stock">库存：{{d.list[i].stock}}</span>
+						<span class="sale_num">销量：{{d.list[i].sale_num}}</span>
+					</div>
+				</li>
+				{{# } }}
+			</ul>
+		</td>
+	</tr>
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+	$(function () {
+		$("body").on("click", ".contraction",function () {
+			var goods_id = $(this).attr("data-goods-id");
+			var open = $(this).attr("data-open");
+			var tr = $(this).parent().parent().parent().parent();
+			var index = tr.attr("data-index");
+			
+			if(open == 1){
+				$(this).children("span").text("+");
+				$(".js-sku-list-"+index).remove();
+			}else{
+				$(this).children("span").text("-");
+				$.ajax({
+					url: ns.url("shop/goods/getGoodsSkuList"),
+					data: {goods_id:goods_id},
+					dataType: 'JSON',
+					type: 'POST',
+					async: false,
+					success: function (res) {
+						var list = res.data;
+						var sku_list = $("#skuList").html();
+						var data ={
+							list : list,
+							index : index
+						};
+						laytpl(sku_list).render(data, function(html) {
+							tr.after(html);
+						});
+						
+					}
+				});
+			}
+			$(this).attr("data-open",(open == 0 ? 1 : 0));
+			
+		})
+	});
+	layui.use(['form','laytpl'], function () {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		laytpl = layui.laytpl;
+		form.render();
+		var table = new Table({
+			elem: '#goods_list',
+			url: ns.url("shop/goods/recycle"),
+			cols: [
+				[
+					{
+						type: 'checkbox',
+						unresize: 'false',
+						width: '3%'
+					},
+					{
+						title: '商品信息',
+						unresize: 'false',
+						width: '39%',
+						templet: '#goods_info'
+					},
+					{
+						field: 'price',
+						title: '价格',
+						unresize: 'false',
+						width: '6%',
+						align: 'right',
+						templet: function(data) {
+							return '￥'+ data.price;
+						}
+					},
+					{
+						unresize: 'false',
+						width: '2%'
+					},
+					{
+						field: 'goods_stock',
+						title: '库存',
+						unresize: 'false',
+						width: '8%'
+					},
+					{
+						field: 'sale_num',
+						title: '销量',
+						unresize: 'false',
+						width: '7%'
+					},
+					{
+						title: '商品状态',
+						unresize: 'false',
+						width: '8%',
+						templet: function (data) {
+							var str = '';
+							if (data.goods_state == 1) {
+								str = '正常';
+							} else if (data.goods_state == 0) {
+								str = '下架';
+							}
+							return str;
+						}
+					},
+					{
+						title: '创建时间',
+						unresize: 'false',
+						width: '15%',
+						templet: function (data) {
+							return ns.time_to_date(data.create_time);
+						}
+					},
+					{
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						width: '12%'
+					}
+				]
+			],
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function (obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'delete':
+					//删除
+					deleteRecycleGoods(data.goods_id);
+					break;
+				case 'recovery':
+					//恢复
+					recoveryRecycle(data.goods_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteRecycleGoods(goods_ids) {
+			layer.confirm('确定要删除该商品吗?', function () {
+				if (repeat_flag) return;
+				repeat_flag = true;
+				
+				$.ajax({
+					url: ns.url("shop/goods/deleteRecycleGoods"),
+					data: {goods_ids : goods_ids.toString()},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function (res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+		
+		//商品恢复
+		function recoveryRecycle(goods_ids) {
+			
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/goods/recoveryRecycle"),
+				data: {goods_ids: goods_ids.toString()},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function (res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						table.reload();
+					}
+				}
+			});
+		}
+		
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function (obj) {
+			
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			var id_array = new Array();
+			for (i in obj.data) id_array.push(obj.data[i].goods_id);
+			switch (obj.event) {
+				case "delete":
+					deleteRecycleGoods(id_array.toString());
+					break;
+				case 'recovery':
+					//恢复
+					recoveryRecycle(id_array.toString());
+					break;
+			}
+		});
+		
+		/**
+		 * 批量操作
+		 */
+		table.toolbar(function (obj) {
+			
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			var id_array = new Array();
+			for (i in obj.data) id_array.push(obj.data[i].goods_id);
+			switch (obj.event) {
+				case "delete":
+					deleteRecycleGoods(id_array.toString());
+					break;
+				case 'recovery':
+					//恢复
+					recoveryRecycle(id_array.toString());
+					break;
+			}
+		});
+		
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function (data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+		
+	});
+</script>
+{/block}

@@ -1,0 +1,107 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用提现：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_use" lay-filter="is_use" value="1" lay-skin="switch" {if !empty($config) && $config.is_use==1 } checked {/if} >
+		</div>
+		<div class="ns-word-aux">会员可以将<span class="ns-text-color">可提现余额账户</span>的金额申请提现</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">提现审核：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_auto_audit" lay-filter="is_auto_audit" value="1" lay-skin="switch" {if !empty($config.value) && $config.value.is_auto_audit==1 } checked {/if} >
+		</div>
+	</div>
+	{if $is_exist}
+	<div class="layui-form-item">
+		<label class="layui-form-label">自动转账：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_auto_transfer" lay-filter="is_auto_transfer" value="1" lay-skin="switch" {if !empty($config.value) && $config.value.is_auto_transfer==1 } checked {/if} >
+		</div>
+		<div class="ns-word-aux">只有微信和支付宝支付支持自动转账</div>
+	</div>
+	{/if}
+	<div class="layui-form-item">
+		<label class="layui-form-label">提现手续费比率：</label>
+		<div class="layui-input-block">
+		<div class="layui-input-inline">
+			<input type="number" name="rate" value="{if condition="!empty($config.value)"}{$config.value.rate}{else/}0{/if}" lay-verify="positivEinteger" autocomplete="off" class="layui-input ns-len-short">
+		</div>
+			<span class="layui-form-mid">%</span>
+		</div>
+		<div class="ns-word-aux">比率必须为0-100的整数</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">最低提现额度：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="min" value="{if condition="!empty($config.value)"}{$config.value.min ?: 0}{else/}0{/if}" lay-verify="growthInteger" autocomplete="off" class="layui-input ns-len-short">
+			</div>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">转账方式：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				{foreach $transfer_type_list as $k => $v}
+					<input type="checkbox" name="transfer_type[]" title="{$v}" lay-skin="primary" value="{$k}" {if !empty($config['value']) && stripos($config['value']['transfer_type'], $k) !== false}checked{/if}>
+				{/foreach}
+
+			</div>
+		</div>
+	</div>
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script >
+	layui.use('form', function(){
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function(data){
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("shop/memberwithdraw/config"),
+				data: data.field,
+				success: function(res) {
+                    repeat_flag = false;
+					if (res.code == 0) {
+						layer.msg(res.message);
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+		
+		// 验证正整数
+		form.verify({
+			positivEinteger: function(value){
+				if(!new RegExp("^(\\d|[1-9]\\d|100)$").test(value)){
+					return '请输入0-100之间的正整数';
+				}
+			},
+			growthInteger: function (value) {
+				if(!new RegExp("(^[1-9]\\d*$)").test(value)){
+					return '请输入正整数';
+				}
+			}
+		});
+	});
+
+</script>
+{/block}

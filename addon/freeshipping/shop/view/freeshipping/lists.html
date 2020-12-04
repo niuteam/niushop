@@ -1,0 +1,173 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-table-cell{
+		height:auto;
+		overflow:visible;
+		text-overflow:inherit;
+		white-space:normal;
+	}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加满额包邮规则</button>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="groupbuy_tab">
+
+	<div class="layui-tab-content">
+		<table id="freeshipping_list" lay-filter="freeshipping_list"></table>
+	</div>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+	</div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+	layui.use(['form', 'element'], function() {
+		var table,
+			form = layui.form,
+			element = layui.element,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(groupbuy_tab)', function() {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': this.getAttribute('data-status')
+				}
+			});
+		});
+
+		table = new Table({
+			elem: '#freeshipping_list',
+			url: ns.url("freeshipping://shop/freeshipping/lists"),
+			cols: [
+				[{
+			    	field:'freeshipping_id',
+					title: '编号',
+					unresize: 'false',
+					width: '8%'
+				}, {
+					field: 'price',
+					title: '包邮金额',
+					unresize: 'false',
+					width: '10%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.price;
+					}
+				}, {
+					unresize: 'false',
+					width: '3%',
+				}, {
+					field: 'area_names',
+					title: '包邮地区',
+					unresize: 'false',
+					width: '52%'
+				}, {
+					title: '添加时间',
+					unresize: 'false',
+					width: '17%',
+					templet: function(data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '10%'
+				}]
+			],
+
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		//监听Tab切换
+		element.on('tab(status)', function(data) {
+			var status = $(this).attr("data-status");
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: {
+					'status': status
+				}
+			});
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("freeshipping://shop/freeshipping/edit", {"freeshipping_id": data.freeshipping_id});
+					break;
+				case 'del': //删除
+					deleteFreeshipping(data.freeshipping_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteFreeshipping(freeshipping_id) {
+			layer.confirm('确定要删除吗?', function() {
+				if (repeat_flag) return;
+				repeat_flag = true;
+
+				$.ajax({
+					url: ns.url("freeshipping://shop/freeshipping/delete"),
+					data: {
+						freeshipping_id: freeshipping_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+	});
+
+	function add() {
+		location.href = ns.url("freeshipping://shop/freeshipping/add");
+	}
+</script>
+{/block}

@@ -1,0 +1,443 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .good-name, .good-price {
+        line-height: 34px;
+    }
+
+    @media screen and (min-width: 1514px) {
+        .ns-len-short {
+			display: inline-block;
+            width: 80px !important;
+        }
+    }
+
+    @media screen and (max-width: 1513px) {
+        .ns-len-short {
+			display: inline-block;
+            width: 58px !important;
+        }
+    }
+
+    #rule_list .layui-input {
+        display: inline-block;
+    }
+
+    .layui-table[lay-size=lg] td, .layui-table[lay-size=lg] th {
+        padding: 15px;
+    }
+
+    .ns-align-right {
+        text-align: right;
+    }
+
+    .ns-line-height {
+        height: 45px;
+        line-height: 45px;
+    }
+
+    input[disabled] {
+        background-color: #F5F5F5;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-form">
+    <div class="layui-card ns-card-common">
+
+        <div class="layui-card-body">
+            <div class="layui-form-item goods-image-wrap">
+                <label class="layui-form-label">是否参与会员等级折扣：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="is_consume_discount" lay-filter="is_consume_discount" value="0" title="不参与"  {if $goods_info['is_consume_discount'] == 0 }checked{/if}>
+                    <input type="radio" name="is_consume_discount" lay-filter="is_consume_discount" value="1" title="参与"  {if $goods_info['is_consume_discount'] == 1 }checked{/if}>
+                 </div>
+            </div>
+			
+			{if condition="$goods_info.is_consume_discount == 0"}
+			<div class="layui-form-item discount_config layui-hide">
+			{else/}
+            <div class="layui-form-item discount_config">
+			{/if}
+                <label class="layui-form-label">优惠设置：</label>
+                <div class="layui-input-inline good-name">
+                    <input type="radio" name="discount_config" lay-filter="discount_config" value="0" title="默认规则"  {if $goods_info['discount_config'] == 0 }checked{/if}>
+                    <input type="radio" name="discount_config" lay-filter="discount_config" value="1" title="单独设置"  {if $goods_info['discount_config'] == 1 }checked{/if}>
+                </div>
+            </div>
+			
+			{if condition="$goods_info.is_consume_discount == 0"}
+			<div class="layui-form-item discount_config_rule layui-hide">
+			{else/}
+				{if condition="$goods_info.discount_config == 0"}
+				<div class="layui-form-item discount_config_rule">
+				{else/}
+				<div class="layui-form-item discount_config_rule layui-hide">
+				{/if}
+			{/if}
+                <label class="layui-form-label"></label>
+                <div class="layui-input-block">
+					<table id="discount_set"></table>
+                </div>
+            </div>
+			
+			{if condition="$goods_info.is_consume_discount == 0"}
+			<div class="layui-form-item discount_method layui-hide">
+			{else/}
+				{if condition="$goods_info.discount_config == 0"}
+				<div class="layui-form-item discount_method layui-hide">
+				{else/}
+				<div class="layui-form-item discount_method">
+				{/if}
+			{/if}
+                <label class="layui-form-label">优惠方式：</label>
+                <div class="layui-input-inline good-name">
+                    <input type="radio" name="discount_method" value="discount" lay-filter="discount_method" title="打折" checked>
+                    <input type="radio" name="discount_method" value="manjian" lay-filter="discount_method" title="减现"  {if $goods_info['discount_method'] == "manjian" }checked{/if}>
+                    <input type="radio" name="discount_method" value="fixed_price" lay-filter="discount_method" title="指定价格"  {if $goods_info['discount_method'] == "fixed_price" }checked{/if}>
+                </div>
+            </div>
+			
+			{if condition="$goods_info.is_consume_discount == 0"}
+			<div class="layui-form-item member_price_table layui-hide" id="personal_rule">
+			{else/}
+				{if condition="$goods_info.discount_config == 0"}
+				<div class="layui-form-item member_price_table layui-hide" id="personal_rule">
+				{else/}
+				<div class="layui-form-item member_price_table" id="personal_rule">
+				{/if}
+			{/if}
+				<label class="layui-form-label"></label>
+				<div class="layui-input-block">
+					<table id="discount_type"></table>
+				</div>
+			</div>
+			
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="save" id="save_member_price">保存</button>
+				<button class="layui-btn layui-btn-primary" onclick="back()" id="back_goods_list">返回</button>
+			</div>
+			<input type="hidden" name="goods_id" value="{$goods_info.goods_id}"/>
+        </div>
+    </div>
+
+    <div class="ns-single-filter-box">
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var param = 0;
+    var goods_id = "";
+    var is_consume_discount = {$goods_info.is_consume_discount};  // 是否参与折扣
+	var discount_config = {$goods_info.discount_config};  // 优惠规则设置
+	var level = {:json_encode($level_list, JSON_UNESCAPED_UNICODE)};  // 等级
+	var goods_info = {:json_encode($goods_info, JSON_UNESCAPED_UNICODE)};  // 商品信息
+	var dis_type = goods_info.discount_method;  // 优惠方式
+	var sku_data = goods_info.sku_data;  // sku列表
+
+
+	var table, tableType, form, laydate, repeat_flag = false;
+    layui.use(['form', 'laydate'], function () {
+		form = layui.form;
+		laydate = layui.laydate;
+		
+		table = new Table({
+			elem: "#discount_set",
+			cols: [
+				[{
+					field: 'goods_name',
+					title: '会员等级',
+					width: 120,
+					unresize: 'false',
+                    fixed: 'left',
+					templet: function(data) {
+						return '会员享受折扣';
+					}
+				},
+				{foreach $level_list as $k => $v}
+				{
+					title: '{$v.level_name}',
+					unresize: 'false',
+					templet: function(data) {
+						return {$v.consume_discount} + '%';
+					}
+				},
+				{/foreach}
+			]],
+			data: [{}],
+			page: false
+		});
+	 
+		if (is_consume_discount == 1 && discount_config == 1) {
+			sku_list = skuList(dis_type);
+			renderTableType(sku_list);
+		}
+	    
+        $(".layui-input").each(function () {
+            $(this).on('input', function () {
+                var _this = $(this);
+                if (_this.val() > 0) {
+                    $(this).siblings().attr('disabled', true);
+                    $(this).siblings().removeAttr("lay-verify");
+                } else {
+                    $(this).siblings().attr('disabled', false);
+                    $(this).siblings().attr("lay-verify", "required|flnum");
+                }
+            });
+        });
+
+        /**
+         * 表单提交
+         */
+        form.on('submit(save)', function (data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+			
+			$.ajax({
+			    type: 'POST',
+			    dataType: 'JSON',
+			    url: ns.url("memberprice://shop/goods/config"),
+			    data: data.field,
+			    async: false,
+			    success: function (res) {
+					repeat_flag = false;
+			        layer.msg(res.message);
+			        if (res.code == 0) {
+						param = 1;
+			        }
+			    }
+			})
+        });
+
+        //监听是否参与会员等级折扣
+		form.on('radio(is_consume_discount)', function(data){
+			var value = data.value;
+			if(value == 1){
+				//获取优惠设置值
+				var discount_config = $("input[name='discount_config']:checked").val();
+				if(discount_config == 1){
+					$(".discount_config").removeClass("layui-hide");
+					$(".discount_config_rule").addClass("layui-hide");
+					$(".discount_method").removeClass("layui-hide");
+					$(".member_price_table").removeClass("layui-hide");
+				} else {
+					$(".discount_config").removeClass("layui-hide");
+					$(".discount_config_rule").removeClass("layui-hide");
+				}
+			}
+			
+			if(value == 0){
+				$(".discount_config").addClass("layui-hide");
+				$(".discount_config_rule").addClass("layui-hide");
+				$(".discount_method").addClass("layui-hide");
+				$(".member_price_table").addClass("layui-hide");
+			}
+		});
+
+        //监听优惠设置
+        form.on('radio(discount_config)', function(data){
+            var value = data.value;
+            if(value == 1){
+                $(".discount_config_rule").addClass("layui-hide");
+                $(".discount_method").removeClass("layui-hide");
+                $(".member_price_table").removeClass("layui-hide");
+				sku_list = skuList(dis_type);
+				renderTableType(sku_list);
+            }
+            if(value == 0){
+				$(".discount_config_rule").removeClass("layui-hide");
+				$(".discount_method").addClass("layui-hide");
+				$(".member_price_table").addClass("layui-hide");
+				$("#personal_rule input").attr("lay-verify", "");
+            }
+        });
+
+        //监听成为分销商条件选择
+        form.on('radio(discount_method)', function(data){
+            var value = data.value;
+            if(value == "discount"){
+				dis_type = "discount";
+				sku_list = skuList(dis_type);
+				renderTableType(sku_list);
+            }
+			
+            if(value == 'manjian'){
+				dis_type = "manjian";
+				sku_list = skuList(dis_type);
+				renderTableType(sku_list);
+            }
+			
+            if(value == 'fixed_price'){
+				dis_type = "fixed_price";
+				sku_list = skuList(dis_type);
+				renderTableType(sku_list);
+            }
+        });
+	    
+		/**
+         * 表单验证
+         */
+		form.verify({
+			discount: function (value) {
+				if (value.trim() == "") {
+					return '会员等级折扣不能为空!';
+				}
+				if (value <= 0) {
+					return '会员等级折扣必须大于0!';
+				}
+				if (value >= 10) {
+					return '会员等级折扣必须小于10!';
+				}
+				
+				var arrMen = value.split(".");
+				var val = 0;
+				if (arrMen.length == 2) {
+					val = arrMen[1];
+				}
+				if (val.length > 2) {
+					return "会员等级折扣最多可保留两位小数";
+				}
+			},
+			manjian: function (value, item) {
+				var price = $(item).parents("tr").find(".sku-price").text();
+				
+				if (value.trim() == "") {
+					return '满减金额不能为空!';
+				}
+				if (value <= 0) {
+					return '满减金额必须大于0!';
+				}
+				if (value > Number(price)) {
+					return '满减金额不能大于商品价格!';
+				}
+				
+				var arrMen = value.split(".");
+				var val = 0;
+				if (arrMen.length == 2) {
+					val = arrMen[1];
+				}
+				if (val.length > 2) {
+					return "满减金额最多可保留两位小数";
+				}
+			},
+			fixed_price: function (value, item) {
+				var price = $(item).parents("tr").find(".sku-price").text();
+				
+				if (value.trim() == "") {
+					return '指定价格不能为空!';
+				}
+				if (value <= 0) {
+					return '指定价格必须大于0!';
+				}
+				if (value > Number(price)) {
+					return '指定价格不能大于商品价格!';
+				}
+				
+				var arrMen = value.split(".");
+				var val = 0;
+				if (arrMen.length == 2) {
+					val = arrMen[1];
+				}
+				if (val.length > 2) {
+					return "指定价格最多可保留两位小数";
+				}
+			}
+		});
+	});
+	
+	// 表格数据
+	function skuList(dis_type) {
+		var sku_list = [];
+		$.each(sku_data, function(index, item) {
+			var sku = {};
+			sku.sku_id = item.sku_id;
+			sku.sku_name = item.sku_name;
+			sku.price = item.price;
+			if (dis_type == "discount" || dis_type == "") {
+				$.each(item.member_price.discount, function(key, value) {
+					sku[key] = value;
+				})
+			} else if (dis_type == "fixed_price") {
+				$.each(item.member_price.fixed_price, function(key, value) {
+					sku[key] = value;
+				})
+			} else if (dis_type == "manjian") {
+				$.each(item.member_price.manjian, function(key, value) {
+					sku[key] = value;
+				})
+			}
+			sku_list.push(sku);
+		});
+		return sku_list;
+	}
+	
+	// 表格渲染
+	function renderTableType(sku_list) {
+		tableType = new Table({
+			elem: "#discount_type",
+			cols: [
+				[
+					{
+						field: 'sku_name',
+						title: '商品规格',
+						width: 180,
+						unresize: 'false',
+						{if count($level_list) > 2}
+						fixed: 'left',
+						{/if}
+						templet: function(data) {
+							return '<p class="ns-multi-line-hiding" title="'+ data.sku_name +'">'+ data.sku_name +'</p>';
+						}
+					}, {
+						field: 'price',
+						title: '价格',
+						width: 120,
+						unresize: 'false',
+						{if count($level_list) > 2}
+						fixed: 'left',
+						{/if}
+						align: 'right',
+						templet: function(data) {
+							return '￥<span class="sku-price">' + data.price + '</span>';
+						}
+					},
+					{foreach $level_list as $k => $v}
+					{
+						field: '{$v.level_id}',
+						title: '{$v.level_name}', 
+						unresize: 'false',
+						width: 120,
+						templet: function(data) {
+							var html = '';
+							var num = data[{$v.level_id}] ? data[{$v.level_id}] : "";
+							
+							if (dis_type == "discount" || dis_type == "") {
+								html = '<input type="number" name="member_price['+data.sku_id+'][discount][{$v.level_id}]" value="'+ num +'" min="0" class="layui-input ns-len-short" lay-verify="discount" /> 折'
+							} else if (dis_type == "fixed_price") {
+								html = '<input type="number" name="member_price['+data.sku_id+'][fixed_price][{$v.level_id}]" value="'+ num +'" min="0" class="layui-input ns-len-short" lay-verify="fixed_price" /> 元'
+							} else if (dis_type == "manjian") {
+								html = '减￥ <input type="number" name="member_price['+data.sku_id+'][manjian][{$v.level_id}]" value="'+ num +'" min="0" class="layui-input ns-len-short" lay-verify="manjian" />'
+							}
+							return html;
+						}
+					},
+					{/foreach}
+				]
+			],
+			data: sku_list,
+			page: false,
+			limit:sku_list.length
+		});
+	}
+	
+	// 表单提交
+	function formSubmit(callback) {
+		callback(param);
+	}
+
+    function back() {
+        param = 1;
+    }
+</script>
+{/block}

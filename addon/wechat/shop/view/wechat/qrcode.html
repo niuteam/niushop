@@ -1,0 +1,135 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_qrcode.css">
+{/block}
+{block name="main"}
+
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="load_url()">添加自定义模板</button>
+</div>
+
+<div class='qrcode-body'>
+
+	<div id="pictureIndex" class="ncsc-picture-folder">
+		<div class="ncsc-album">
+			<div style="clear:both;"></div>
+			<ul id="albumList" >
+
+			{foreach name="template_list['list']" item="info"}
+			<li onmouseover="checkShowThis(this);"  onmouseout="checkHideThis(this);" >
+			
+				{if condition="$info.is_default == 1 "}
+				<div class="qrcode" id="divBlock" style="border:1px solid #0d73f9;">
+				{else/}
+				<div class="qrcode" id="divBlock" style="border:1px solid #e1e1e1;">
+				{/if}
+					{if condition="$info.background"}
+						<img src="{:img($info.background)}" class="img-block" />
+					{/if}
+					<img class="tdrag-header" src="WECHAT_IMG/icon-header.png" style="left:{$info['header_left']};top:{$info['header_top']};">
+					<img class="tdrag-logo"  src="__STATIC__/img/bitbug_favicon.ico" style="left:{$info['logo_left']};top:{$info['logo_top']};{if $info["is_logo_show"] == 0}display:none;{/if}">
+					<img class="tdrag-code" src="WECHAT_IMG/template_qrcode.png" style="left:{$info['code_left']};top:{$info['code_top']};">
+					<span class="tdrag-name"  style="left:{$info['name_left']};top:{$info['name_top']};color:{$info['nick_font_color']};font-size:{$info['nick_font_size']}px;">昵称</span>
+				</div>
+				
+				<div class="check" >
+					{if condition="$info.is_default == 1 "}
+					<div onclick="modifyWeixinQrcode({$info.id})" style="margin-top:60%;cursor:pointer;">
+						<span>编辑</span>
+					</div>
+					{else /}
+					<div style="margin-top:50%;cursor:pointer;" onclick="modifyWeixinQrcodeTemplateValid({$info.id})">
+						<span >设为默认</span>
+					</div>
+					<div onclick="deleteWeixinQrcodeTemplateValid({$info.id})" style="cursor:pointer;">
+						<span>删除</span>
+					</div>
+					<div onclick="modifyWeixinQrcode({$info.id})" style="cursor:pointer;">
+						<span>编辑</span>
+					</div>
+					{/if}
+				</div>
+				
+				<input type="hidden" class="id" value="{$info.id}"/>
+				<input type="hidden" class="background" value="{$info.background}"/>
+				<input type="hidden" class="nick_font_color" value="{$info.nick_font_color}"/>
+				<input type="hidden" class="nick_font_size" value="{$info.nick_font_size}"/>
+				<input type="hidden" class="is_logo_show" value="{$info.is_logo_show}"/>
+				<input type="hidden" class="header_left" value="{$info.header_left}"/>
+				<input type="hidden" class="header_top" value="{$info.header_top}"/>
+				<input type="hidden" class="name_left" value="{$info.name_left}"/>
+				<input type="hidden" class="name_top" value="{$info.name_top}"/>
+				<input type="hidden" class="logo_left" value="{$info.logo_left}"/>
+				<input type="hidden" class="logo_top" value="{$info.logo_top}"/>
+				<input type="hidden" class="code_left" value="{$info.code_left}"/>
+				<input type="hidden" class="code_top" value="{$info.code_top}"/>
+				<div>
+					{if condition="$info.is_default == 1 "}
+						<img src="WECHAT_IMG/check_qrcode1.png" class="qrcode_img" style="position:absolute;top:0px;left:1px;"/>
+					{else /} 
+						<img src="WECHAT_IMG/check_qrcode1.png" class="qrcode_img" style="position:absolute;top:0px;leftt:1px;display:none;"/>
+					{/if}
+				</div>
+			</li>
+			{/foreach}
+			</ul>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	function checkShowThis(event){
+		$(".qrcode_button").hide();
+		$(".check").hide();
+		$(event).find(".qrcode_button").show();
+		$(event).find(".check").show();
+	}
+	function checkHideThis(event){
+		$(event).find(".qrcode_button").hide();
+		$(event).find(".check").hide();
+	}
+
+	//上传配置
+	var repeat_flag = false;//防重复标识
+
+	//设置店铺的模板为默认
+	function modifyWeixinQrcodeTemplateValid(id){
+		$.ajax({
+			type : "post",
+			url : "{:addon_url('Wechat://shop/wechat/qrcodeDefault')}",
+			data : { 'id' : id },
+			dataType : "JSON",
+			success : function(data) {
+				layer.msg(data.message);
+				setTimeout(function() {
+					location.href = ns.url("wechat://shop/wechat/qrcode");
+				}, 1000)
+			}
+		})
+	}
+
+	function deleteWeixinQrcodeTemplateValid(id){
+		$.ajax({
+			type : "post",
+			url : "{:addon_url('Wechat://shop/wechat/deleteQrcode')}",
+			data : { 'id' : id },
+			dataType : "JSON",
+			success : function(data) {
+				layer.msg(data.message);
+				setTimeout(function() {
+					location.href = ns.url("wechat://shop/wechat/qrcode");
+				}, 1000)
+			}
+		})
+	}
+
+	function load_url(){
+		window.location.href = ns.url('wechat://shop/wechat/addqrcode');
+	}
+
+	function modifyWeixinQrcode(id){
+		window.location.href = ns.url('wechat://shop/wechat/editQrcode', {'id' : id});
+	}
+</script>
+{/block}

@@ -1,0 +1,264 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_follow.css">
+{/block}
+{block name="main"}
+<div class="layui-tab-brief clearfix fourstage-nav">
+    <ul class="layui-tab-title">
+        <li>
+            <a href='{:addon_url("wechat://shop/replay/replay")}'>关键词自动回复</a>
+        </li>
+        <li class='layui-this'>
+            <a href='{:addon_url("wechat://shop/replay/follow")}'>关注后自动回复</a>
+        </li>
+    </ul>
+
+    <div class="weixin-normal rule-autoreplay-page">
+        <div id="load_rule_list"></div>
+
+        <!--添加回复-->
+        <div class="layui-form rule-container" id="add_reply" style="display: none">
+            <input type="hidden" name="layer_index" value="">
+            <input type="hidden" name="rule_id" value="">
+            <input type="hidden" name="key_id" value="-1">
+            <div class="arrow"><i class="layui-icon">&#xe603;</i></div>
+            <a href="javascript:;" class="close--circle js-close">×</a>
+            <div>
+                <div class="misc">
+                    <!-- 	   <a href="javascript:;" class="js-replay" nc-event="click" nc-action="emotion">表情</a> -->
+                    <a href="javascript:;" class="js-replay" nc-event="click" nc-action="hyperlink">插入链接</a>
+                    <!-- 		   <a href="javascript:;" class="js-replay" nc-event="click" nc-action="music">音乐</a> -->
+                    <!-- <a href="javascript:;" class="js-replay" onclick="material(1);">选择图文</a> -->
+                    <!--<div  class="others">-->
+                        <!--<a href="javascript:;">其他<i class="caret"></i></a>-->
+                        <!--<ul class="dropdown-menu">-->
+                            <!--{volist name="link_list" id="vo"}-->
+                            <!--<li><a class="js-open-goods" data-action-type="{$vo.name}" data-complex-mode="true" href="javascript:;">{$vo.title}</a></li>-->
+                            <!--{/volist}-->
+                        <!--</ul>-->
+                    <!--</div>-->
+                </div>
+
+                <div class="layui-form-item">
+                    <textarea placeholder="请输入内容" class="layui-textarea" name="reply_content" maxlength="300" lay-verify="required|content" ></textarea>
+                    <div class="complex-backdrop">
+                        <div class="complex-content"></div>
+                    </div>
+
+                    <div class="layui-input-block" style="margin-top:10px;margin-left: 0;">
+                        <button class="layui-btn ns-bg-color" type="button" lay-submit lay-filter="add_reply">确定</button>
+                        <span class="pull-right">还能输入 <i>300</i> 个字</span>
+                    </div>
+                </div>
+                <input type="hidden" value="" id="hidden_reply_type"/>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 插入链接 -->
+<div class="layui-form" id="hyperlink" style="display:none">
+    <div class="layui-form-item" style="margin-bottom:0;">
+        <div class="layui-input-inline">
+            <input type="text" name="title" lay-verify="required|title" autocomplete="off" placeholder="http://" class="layui-input">
+        </div>
+        <button class="layui-btn ns-bg-color"  lay-submit lay-filter="hyperlink">确定</button>
+    </div>
+</div>
+<!-- 音乐素材 -->
+<div class="layui-form" id="music" style="display:none">
+    <div class="layui-form-item ">
+        <label class="layui-form-label msg-music-thumb"><a href="javascript:;"  class="js-replay" nc-event="click" nc-action="thumbnail"><i class="layui-icon">&#xe654;</i></a></label>
+        <div class="layui-input-inline ">
+            <input type="text" name="title" placeholder="音乐标题" autocomplete="off" class="layui-input"  lay-verify="required|title" style="margin-bottom: 10px;">
+            <textarea placeholder="音乐描述" class="layui-textarea" name="description" maxlength="300" lay-verify="required|description" ></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item ">
+        <label class="layui-form-label">普通音质</label>
+        <div class="layui-input-inline ">
+            <input type="text" name="music_url" placeholder="填写音乐地址" autocomplete="off" class="layui-input"  lay-verify="required|url">
+        </div>
+    </div>
+    <div class="layui-form-item ">
+        <label class="layui-form-label">高清音质</label>
+        <div class="layui-input-inline ">
+            <input type="text" name="hq_music_url" placeholder="填写音乐地址" autocomplete="off" class="layui-input"  lay-verify="required|url">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <button class="layui-btn ns-bg-color" lay-submit lay-filter="music" style="float: right; margin-right: 10px;">确定</button>
+    </div>
+    <input type="hidden" name="thumb_attachment_id" value="">
+</div>
+{/block}
+{block name="script"}
+<script type='text/javascript' src='WECHAT_JS/wx_follow.js'></script>
+<script src="WECHAT_JS/common.js"></script>
+<script type="text/javascript">
+    $(function () {
+        var replay = new WxReplay(3,[3,6,9]);
+        replay.getData({"_this": replay, "rule_type": 'AFTER'});//数据初始化
+        replay.pageInit({"_this": replay});//分页初始化
+//        $(".js-replay").bind("click", {"_this": replay}, replay.e); //元素事件
+        $(".rule-autoreplay-page,.replay-button").delegate(".js-replay","click",{"_this": replay},replay.e);
+        //form 操作模块
+        layui.use(['form'], function () {
+            var form = layui.form;
+
+            //添加和修改回复
+            form.on('submit(add_reply)', function (data) {
+                var d = data.field;
+                var rule_id = d.rule_id;
+                var key_id = d.key_id;
+                var reply_content = $.trim(d.reply_content);
+                var layer_index = d.layer_index;
+                var type = $("#hidden_reply_type").val() ? $("#hidden_reply_type").val() : "text";
+
+                var param = {
+                    url: ns.url('wechat://shop/replay/editReplays'),
+                    data: {"rule_id": rule_id,"reply_content":reply_content, "key_id":key_id, "type" : type},
+                    success: function (res) {
+                        layer.msg(res.message);
+                        if (res.code >= 0) {
+                            $(".layui-laypage-btn").click();
+                            $('#add_reply').css("display","none");
+                            location.reload();
+                        }
+                    }
+                };
+                replay.sendAjax(param);
+            });
+
+            //插入链接 确定
+            form.on('submit(hyperlink)', function (data, index) {
+                var d = data.field;
+                var url = d.title;
+                if (url.indexOf('http://') == -1 && url.indexOf('https://') == -1) {
+                    url = 'http://' + url;
+                }
+
+                $("#add_reply").find("textarea[name='reply_content']").val(url);
+                layer.close(layer.index);
+            });
+
+            //音乐 确定
+            form.on('submit(music)', function (data, index) {
+                var d = data.field;
+                var thumb_attachment_id = d.thumb_attachment_id;
+                var title = d.title;
+                var description = d.description;
+                var music_url = d.music_url;
+                var hq_music_url = d.hq_music_url;
+
+                var active_pic = '';
+                active_pic += '<div class="voice-wrapper" data-voice-src="'+music_url+'">';
+                active_pic += '<span class="voice-player">';
+                active_pic += '<a href="javascript:;" class="close--circle js-delete-complex">×</a>';
+                active_pic += '<span class="stop">点击播放</span>';
+                active_pic += '<span class="second"></span>';
+                active_pic += '<i class="play" style="display:none;"></i>';
+                active_pic += '</span>';
+                active_pic += '</div>';
+                $("#add_reply").find(".complex-content").html(active_pic);
+                $('.complex-backdrop').css("display","block");
+                $("#add_reply").find("textarea[name='reply_content']").val(music_url);
+
+                layer.close(layer.index);
+            });
+        });
+
+        //关闭  清除
+        $(".js-close").click(function(){
+            $("#add_reply").find("textarea[name='reply_content']").val();
+            $('.complex-backdrop').css("display","none");
+            $('#add_reply').css("display","none");
+            $(".layui-layer-shade").remove();
+        });
+
+        //清除
+        $("body").on('click',".js-delete-complex",function(){
+            $("#add_reply").find("textarea[name='reply_content']").val('');
+            $('.complex-backdrop').css("display","none");
+        });
+    });
+
+    //音乐回调
+    function albumUploadSuccess(o,name){
+        $("#hidden_reply_type").val('image');
+        var active_pic = '';
+        active_pic += '<div class="ng ng-single ng-image">';
+        active_pic += '<a class="picture" target="_blank" href=""><img src="'+nc.img(o[0]['small_pic_path'])+'" alt=""/></a>';
+        active_pic += '</div>';
+        $("#add_reply").find(".complex-content").html(active_pic);
+        $('.complex-backdrop').css("display","block");
+        $("#add_reply").find("textarea[name='reply_content']").val(o[0]['small_pic_path']);
+    }
+
+    //图文回调
+    function chooseGraphicMessage(data) {
+        var active_pic = '';
+        active_pic += '<div class="ng ng-single">';
+        active_pic += '<a href="javascript:;" class="close--circle js-delete-complex">×</a>';
+        active_pic += '<div class="ng-item">';
+        active_pic += '<span class="label label-success">图 文</span>';
+        active_pic += '<div class="ng-title">';
+        active_pic += '<a href="'+data.value[0].url+'" target="_blank" class="new-window" title="'+data.value[0].title+'">' + data.value[0].title + '</a>';
+        active_pic += '</div>';
+        active_pic += '</div>';
+        active_pic += '<div class="ng-item view-more">';
+        active_pic += '<a href="'+data.value[0].url+'" target="_blank" class="clearfix new-window">';
+        active_pic += '<span class="pull-left">阅读全文</span>';
+        active_pic += '<span class="pull-right">&gt;</span>';
+        active_pic += '</a>';
+        active_pic += '</div>';
+        active_pic += '</div>';
+
+        $("#add_reply").find(".complex-content").html(active_pic);
+        $('.complex-backdrop').css("display", "block");
+        $("#add_reply").find("textarea[name='reply_content']").val(data.value[0].title);
+        $("#hidden_reply_type").val('articles');
+        $("#hidden_media_id").val(data.media_id);
+    }
+
+    //弹出框的位置
+    $("body").on('click',".add-reply-menu",function(){
+        var x = $(this).position().top;
+        var y = $(this).position().left;
+        var real_x = 16;
+        var real_y = 72;
+        $('.rule-container').css('top', real_x);
+        $('.rule-container').css('left', real_y);
+
+        var m = '<i class="layui-icon">&#xe603;</i>';
+        $('.rule-container .arrow').html(m);
+        $('.rule-container .arrow').css('right', 'auto');
+        $('.rule-container .arrow').css('left', '-13px');
+
+        $('.pull-right').find('i').text(300);
+    });
+
+    //编辑弹出框的位置
+    $("body").on('click',".js-edit-it",function(){
+        var x = $(this).position().top;
+        var real_x = x;
+        var real_y = 85;
+        $('.rule-container').css('top', real_x);
+        $('.rule-container').css('right', real_y);
+
+        var s = '<i class="layui-icon">&#xe602;</i>';
+        $('.rule-container .arrow').html(s);
+        $('.rule-container .arrow').css('left', 'auto');
+        $('.rule-container .arrow').css('right', 3);
+
+        var text_leng = $('.rule-container').find(".layui-textarea").val().length;
+        var left_leng = 300 - text_leng;
+        $('.pull-right').find('i').text(left_leng);
+    });
+
+    $("body").on('keydown',".layui-textarea",function(){
+        var text_leng = $(this).val().length;
+        var left_leng = 300 - text_leng;
+        $('.pull-right').find('i').text(left_leng);
+    })
+</script>
+{/block}

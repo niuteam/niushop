@@ -1,0 +1,190 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">订单设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">未付款自动关闭时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_close_time" value="{$order_event_time_config.auto_close ?? 0}" lay-verify="closetime" autocomplete="off" class="layui-input ns-len-short">
+					</div>
+					<span class="layui-form-mid">分钟</span>
+				</div>
+				<div class="ns-word-aux">订单创建后多长时间未付款自动关闭</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">发货后自动收货时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_take_delivery_time" value="{$order_event_time_config.auto_take_delivery ?? ''}" lay-verify="deliverytime" autocomplete="off" class="layui-input ns-len-short">
+					</div>
+					<span class="layui-form-mid">天</span>
+				</div>
+				<div class="ns-word-aux">订单发货后多长时间后自动收货</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">收货后自动完成时间：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="number" name="order_auto_complete_time" value="{$order_event_time_config.auto_complete ?? ''}" lay-verify="positiv" autocomplete="off" class="layui-input ns-len-short">
+					</div>
+					<span class="layui-form-mid">天</span>
+				</div>
+				<div class="ns-word-aux">收货后，多长时间订单自动完成</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">评价设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">订单评价：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_status" value="0" title="关闭" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_status == 0} checked {/if}>
+						<input type="radio" name="evaluate_status" value="1" title="开启" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_status == 1} checked {/if}>
+					</div>
+				</div>
+				<div class="ns-word-aux">开启订单评价功能</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">显示评价：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_show" value="0" title="关闭" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_show == 0} checked {/if}>
+						<input type="radio" name="evaluate_show" value="1" title="开启" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_show == 1} checked {/if}>
+					</div>
+				</div>
+				<div class="ns-word-aux">前台商品详情是否显示评价</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">评价审核：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input type="radio" name="evaluate_audit" value="0" title="关闭" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_audit == 0} checked {/if}>
+						<input type="radio" name="evaluate_audit" value="1" title="开启" autocomplete="off" class="layui-input ns-len-long" {if $order_evaluate_config.evaluate_audit == 1} checked {/if}>
+					</div>
+				</div>
+				<div class="ns-word-aux">评价是否需要后台审核</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">发票设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>发票开关：</label>
+				<div class="layui-input-inline">
+					<input type="radio" name="invoice_status" value="0" title="关闭" autocomplete="off" class="layui-input ns-len-long" {if $order_event_time_config.invoice_status == 0} checked {/if}>
+					<input type="radio" name="invoice_status" value="1" title="开启" autocomplete="off" class="layui-input ns-len-long" {if $order_event_time_config.invoice_status == 1} checked {/if}>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>发票税率：</label>
+				<div class="layui-input-block">
+					<input type="number" name="invoice_rate" min="0" lay-verify="required" value="{$order_event_time_config.invoice_rate}" placeholder="请输入税率"  autocomplete="off" class="layui-input ns-len-short">
+				</div>
+			</div>
+			<div class="layui-form-item layui-form-text">
+				<label class="layui-form-label"><span class="required">*</span>发票内容</label>
+				<div class="layui-input-block ns-len-long">
+					<textarea name="invoice_content" placeholder="请输入内容" lay-verify="invoice_content" class="layui-textarea">{$order_event_time_config.invoice_content}</textarea>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>邮寄费用：</label>
+				<div class="layui-input-block">
+					<input type="number" name="invoice_money" min="0" lay-verify="required" value="{$order_event_time_config.invoice_money}" placeholder="请输入费用" autocomplete="off" class="layui-input ns-len-short">
+				</div>
+			</div>
+
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			$.ajax({
+				type: 'POST',
+				url: ns.url("shop/order/config"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0 && !res.message) {
+						location.reload();
+						return;
+					}
+					layer.msg(res.message);
+				}
+			});
+		});
+
+		// 验证正整数
+		form.verify({
+			positivEinteger: function(value) {
+				if (!new RegExp("^(\\d|[1-9]\\d|99)$").test(value)) {
+					return '请输入0-99之间的正整数';
+				}
+			},
+			positiv: function(value) {
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '时间不能小于0，且必须是整数！';
+				}
+			},
+			invoice_content:function (value) {
+				if(parseInt($("input[name='invoice_status']:checked").val().toString()) == 1){
+					if(value.length == 0){
+						return '发票内不能为空';
+					}
+				}
+			},
+			closetime: function(value){
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '自动关闭时间须是整数天数！';
+				}
+				if (parseInt(value) < 1) {
+					return '自动关闭时间须大于0天！';
+				}
+			},
+			deliverytime: function(value){
+				if (!new RegExp("^[0-9]+$").test(value)) {
+					return '自动收货时间须是整数天数！';
+				}
+				if (parseInt(value) < 1) {
+					return '自动收货时间须大于0天！';
+				}
+			}
+		});
+	});
+</script>
+{/block}

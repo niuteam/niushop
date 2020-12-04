@@ -1,0 +1,273 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_menu.css">
+<script src="WECHAT_JS/common.js"></script>
+{/block}
+{block name="main"}
+<div class='wx-menu' id='menu'>
+    <div class='wx-menu-preview'>
+        <div class='mobile-preview'>
+            <div class='mobile-hd'>
+                <span></span>
+            </div>
+            <div class='mobile-bd'>
+                <div class='wx-menu-list'>
+                    <template v-for="(item, index) in button">
+                        <div class="wx-menu-item-box" v-bind:class="['wx-menu-item-box-' + index]">
+                            <div class='wx-menu-item' v-bind:class="[index==menuIndex[0]&&-1==menuIndex[1] ? 'active' : '']" 	 @click.stop='chooseMenu(index, -1)'>
+                                <template v-if="item.name == ''">
+                                    <span>菜单名称</span>
+                                </template>
+                                <template v-else>
+                                    <span>{{item.name}}</span>
+                                </template>
+                            </div>
+                            <template v-if="index==menuIndex[0]">
+                                <div class='wx-sub-menu-list' v-if="item"
+                                     v-bind:class="[button.length != undefined && button.length == 2 ? 'two' : '', button.length != undefined && button.length == 3 ? 'three' : '']">
+                                    <div class='wx-sub-menu-item' v-bind:data="[second_index]" v-bind:class="[second_index==menuIndex[1] ? 'active' : '', 'wx-sub-menu-item-' + second_index]" v-for="(item2, second_index) in item.sub_button" @click.stop='chooseMenu(index, second_index)'>
+                                        <template v-if="item2.name == ''">
+                                            <span>子菜单名称</span>
+                                        </template>
+                                        <template v-else>
+                                            <span>{{item2.name}}</span>
+                                        </template>
+                                    </div>
+                                    <template v-if="subMenuPlusShow">
+                                        <div class='wx-sub-menu-item' v-on:click.stop="addSubMenu(index)">+</div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template v-if="button.length < 3">
+                        <div class='wx-menu-item-box add-menu' v-on:click="addMenu">+</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='wx-menu-form'>
+        <div class='button-list-null' v-if='menuIndex[0] == -1'>点击左侧按钮 + 添加菜单</div>
+        <template v-if="menuIndex[0] != -1">
+            <div class='form-editor'>
+                <div class='form-hd'>
+                    <div class='form-hd-name'>{{name}}</div>
+                    <div class='form-hd-del'><a href="javascript:void(0);" class='layui-btn layui-btn-primary layui-btn-xs' v-on:click='deleteMenu'>删除菜单</a></div>
+                </div>
+                <div class='form-bd'>
+                    <div class='form-bd-list'>
+                        <div class='form-bd-item'>
+                            <label class='layui-form-label sm'>菜单名称</label>
+                            <div class='item-group'>
+                                <template v-if="menuIndex[1] == -1">
+                                    <input type='text' class='input layui-input' :class="error_hint == 'name' ? 'error' : ''" value='' @keyup="checkName($event)" v-model='name' placeholder="请输入菜单名称">
+                                    <p class="tip" :class="error_hint == 'name' ? 'error' : ''">字数不超过4个汉字或8个字母</p>
+                                </template>
+                                <template v-else>
+                                    <input type='text' class='input layui-input' :class="error_hint == 'name' ? 'error' : ''" value='' @keyup="checkName($event, 'sub_button')" v-model='name' placeholder="请输入子菜单名称">
+                                    <p class='tip' :class="error_hint == 'name' ? 'error' : ''">字数不超过8个汉字或16个字母</p>
+                                </template>
+                            </div>
+                        </div>
+                        <div class='form-bd-item'  v-if="(menuIndex[0] > -1 && (button[menuIndex[0]] == undefined || button[menuIndex[0]].sub_button == undefined || button[menuIndex[0]].sub_button[0] == undefined)) || (menuIndex[1] > -1)">
+                            <label class='layui-form-label sm'>菜单内容</label>
+                            <div class='item-group menu-type'>
+                                <label class='radio-label'>
+                                    <i class='layui-icon' :class="type == 'media' ? 'layui-icon-radio' : 'layui-icon-circle'"></i>
+                                    <input type='radio' name='type' id='type1' value='media' v-model='type'>
+                                    <span>发送素材内容</span>
+                                </label>
+                                <label class='radio-label'>
+                                    <i class='layui-icon' :class="type == 'view' ? 'layui-icon-radio' : 'layui-icon-circle'"></i>
+                                    <input type='radio' name='type' id='type2' value='view' v-model='type'>
+                                    <span>跳转到网页</span>
+                                </label>
+                                <label class='radio-label'>
+                                    <i class='layui-icon' :class="type == 'miniprogram' ? 'layui-icon-radio' : 'layui-icon-circle'"></i>
+                                    <input type='radio' name='type' id='type3' value='miniprogram' v-model='type'>
+                                    <span>跳转小程序</span>
+                                </label>
+                                <label class='radio-label hide'>
+                                    <i class='layui-icon' :class="type == 'custom_event' ? 'layui-icon-radio' : 'layui-icon-circle'"></i>
+                                    <input type='radio' name='type' id='type4' value='custom_event' v-model='type'>
+                                    <span>自定义事件</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='form-bd-content'>
+                        <div class='menu-content' v-if='type == "media"'>
+                            <div class="layui-tab layui-tab-brief">
+                                <ul class="layui-tab-title wechat-media">
+                                    <li :class="media_type == 'text' ? 'layui-this' : ''" @click="chooseMediaType(5)"><i class='layui-icon layui-icon-form'></i>文本消息</li>
+                                    <li :class="media_type == 'graphic_message' ? 'layui-this' : ''" @click="chooseMediaType(1)"><i class='layui-icon layui-icon-tabs'></i>图文消息</li>
+                                </ul>
+                                <div class="layui-tab-content">
+                                    <div class="layui-tab-item" :class="media_type == 'text' ? 'layui-show' : ''">
+                                        <template v-if="text == '' || text == undefined">
+                                            <div class='material-library' @click="material(5)">
+                                                <i></i>
+                                                <span>从素材库选择</span>
+                                            </div>
+                                            <div class='add-material' @click="addMaterial(5)">
+                                                <i></i>
+                                                <span>添加文本素材</span>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class='text-message'>
+                                                <div class='text-message-content'>
+                                                    <div class="material-type">
+                                                        <span>文本</span>
+                                                    </div>
+                                                    <div class="title">
+                                                        <a href="javascript:void(0);" @click="previewText(text)">{{text}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class='del' @click="deleteMaterial(5)">删除</span>
+                                        </template>
+                                    </div>
+                                    <div class="layui-tab-item" :class="media_type == 'graphic_message' ? 'layui-show' : ''">
+                                        <template v-if="graphic_message[0] == undefined">
+                                            <div class='material-library' @click="material(1)">
+                                                <i></i>
+                                                <span>从素材库选择</span>
+                                            </div>
+                                            <div class='add-material' @click="addMaterial(1)">
+                                                <i></i>
+                                                <span>新建图文素材</span>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <div class='graphic-message-list'>
+                                                <template v-for="(value, index) in graphic_message">
+                                                    <div class='graphic-message-content'>
+                                                        <div class="material-type">
+                                                            <span>图文</span>
+                                                        </div>
+                                                        <div class="title">
+                                                            <a href="javascript:void(0);" @click="preview(value.id, index)">{{value.title}}</a>
+                                                        </div>
+                                                    </div>
+                                                    <template v-if="graphic_message.length == 1">
+                                                        <div class='read-all' @click="preview(value.id)">
+                                                            <div>阅读全文</div>
+                                                            <i> > </i>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                            <span class='del' @click="deleteMaterial(1)">删除</span>
+                                        </template>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class='menu-content view' v-if='type == "view"'>
+                            <p class='tip' style="margin: 10px 0 20px 0;padding-left: 5px;">订阅者点击该子菜单会跳转到一下链接</p>
+                            <div class='form-bd-item'>
+                                <label class='layui-form-label sm'>页面地址</label>
+                                <div class='layui-input-inline'>
+                                    <input type='text' class="input layui-input nc-len-mid" value='' v-model='url' placeholder='例：http://example.com'>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='menu-content menu' v-if='type == "miniprogram"'>
+                            <p class='tip' style="margin: 10px 0 20px 0;padding-left: 5px;">订阅者点击该子菜单会跳到以下小程序</p>
+                            <div class='layui-form-item'>
+                                <label class='layui-form-label'>备用网页</label>
+                                <div class='layui-input-block'>
+                                    <input type='text' id='miniprogram_url' class="layui-input nc-len-mid" value='' v-model='url' placeholder='例：http://example.com'>
+                                    <p class='layui-form-mid layui-word-aux'>旧版微信客户端无法支持小程序，用户点击菜单时将会打开备用网页。</p>
+                                </div>
+                            </div>
+                            <div class='layui-form-item'>
+                                <label class='layui-form-label'>小程序APPID</label>
+                                <div class='layui-input-block'>
+                                    <input type='text' class="layui-input nc-len-mid" value='' v-model='appid'>
+                                    <p class='layui-form-mid layui-word-aux'>小程序需要绑定当前公众号。</p>
+                                </div>
+                            </div>
+                            <div class='layui-form-item'>
+                                <label class='layui-form-label'>小程序页面路径</label>
+                                <div class='layui-input-inline'>
+                                    <input type='text' class="layui-input" value='' v-model='pagepath'>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='menu-content' v-if='type == "event"'>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='click' v-model='eventType'>
+                                <span>点击事件</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='scancode_push' v-model='eventType'>
+                                <span>扫码推事件</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='scancode_waitmsg' v-model='eventType'>
+                                <span>扫码推事件带提示</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='pic_sysphoto' v-model='eventType'>
+                                <span>弹出系统拍照发图</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='pic_photo_or_album' v-model='eventType'>
+                                <span>弹出拍照或者相册发图</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='pic_wechat' v-model='eventType'>
+                                <span>弹出微信相册发图器</span>
+                            </label>
+                            <label class='radio-label'>
+                                <input type='radio' name='eventType' value='location_select' v-model='eventType'>
+                                <span>弹出地理位置选择器</span>
+                            </label>
+                            <div class='form-bd-item'>
+                                <label class='item-label'>菜单KEY值</label>
+                                <div class='item-group'>
+                                    <input type='text' class='input' value='' v-model='key'>
+                                    <p class='tip'>旧版微信客户端无法支持小程序，用户点击菜单时将会打开备用网页。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    <div class='form-ft'>
+        <button class='layui-btn ns-bg-color' @click="saveMenu">保存并发布</button>
+    </div>
+</div>
+
+<!-- 添加文本消息 -->
+<div class="layui-tab layui-tab-brief" id="add_material_text" style="display:none;">
+    <ul class="layui-tab-title">
+        <li class="layui-this">添加文本消息</li>
+    </ul>
+    <div class="layui-form" style="margin-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">内容</label>
+            <div class="layui-input-block">
+                <textarea name="content" placeholder="请输入内容" id="material_text_content" class="layui-textarea" maxlength="300" lay-verify='material_text_content'></textarea>
+                <span class='input-text-hint'>剩余300字</span>
+            </div>
+        </div>
+        <div class="ns-form-row sm">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="addText">保存</button>
+            <button type="reset" class="layui-btn layui-btn-primary" onclick="back()">取消</button>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script src="STATIC_JS/vue.js"></script>
+<script type="text/javascript" src="WECHAT_JS/wx_menu.js"></script>
+<script type="text/javascript" src="WECHAT_JS/wx_material_mannager.js"></script>
+{/block}

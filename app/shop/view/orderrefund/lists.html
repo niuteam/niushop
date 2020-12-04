@@ -1,0 +1,362 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/order_list.css"/>
+{/block}
+{block name="main"}
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show"  lay-filter="order_list">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">商品名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="sku_name">
+					</div>
+				</div>
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">订单编号：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="order_no">
+					</div>
+				</div>
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">退款编号：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="refund_no">
+					</div>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">下单时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time" placeholder="开始时间" id="start_time" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" placeholder="结束时间" id="end_time" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(7, this);return false;">近7天</button>
+					<button class="layui-btn layui-btn-primary date-picker-btn" onclick="datePick(30, this);return false;">近30天</button>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">退款状态：</label>
+					<div class="layui-input-inline">
+						<select name="refund_status" lay-filter="refund_status">
+							<option value="">全部</option>
+							{foreach $refund_status_list as $k => $status_val}
+							<option value="{$status_val.status}">{$status_val.name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">退款方式：</label>
+					<div class="layui-input-inline">
+						<select name="refund_type" >
+							<option value="">全部</option>
+							{foreach $refund_type_list as $refund_type_k => $refund_type_v}
+							<option value="{$refund_type_k}">{$refund_type_v}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+			</div>
+			
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit id="btn_search"lay-filter="btn_search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				<button class="layui-btn layui-btn-primary" lay-submit lay-filter="batch_export" >批量导出</button>
+				<a class="layui-btn layui-btn-primary" href="{:addon_url('shop/orderrefund/export')}" target="_blank">查看已生成报表</a>
+			</div>
+			<input type="hidden" name="status" val=""/>
+			<input type="hidden" name="page" val=""/>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="order_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		{foreach $refund_status_list as $k => $status_val}
+		{if $status_val.status!=0}
+		<li lay-id="{$status_val.status}">{$status_val.name}</li>
+		{/if}
+		{/foreach}
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<div id="order_list"></div>
+	</div>
+</div>
+
+<div id="order_page"></div>
+<div id="order_operation"></div>
+{/block}
+{block name="script"}
+<script src="SHOP_JS/refund_list.js"></script>
+<script>
+    var laypage,element, form, hash_url;
+    /**
+     *通过hash获取页数
+     */
+    function getHashPage(){
+        var page = 1;
+        var hash = location.hash;
+
+        var hash_arr = hash.split("&");
+        $.each(hash_arr,function(index, itemobj){
+            var item_arr = itemobj.split("=");
+            if(item_arr.length == 2){
+                if(item_arr[0].indexOf("page") != "-1"){
+                    page = item_arr[1];
+                }
+            }
+        });
+        return page;
+    }
+
+    //从hash中获取数据
+    function getHashData(){
+        var hash = ns.urlReplace(location.hash);
+
+        var hash_arr = hash.split("&");
+        var form_json = {
+            "end_time" : "",
+            "sku_name" : "",
+            "refund_type" : "",
+            "order_no" : "",
+            "delivery_status" : "",
+            "refund_status" : "",
+            "start_time" : "",
+            "refund_no" : "",
+            "delivery_no" : "",
+            "refund_delivery_no" : "",
+            "page" : ""
+        };
+        if(hash_arr.length > 0){
+            // page = hash_arr[0].replace('#!page=', '');
+            $.each(hash_arr,function(index, itemobj){
+                var item_arr = itemobj.split("=");
+                if(item_arr.length == 2){
+                    $.each(form_json,function(key, form_val){
+                        if(item_arr[0].indexOf(key) != "-1"){
+                            form_json[key] = item_arr[1];
+                        }
+                    })
+
+                }
+
+            })
+        }
+        form.val("order_list", form_json);
+
+		setStatusTab(form_json.refund_status);
+        return form_json;
+
+    }
+    layui.use(['laypage','laydate','form', 'element'], function(){
+        form = layui.form;
+        laypage = layui.laypage;
+        element = layui.element;
+        var laydate = layui.laydate;
+		form.render();
+		
+        //渲染时间
+        laydate.render({
+            elem: '#start_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+        laydate.render({
+            elem: '#end_time'
+            ,type: 'datetime'
+            ,change: function(value, date, endDate){
+                $(".date-picker-btn").removeClass("selected");
+            }
+        });
+
+        //监听筛选事件
+        form.on('submit(btn_search)', function(data){
+            data.field.page = 1;
+            setHashOrderList(data.field);
+			setStatusTab(data.field.refund_status);
+            return false;
+        });
+
+        //批量导出
+        form.on('submit(batch_export)', function(data){
+            // location.href = ns.url("shop/order/exportRefundOrder",data.field);
+
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: ns.url("shop/orderrefund/exportrefundorder"),
+                data: data.field,
+                success: function (res) {
+
+                }
+            });
+            window.open(ns.url("shop/orderrefund/export",{}))
+
+            return false;
+        });
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(order_tab)', function(){
+			var status = this.getAttribute('lay-id');
+			form.val("order_list", {"refund_status":status});
+
+			var hash_data = getHashList();
+			hash_data.refund_status = status;
+			hash_data.page = 1;
+			setHashOrderList(hash_data);
+		});
+
+        getOrderList();//筛选
+        getHashData();
+
+    });
+    //哈希值 订单数据
+    function setHashOrderList(data){
+        var hash = "";
+        $.each(data,function(index, itemobj){
+            if(itemobj != ""){
+                if(hash == ""){
+                    hash += "#!"+index +"="+itemobj;
+                }else{
+                    hash += "&"+index +"="+itemobj;
+                }
+            }
+        });
+        // window.location.href = hash;
+        hash_url = hash;
+        location.hash = hash;
+        getOrderList();
+    }
+
+	function getHashList(){
+		var hash = ns.urlReplace(location.hash);
+		var data= [];
+		var hash_arr = hash.split("&");
+
+		var form_json = {
+			"end_time" : "",
+			"sku_name" : "",
+			"refund_type" : "",
+			"order_no" : "",
+			"delivery_status" : "",
+			"refund_status" : "",
+			"start_time" : "",
+			"refund_no" : "",
+			"delivery_no" : "",
+			"refund_delivery_no" : "",
+			"page" : ""
+		};
+		if(hash_arr.length > 0){
+			// page = hash_arr[0].replace('#!page=', '');
+			$.each(hash_arr,function(index, itemobj){
+				var item_arr = itemobj.split("=");
+				if(item_arr.length == 2){
+					$.each(form_json,function(key, form_val){
+						if(item_arr[0].indexOf(key) != "-1"){
+							form_json[key] = item_arr[1];
+						}
+					})
+				}
+			})
+		}
+
+		return form_json;
+	}
+
+	function setStatusTab(refund_status){
+		$(".layui-tab-title li").removeClass("layui-this");
+		$(".layui-tab-title li").each(function(){
+			var status = $(this).attr("lay-id");
+			if(status == refund_status){
+				$(this).addClass("layui-this")
+			}
+		});
+	}
+    var order = new Order();
+    function getOrderList(){
+        var url = ns.url("shop/orderrefund/lists", ns.urlReplace(location.hash.replace('#!', '')));
+
+        $.ajax({
+            type : 'get',
+            dataType: 'json',
+            url :url,
+            success : function(res){
+                if(res.code == 0){
+                    order.setData(res.data);
+                    $("#order_list").html(order.fetch());
+                    //执行一个laypage实例
+                    laypage.render({
+                        elem: 'order_page',
+                        count: res.data.count,
+                        curr: getHashPage(),
+                        layout: ['count','prev', 'page', 'next'],
+                        // hash: 'page',
+                        jump: function(obj, first){
+                            //首次不执行
+                            if(!first){
+                                var hash_data = getHashData();
+                                hash_data.page = obj.curr;
+                                setHashOrderList(hash_data);
+                                // $("#btn_search").click();//筛选
+                            }
+                        }
+                    });
+                }else{
+                    layer.msg(res.message);
+                }
+            }
+        });
+    }
+
+    /**
+     * 七天时间
+     */
+    function datePick(date_num,event_obj){
+        $(".date-picker-btn").removeClass("selected");
+        $(event_obj).addClass('selected');
+        // alert(new Date().format("yyyy-MM-dd hh:mm"));
+
+        Date.prototype.Format = function (fmt,date_num) { //author: meizz
+            this.setDate(this.getDate()-date_num);
+            var o = {
+                "M+": this.getMonth() + 1, //月份
+                "d+": this.getDate(), //日
+                "H+": this.getHours(), //小时
+                "m+": this.getMinutes(), //分
+                "s+": this.getSeconds(), //秒
+                "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                "S": this.getMilliseconds() //毫秒
+            };
+            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+            for (var k in o)
+                if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            return fmt;
+        };
+        // var now_time =  new Date().Format("yyyy-MM-dd HH:mm:ss",0);//当前日期
+        var now_time =  new Date().Format("yyyy-MM-dd 23:59:59",0);//当前日期
+        var before_time =  new Date().Format("yyyy-MM-dd 00:00:00",date_num-1);//前几天日期
+        $("input[name=start_time]").val(before_time,0);
+        $("input[name=end_time]").val(now_time,date_num-1);
+
+    }
+</script>
+{/block}

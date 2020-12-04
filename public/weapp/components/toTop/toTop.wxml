@@ -1,0 +1,1 @@
+<image class="{{['mescroll-totop',value?'mescroll-totop-in':'mescroll-totop-out']}}" src="{{$root.g0}}" mode="widthFix" data-event-opts="{{[['tap',[['toTopClick',['$event']]]]]}}" bindtap="__e"></image>

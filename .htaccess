@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  Options +FollowSymlinks -Multiviews
+  RewriteEngine On
+
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^(.*)$ index.php?s=/$1 [QSA,PT,L]
+  RewriteEngine on RewriteCond % !^$
+
+# 视频防盗，直接访问时，替换成图片
+#  RewriteCond %{HTTP_REFERER} !^$ [NC]
+#  RewriteRule .(mp4) https://img2.mukewang.com/szimg/5c7e6835087ef3d806000338.jpg [R,NC,L]
+</IfModule>

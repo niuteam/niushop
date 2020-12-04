@@ -1,0 +1,1 @@
+<view class="{{['empty',(fixed)?'fixed':'']}}"><view class="empty_img"><image src="{{$root.g0}}" mode="aspectFit"></image></view><view class="color-tip margin-top margin-bottom">{{text}}</view><block wx:if="{{isIndex}}"><button class="button" type="primary" size="mini" data-event-opts="{{[['tap',[['goIndex']]]]}}" bindtap="__e">{{emptyBtn.text}}</button></block></view>

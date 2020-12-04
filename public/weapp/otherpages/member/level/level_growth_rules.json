@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-progress": "/components/ns-progress/ns-progress",
+    "to-top": "/components/toTop/toTop"
+  }
+}

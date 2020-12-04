@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "pick-regions": "/components/pick-regions/pick-regions",
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

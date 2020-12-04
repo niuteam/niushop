@@ -1,0 +1,119 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作说明</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>启用之后才可进行注册送积分红包活动</li>
+			<li>注册送积分或注册送红包设为0时，表示不赠送</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_use" lay-filter="is_use" value="1" lay-skin="switch" {if !empty($config) && $config.is_use==1 }checked{/if}>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">注册送积分：</label>
+		<div class="layui-input-block">
+			<input type="number" name="point" lay-verify="required|number|int" value="{if empty( $config.value) }0{else/}{$config.value.point}{/if}"
+			 autocomplete="off" class="layui-input ns-len-short">
+		</div>
+		<div class="ns-word-aux">积分必须为正整数</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">注册送红包：</label>
+		<div class="layui-input-block">
+			<input type="number" name="balance" lay-verify="required|number|flnum" value="{if empty( $config.value) }0{else/}{$config.value.balance}{/if}"
+			 autocomplete="off" class="layui-input ns-len-short">
+		</div>
+		<div class="ns-word-aux">会员注册即可获得红包，红包不能小于0，可保留两位小数</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">注册送成长值：</label>
+		<div class="layui-input-block">
+			<input type="number" name="growth" lay-verify="required|number|flnum" value="{if empty( $config.value) }0{else/}{$config.value.growth}{/if}" autocomplete="off" class="layui-input ns-len-short">
+		</div>
+		<div class="ns-word-aux">会员注册即可获得成长值，成长值不能小于0，可保留两位小数</div>
+	</div>
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("memberregister://shop/config/index"),
+				data: data.field,
+				success: function(res) {
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/promotion/member")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			})
+		});
+		
+		form.verify({
+			number: function (value) {
+				if (value < 0) {
+					return '请输入不小于0的数!'
+				}
+			},
+			int: function (value) {
+				if (value%1 != 0) {
+					return '积分必须为整数!'
+				}
+			},
+			flnum: function (value) {
+				var arrMen = value.split(".");
+				var val = 0;
+				if (arrMen.length == 2) {
+					val = arrMen[1];
+				}
+				if (val.length > 2) {
+					return '保留小数点后两位!'
+				}
+			}
+		});
+	});
+
+	function back() {
+		location.href = ns.url("shop/promotion/member")
+	}
+</script>
+{/block}

@@ -1,0 +1,192 @@
+{
+  "pages": [
+    "pages/index/index/index",
+    "pages/login/login/login",
+    "pages/login/register/register",
+    "pages/goods/cart/cart",
+    "pages/goods/category/category",
+    "pages/goods/detail/detail",
+    "pages/goods/list/list",
+    "pages/member/index/index",
+    "pages/member/info/info",
+    "pages/order/payment/payment",
+    "pages/order/list/list",
+    "pages/order/evaluate/evaluate",
+    "pages/order/detail/detail",
+    "pages/order/detail_local_delivery/detail_local_delivery",
+    "pages/order/detail_pickup/detail_pickup",
+    "pages/order/detail_virtual/detail_virtual",
+    "pages/order/detail_point/detail_point",
+    "pages/order/logistics/logistics",
+    "pages/order/refund/refund",
+    "pages/order/refund_detail/refund_detail",
+    "pages/order/activist/activist",
+    "pages/pay/index/index",
+    "pages/pay/result/result",
+    "pages/storeclose/storeclose/storeclose"
+  ],
+  "subPackages": [
+    {
+      "root": "promotionpages",
+      "pages": [
+        "combo/detail/detail",
+        "combo/payment/payment",
+        "topics/list/list",
+        "topics/detail/detail",
+        "topics/goods_detail/goods_detail",
+        "topics/payment/payment",
+        "seckill/list/list",
+        "seckill/detail/detail",
+        "seckill/payment/payment",
+        "pintuan/list/list",
+        "pintuan/detail/detail",
+        "pintuan/my_spell/my_spell",
+        "pintuan/share/share",
+        "pintuan/payment/payment",
+        "bargain/list/list",
+        "bargain/detail/detail",
+        "bargain/launch/launch",
+        "bargain/my_bargain/my_bargain",
+        "bargain/payment/payment",
+        "groupbuy/list/list",
+        "groupbuy/detail/detail",
+        "groupbuy/payment/payment",
+        "point/list/list",
+        "point/detail/detail",
+        "point/payment/payment",
+        "point/order_list/order_list",
+        "point/result/result"
+      ]
+    },
+    {
+      "root": "otherpages",
+      "pages": [
+        "web/web",
+        "diy/diy/diy",
+        "index/storelist/storelist",
+        "index/storedetail/storedetail",
+        "member/modify_face/modify_face",
+        "member/account/account",
+        "member/account_edit/account_edit",
+        "member/apply_withdrawal/apply_withdrawal",
+        "member/balance/balance",
+        "member/balance_detail/balance_detail",
+        "member/collection/collection",
+        "member/coupon/coupon",
+        "member/footprint/footprint",
+        "member/level/level",
+        "member/level/level_growth_rules",
+        "member/point/point",
+        "member/point_detail/point_detail",
+        "member/signin/signin",
+        "member/withdrawal/withdrawal",
+        "member/withdrawal_detail/withdrawal_detail",
+        "member/address/address",
+        "member/address_edit/address_edit",
+        "member/pay_password/pay_password",
+        "member/cancellation/cancellation",
+        "member/assets/assets",
+        "member/cancelstatus/cancelstatus",
+        "member/cancelsuccess/cancelsuccess",
+        "member/cancelrefuse/cancelrefuse",
+        "login/find/find",
+        "goods/coupon/coupon",
+        "goods/coupon_receive/coupon_receive",
+        "goods/evaluate/evaluate",
+        "goods/search/search",
+        "help/list/list",
+        "help/detail/detail",
+        "notice/list/list",
+        "notice/detail/detail",
+        "verification/index/index",
+        "verification/list/list",
+        "verification/detail/detail",
+        "recharge/list/list",
+        "recharge/order_list/order_list",
+        "fenxiao/index/index",
+        "fenxiao/apply/apply",
+        "fenxiao/order/order",
+        "fenxiao/order_detail/order_detail",
+        "fenxiao/team/team",
+        "fenxiao/withdraw_apply/withdraw_apply",
+        "fenxiao/withdraw_list/withdraw_list",
+        "fenxiao/promote_code/promote_code",
+        "fenxiao/level/level",
+        "fenxiao/goods_list/goods_list",
+        "fenxiao/follow/follow",
+        "fenxiao/bill/bill",
+        "live/list/list",
+        "game/cards/cards",
+        "game/turntable/turntable",
+        "game/smash_eggs/smash_eggs",
+        "game/record/record",
+        "store_notes/note_list/note_list",
+        "store_notes/note_detail/note_detail",
+        "chat/room/room",
+        "webview/webview",
+        "member/invite_friends/invite_friends"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#F7f7f7",
+    "backgroundColorTop": "#f7f7f7",
+    "backgroundColorBottom": "#f7f7f7"
+  },
+  "tabBar": {
+    "color": "#333",
+    "selectedColor": "#FF0036",
+    "backgroundColor": "#fff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/goods/category/category",
+        "text": "分类"
+      },
+      {
+        "pagePath": "pages/goods/cart/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/member/index/index",
+        "text": "个人中心"
+      }
+    ]
+  },
+  "preloadRule": {
+    "pages/index/index/index": {
+      "network": "all",
+      "packages": [
+        "promotionpages",
+        "otherpages"
+      ]
+    }
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "为了更好地为您提供服务"
+    }
+  },
+  "plugins": {
+    "live-player-plugin": {
+      "version": "1.2.0",
+      "provider": "wx2b03c6e691cd7370"
+    }
+  },
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "mescroll-uni": "/components/mescroll/my-list-mescroll",
+    "mescroll-body": "/components/mescroll/mescroll-body",
+    "ns-login": "/components/ns-login/ns-login",
+    "ns-show-toast": "/components/ns-show-toast/ns-show-toast"
+  },
+  "sitemapLocation": "sitemap.json"
+}

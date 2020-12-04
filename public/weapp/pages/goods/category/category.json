@@ -1,0 +1,9 @@
+{
+  "disableScroll": true,
+  "navigationBarTitleText": "商品分类",
+  "usingComponents": {
+    "diy-goods-level-category": "/components/diy-goods-level-category/diy-goods-level-category",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "diy-bottom-nav": "/components/diy-bottom-nav/diy-bottom-nav"
+  }
+}

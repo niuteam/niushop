@@ -1,0 +1,7 @@
+{
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "ns-payment": "/components/payment/payment"
+  }
+}

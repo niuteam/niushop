@@ -1,0 +1,55 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 列表 -->
+<table id="oss_list" lay-filter="oss_list"></table>
+{/block}
+{block name="script"}
+<!-- 操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" href="{{ns.url(d.edit_url)}}">配置</a>
+    </div>
+</script>
+
+<script type="text/html" id="desc">
+    <div class="ns-over-hide-second">{{d.desc}}</div>
+</script>
+
+<script>
+    var table = new Table({
+        elem: '#oss_list',
+        url: ns.url("shop/upload/oss"),
+        page: false,
+        parseData: function(data) {
+            return {
+                "code": data.code,
+                "msg": data.message,
+                "data": data.data
+            };
+        },
+        cols: [
+            [
+            {
+                field: 'sms_type_name',
+                title: '云上传',
+                width: '20%',
+                unresize: 'false'
+            }, {
+                field: 'desc',
+                title: '描述',
+                width: '60%',
+                templet: "#desc",
+                unresize: 'false'
+            }, {
+                title: '操作',
+                width: '20%',
+                toolbar: '#operation',
+                unresize: 'false'
+            }
+            ]
+        ],
+    });
+</script>
+{/block}

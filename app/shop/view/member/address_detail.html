@@ -1,0 +1,48 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="nc-table-box">
+	<table id="member_address_list" lay-filter="member_address_list"></table>
+</div>
+{/block}
+{block name="script"}
+<script>
+var table = new Table({
+	elem: '#member_address_list',
+	filter: "member_address_list",
+	url: ns.url("shop/member/addressdetail"),
+	where:{ member_id : "{$member_id}" },
+	cols: [[{
+		field: 'name',
+		width: '30%',
+		title: '名称',
+		unresize : 'true'
+	}, {
+		field: 'mobile',
+		width: '10%',
+		title: '手机号',
+		unresize : 'true'
+	}, {
+		field: 'telephone',
+		width: '20%',
+		title: '联系电话',
+		unresize : 'true'
+	}, {
+		width: '30%',
+		title: '地址信息',
+		unresize : 'true',
+		templet: function (d) {
+			return d.full_address.replace(/-/g, " ") + " " + d.address;
+		}
+	}, {
+		width: '10%',
+		title: '是否默认地址',
+		unresize : 'true',
+		templet: function (d) {
+			return d.is_default ? "是" : "否";
+		}
+	}]],
+});
+</script>
+{/block}

@@ -1,0 +1,94 @@
+{extend name="base"/}
+{block name="resources"}
+
+{/block}
+{block name="main"}
+
+<div class="testing">
+	<div class="testing-item">
+		<h3>服务器信息</h3>
+		<table border="0" align="center" cellpadding="0" cellspacing="0" class="twbox">
+			<tr>
+				<th width="30%" align="center"><strong>参数</strong></th>
+				<th width="70%"><strong>值</strong></th>
+			</tr>
+			<tr>
+				<td><strong>服务器域名</strong></td>
+				<td>{$name}</td>
+			</tr>
+			<tr>
+				<td><strong>服务器操作系统</strong></td>
+				<td>{$os}</td>
+			</tr>
+			<tr>
+				<td><strong>服务器解译引擎</strong></td>
+				<td>{$server}</td>
+			</tr>
+			<tr>
+				<td><strong>PHP版本</strong></td>
+				<td>{$phpv}</td>
+			</tr>
+			<tr>
+				<td><strong>系统安装目录</strong></td>
+				<td>{$root_path}</td>
+			</tr>
+		</table>
+	</div>
+	<div class="testing-item">
+		<h3>系统环境检测<span class="desc">系统环境要求必须满足下列所有条件，否则系统或系统部份功能将无法使用。</span></h3>
+		<table  border="0" align="center" cellpadding="0" cellspacing="0" class="twbox">
+			<tr>
+				<th width="30%" align="center"><strong>需开启的变量或函数</strong></th>
+				<th width="35%"><strong>要求</strong></th>
+				<th width="35%"><strong>实际状态及建议</strong></th>
+			</tr>
+			<tr>
+				<td>php版本</td>
+				<td style="color:#ff8143;">php7.1及以上 </td>
+				<td><font color={if $verison}#ff8143{else/}red{/if}>{$phpv}</font> </td>
+			</tr>
+			{foreach $system_variables as $variables_key => $variables_item}
+			<tr>
+				<td>{$variables_item.name}</td>
+				<td>{$variables_item.need}</td>
+				<td><img clsss="check-icon" src="{if $variables_item.status}INSTALL_IMG/success.png{else/}INSTALL_IMG/error.png{/if}"/></td>
+			</tr>
+			{/foreach}
+		</table>
+	</div>
+
+	<div class="testing-item">
+		<h3>目录权限检测<span class="desc">系统要求必须满足下列所有的目录权限全部可读写的需求才能使用，其它应用目录可安装后在管理后台检测。</span></h3>
+		<table border="0" align="center" cellpadding="0" cellspacing="0" class="twbox">
+			<tr>
+				<th width="30%" align="center"><strong>目录名</strong></th>
+				<th width="35%"><strong>读取权限</strong></th>
+				<th width="35%"><strong>写入权限</strong></th>
+			</tr>
+			{foreach $dirs_list as $dirs_key => $dirs_item}
+			<tr>
+				<td>{$dirs_item.path_name}</td>
+				<td>
+					<img clsss="check-icon" src="{if $dirs_item.is_readable}INSTALL_IMG/success.png{else/}INSTALL_IMG/error.png{/if}"/>
+				</td>
+				<td>
+					<img clsss="check-icon" src="{if $dirs_item.is_write}INSTALL_IMG/success.png{else/}INSTALL_IMG/error.png{/if}"/>
+				</td>
+			</tr>
+			{/foreach}
+
+		</table>
+	</div>
+	
+	<div class="btn-box">
+		<input type="button" class="btn-back" value="后退" onclick="window.location.href = '{$root_url}/install.php/index/index?step=1';" />
+		<input type="button" class="btn-next" value="继续" {if !$continue} style="background-color:#777;color:#FFF;"disabled="disabled"{/if} onclick="window.location.href = '{$root_url}/install.php/index/index?step=3';" />
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	ControlContent(1);
+</script>
+{/block}

@@ -1,0 +1,311 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	#goods thead th{ background-color: #e6e6e6;}
+	/* 优惠商品 */
+	.goods-empty { width: 100%; display: flex; justify-content: center; align-items: center; }
+	.goods-title{display: flex;align-items: center;}
+	.goods-title .goods-img{display: flex;align-items: center;justify-content: center;width: 55px;height: 55px;margin-right: 5px;}
+	.goods-title .goods-img img{max-height: 100%;max-width: 100%;}
+	.goods-title .goods-name{flex: 1;line-height: 1.6;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>每个活动可添加2到6个商品</li>
+			<li>凡选择指定优惠的商品，在这个商品的详细页将出现发布的优惠套装</li>
+			<li>特殊商品不能参加该活动</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form ns-form" id="add_active">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>优惠套餐名称：</label>
+		<div class="layui-input-block">
+			<input type="text" name="bl_name" lay-verify="required" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">
+			<p>请认真填写组合优惠套餐名称，使顾客能从名称了解该套餐</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>商品：</label>
+		<div class="layui-input-block">
+			<table class="layui-table" id="goods" lay-skin="line" lay-size="lg">
+				<colgroup>
+					<col width="45%">
+					<col width="20%">
+					<col width="20%">
+					<col width="15%">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>商品名称</th>
+						<th>价格</th>
+						<th>库存</th>
+						<th class="operation">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="4">
+							<div class="goods-empty">未添加商品</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<button class="layui-btn ns-bg-color" onclick="addGoods()">添加商品</button>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">优惠套餐价格：</label>
+		<div class="layui-input-block">
+			<div class="layui-input-inline">
+				<input type="number" name="bl_price" onblur="bl_price" id="bl_price" lay-verify="flo" autocomplete="off" class="layui-input combined-price ns-len-short" value="0.00" step="1"  min="0.00" >
+			</div>
+			<span class="layui-form-mid">元</span>
+		</div>
+		<div class="ns-word-aux">
+			<p>价格不能小于0，可保留两位小数</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">原价：</label>
+		<div class="layui-input-block">
+			<p class="ns-input-text"><span class="original-price">0.00</span>元</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">节省价：</label>
+		<div class="layui-input-block">
+			<p class="ns-input-text"><span class="save-prices">0.00</span>元</p>
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">运费承担：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="shipping_fee_type" value="1" title="卖家承担运费" checked>
+			<input type="radio" name="shipping_fee_type" value="2" title="买家承担运费（快递）">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否上下架：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="status" lay-filter="isOpen" value="1" lay-skin="switch" checked />
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var form, selectGoodsSkuId = [];
+	layui.use("form", function() {
+		form = layui.form;
+		var repeat_flag = false; //防重复标识
+		
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+
+			var num = $("#goods").find("tbody tr").length;
+			if (num < 2) {  //判断提交时商品数量是否在2-6之间
+				layer.msg("商品数不可小于2个！", {
+					icon: 5
+				});
+				return;
+			}
+			
+			if (data.field.status == undefined) {
+				data.field.status = 0;
+			}
+			data.field.sku_ids = selectGoodsSkuId.toString();
+
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("bundling://shop/bundling/add"),
+				data: data.field,
+				async: false,
+				success: function(res) {
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('添加成功', {
+							title: '操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function() {
+								location.href = ns.url("bundling://shop/bundling/lists");
+							},
+							btn2: function() {
+								location.href = ns.url("bundling://shop/bundling/add");
+							}
+						});
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			})
+		});
+
+		form.verify({
+			flo: function(value) {
+				if (value == '') {
+					return;
+				}
+				var reg = /^(0|[1-9]\d*)(\s|$|\.\d{1,2}\b)/;
+				if (!reg.test(value)) {
+					return '价格不能小于0，可保留两位小数！'
+				}
+			}
+		});
+	});
+
+	/**
+	 * 添加商品
+	 */
+	function addGoods() {
+		goodsSelect(function (res) {
+			if (!res.length) return false;
+			var price = 0.00;
+			var html = $("#goods tbody .goods-empty").length ? '' : $("#goods tbody").html();
+			for (var i = 0; i < res.length; i++) {
+				for (var k = 0; k < res[i].selected_sku_list.length; k++) {
+					var item = res[i].selected_sku_list[k];
+					html += `<tr data-sku_id="${item.sku_id}">`;
+					html += `
+						<td>
+							<div class="goods-title">
+								<div class="goods-img">
+									<img layer-src src="${item.sku_image ? ns.img(item.sku_image) : ''}" alt="">
+								</div>
+								<p class="ns-multi-line-hiding goods-name">${item.sku_name}</p>
+							</div>
+						</td>
+					`;
+					html += `<td class='price-one'>${item.price }</td>`;
+					html += `<td>${item.stock}</td>`;
+					html += `<td class='operation'> <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='deleteGoods(this)'>删除商品</a></div></td>`;
+					html += `</tr>`;
+					
+					price += Number(item.price);
+					selectGoodsSkuId.push(item.sku_id);
+				}
+			}
+
+
+			$("#goods tbody").html(html);
+			$(".original-price").text(price.toFixed(2));
+			$(".combined-price").val(price.toFixed(2));
+			$(".save-prices").text(0);
+			
+		}, selectGoodsSkuId, {mode: "sku", max_num: 6, min_num: 2});
+	}
+
+	/**
+	 * 删除商品
+	 */
+	function deleteGoods(data) {
+		var obj = $(data).parent().parent().parent();
+		$(obj).remove();
+		priceCount(); //计算出当前总价格
+		for (var i in selectGoodsSkuId) {
+			if (selectGoodsSkuId[i] == Number($(obj).attr("data-sku_id"))) {
+				selectGoodsSkuId.splice(i, 1);
+			}
+		}
+	}
+
+	/**
+	 * 计算总价
+	 */
+	function priceCount() {
+		var price_count = 0;
+		$("#goods").find("tbody td.price-one").each(function(i) {
+			var price_one = Number($(this).text());
+			price_count += price_one;
+		});
+		$(".original-price").text(price_count.toFixed(2));
+		$(".save-prices").text(0);
+		$(".combined-price").val(price_count.toFixed(2));
+
+		if (price_count == 0) {
+			var html = '<tr>' +
+				'<td colspan="4">' +
+				'<div class="goods-empty">未选择添加商品</div>' +
+				'</td>' +
+				'</tr>';
+
+			$("#goods tbody").html(html);
+		}
+	}
+	
+	$("#bl_price").blur(function() {
+		var bl_price = $(this).val();
+		if (bl_price < 0) {
+			layer.msg("价格不能小于0，可保留两位小数");
+		}
+	});
+	
+	/**
+	 * 计算组合套餐价格、原价、节省价
+	 */
+	$(".combined-price").blur(function() {
+		var combinedPrice = $(this).val(),
+			originalPrice = Number($(".original-price").text());
+
+		if (combinedPrice > originalPrice) {
+			$(this).val(originalPrice);
+			layer.msg("优惠套餐价格不能高于原价");
+			$(".save-prices").text(0);
+		} else {
+			var num = accSub(originalPrice, combinedPrice);
+			$(".save-prices").text(num);
+		}
+	});
+	
+	// 两个浮点数相减
+	function accSub(num1, num2){
+		var r1, r2, m;
+		
+		try{
+			r1 = num1.toString().split(".")[1].length;
+		}catch(e){
+			r1 = 0;
+		}
+		
+		try{
+			r2 = num2.toString().split(".")[1].length;
+		}catch(e){
+			r2 = 0;
+		}
+		
+		m = Math.pow(10, Math.max(r1, r2));
+		n = (r1 >= r2) ? r1 : r2;
+		return (Math.round(num1 * m - num2 * m) / m).toFixed(2);
+    }
+
+	//返回按钮
+	function back() {
+		location.href = ns.url("bundling://shop/bundling/lists");
+	}
+</script>
+{/block}

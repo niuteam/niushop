@@ -1,0 +1,58 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.install-content-procedure .content-procedure-item:first-of-type{
+		background: url("INSTALL_IMG/complete_two.png") no-repeat center / contain;
+		color: #fff;
+	}
+	.install-content-procedure .content-procedure-item:nth-child(2), .install-content-procedure .content-procedure-item:nth-child(3){
+		background: url("INSTALL_IMG/complete_four.png") no-repeat center / contain;
+		color: #fff;
+	}
+	.install-content-procedure .content-procedure-item:nth-child(4){
+		background: url("INSTALL_IMG/complete_three.png") no-repeat center / contain;
+		color: #fff;
+	}
+	.install-content-procedure{border: none;}
+</style>
+{/block}
+{block name="main"}
+<div class="install-success">
+	<div class="install-success-box">
+		<img class="install-success-pic" src="INSTALL_IMG/install_complete.png" alt="">
+		<div class="install-success-text">
+			<p class="install-success-title">恭喜您！已成功安装单商户V4版系统。</p>
+			<p class="install-success-desc">建议删除安装目录install后使用</p>
+		</div>
+	</div>
+</div>
+<div class="other-links">
+	<p class="other-links-title">您现在可以访问：</p>
+	<ul class="other-links-list">
+		<li class="other-links-item">
+			<div  class="other-links-pic">
+				<img src="INSTALL_IMG/site_index.png" alt="">
+			</div>
+			<a href="{$root_url}" class="other-links-text" target="_blank">网站后台</a>
+		</li>
+		<li class="other-links-item">
+			<div  class="other-links-pic">
+				<img src="INSTALL_IMG/official_website.png" alt="">
+			</div>
+			<a href="http://www.niushop.com.cn" class="other-links-text" target="_blank">NIUSHOP官方网站</a>
+		</li>
+		<li class="other-links-item">
+			<div  class="other-links-pic">
+				<img src="INSTALL_IMG/forum.png" alt="">
+			</div>
+			<a href="http://bbs.niushop.com.cn" class="other-links-text" target="_blank">NIUSHOP官方论坛</a>
+		</li>
+	</ul>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+	ControlContent(3);
+</script>
+{/block}

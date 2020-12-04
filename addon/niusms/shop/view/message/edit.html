@@ -1,0 +1,96 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-btn-primary:hover {border-color: #C9C9C9;}
+	.number-con {margin-right: 10px;}
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否开启：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="sms_is_open" lay-filter="openChecked" value="1" {if $sms_is_open == 1}checked{/if} lay-skin="switch">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">模板名称：</label>
+		<div class="layui-input-block">
+			{$info.template_name}
+		</div>
+
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">模板类型：</label>
+		<div class="layui-input-block">
+			{if $info.template_type == 1} 验证码
+			{elseif $info.template_type == 2/} 行业通知
+			{elseif $info.template_type == 3/} 营销推广
+			{/if}
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">短信内容：</label>
+		<div class="layui-input-block">{$info.template_content}</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">审核状态：</label>
+		<div class="layui-input-block">{$info.audit_status_name}</div>
+	</div>
+
+	{if $template_info['auditResult'] != 2}
+	<div class="layui-form-item">
+		<label class="layui-form-label">审核原因：</label>
+		<div class="layui-input-block">{$template_info.auditMsg}</div>
+	</div>
+	{/if}
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+
+	<input type="hidden" name="keywords" value="{$keywords}">
+</div>
+{/block}
+{block name="script"}
+<script>
+	var template_id = '{$info.template_id}';
+	layui.use('form', function() {
+		var form = layui.form;
+			repeat_flag = false; //防重复标识
+		form.render();
+
+        form.on('switch(openChecked)', function(data){
+				var start = data.elem.checked ? 1 : 0;
+                enableTemplate(template_id,start);
+
+        });
+        /**
+		 * 监听提交
+		 */
+	});
+	
+	function back(){
+		location.href = ns.url("shop/message/lists");
+	}
+
+    function enableTemplate(template_id,status) {
+        $.ajax({
+            url: ns.url("niusms://shop/template/enableTemplate"),
+            data: {template_id: template_id,status:status},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function (res) {
+                layer.msg(res.message);
+                // location.reload();
+            }
+        });
+    }
+</script>
+{/block}

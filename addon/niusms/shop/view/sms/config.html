@@ -1,0 +1,114 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+
+<!--	<div class="layui-form-item">-->
+<!--		<label class="layui-form-label">用户名：</label>-->
+<!--		<div class="layui-input-block">-->
+<!--			<input type="text" name="access_key_id" placeholder="请输入用户名" {if $info.value } value="{$info.value.access_key_id}" {/if} autocomplete="off" class="layui-input ns-len-long">-->
+<!--		</div>-->
+<!--	</div>-->
+
+<!--	<div class="layui-form-item">-->
+<!--		<label class="layui-form-label">密码：</label>-->
+<!--		<div class="layui-input-block">-->
+<!--			<input type="text" name="access_key_secret" placeholder="请输入密码" {if $info.value } value="{$info.value.access_key_secret}" {/if} autocomplete="off" class="layui-input ns-len-long">-->
+<!--		</div>-->
+<!--	</div>-->
+
+<!--    &lt;!&ndash; 表单操作 &ndash;&gt;-->
+<!--    <div class="ns-form-row">-->
+<!--        <button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>-->
+<!--        <button class="layui-btn layui-btn-primary" onclick="back()">返回</button>-->
+<!--    </div>-->
+
+	    <div class="ns-form-row">
+	        <button class="layui-btn ns-bg-color" onclick="getSmsPackageList()">获取短信套餐包</button>
+		    <button class="layui-btn ns-bg-color" onclick="register()">注册</button>
+		    <button class="layui-btn ns-bg-color" onclick="alert()">发送短信</button>
+		    <button class="layui-btn ns-bg-color" onclick="removeChildAccount()">删除</button>
+	    </div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use('form', function() {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+		form.render();
+
+        form.on('submit(save)', function(data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+			
+            $.ajax({
+                url: ns.url("alisms://shop/sms/config"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/message/sms")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+                }
+            });
+        });
+    });
+
+    function back() {
+        location.href = ns.url("shop/message/sms");
+    }
+
+    function getSmsPackageList() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/getSmsPackageList"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("getSmsPackageList",res);
+			}
+		});
+	}
+
+	function register() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/register"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("register",res);
+			}
+		});
+	}
+
+	function removeChildAccount() {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/removeChildAccount"),
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				console.log("removeChildAccount",res);
+			}
+		});
+	}
+</script>
+{/block}

@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "购物车",
+  "usingComponents": {
+    "uni-number-box": "/components/uni-number-box/uni-number-box",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "diy-bottom-nav": "/components/diy-bottom-nav/diy-bottom-nav",
+    "ns-login": "/components/ns-login/ns-login",
+    "ns-goods-recommend": "/components/ns-goods-recommend/ns-goods-recommend",
+    "to-top": "/components/toTop/toTop"
+  }
+}

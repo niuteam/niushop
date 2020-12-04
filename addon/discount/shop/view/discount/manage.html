@@ -1,0 +1,264 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+    .ns-shop-account {
+        display: flex;
+        align-items: center;
+        position: relative;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    .ns-shop-detail p {
+        display: inline-block;
+        width: 300px;
+        line-height: 30px;
+    }
+
+    .ns-shop-account>a {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        cursor: pointer;
+    }
+	
+	.ns-good-detail {
+		margin-top: 10px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>管理员可以在此页添加/删除参加限时折扣活动的商品</li>
+			<li>折扣价格为参与折扣活动时的价格，可在列表页进行编辑</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="addGoods()" data-num="{$discount_info.discount_id}">添加商品</button>
+</div>
+
+
+<!-- 列表 -->
+<table id="good_list" lay-filter="good_list"></table>
+<input type="hidden" value="{$discount_info.discount_id}" name="discount_id" id="discount_id" />
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="delete">删除商品</a>
+	</div>
+</script>
+
+<!-- 商品 -->
+<script type="text/html" id="goodIntro">
+	<div class="ns-table-title">
+		<div class="ns-title-pic">
+			<img layer-src src="{{ns.img(d.sku_image.split(',')[0],'small')}}" />
+		</div>
+		<div class="ns-title-content">
+			<a href="javascript:;" class="ns-multi-line-hiding ns-text-color">{{ d.sku_name }}</a>
+		</div>
+	</div>
+</script>
+
+<!-- 编辑价格 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.sku_id}}, this)" value="{{d.discount_price}}" autocomplete="off" placeholder="请输入价格" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script>
+	var form, table, laytpl, selectedGoodsSkuId = [], total_goods = []; repeat_flag = false, //防重复标识
+		discount_id = $("#discount_id").val();
+
+	layui.use(['form', 'laytpl'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		form.render();
+		
+		table = new Table({
+			elem: '#good_list',
+			url: '{:addon_url("discount://shop/discount/manage")}',
+			async : false,
+			where: {discount_id},
+			parseData: function(res) {
+				for (var i in res.data.list) {
+					selectedGoodsSkuId.push(res.data.list[i].sku_id);
+				}
+				removeDuplicates(selectedGoodsSkuId);
+				return {
+					"code": res.code,
+					"msg": res.message,
+					"count": res.data.count,
+					"data": res.data.list
+				};
+			},
+			cols: [
+				[{
+					type: 'checkbox',
+					unresize: 'false',
+					width: '3%'
+				}, {
+					title: '商品',
+					unresize: 'false',
+					width: '38%',
+					templet: '#goodIntro'
+				}, {
+					field: 'price',
+					title: '商品价格',
+					unresize: 'false',
+					width: '14%',
+					align: 'right',
+					templet: function(data) {
+						return '￥<span class="goods-price">'+ data.price +'</span>';
+					}
+				}, {
+					title: '折扣价格(可编辑)',
+					unresize: 'false',
+					width: '18%',
+					align: 'center',
+					templet: '#editSort'
+				}, {
+					field: 'discount_rate',
+					title: '折扣率(%)',
+					unresize: 'false',
+					width: '14%'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					align: 'left',
+					unresize: 'false',
+					width: '13%'
+				}]
+			]
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'delete': //删除
+					delMember(data.sku_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function delMember(sku_id) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除该商品吗?', function() {
+				$.ajax({
+					url: '{:addon_url("discount://shop/discount/deleteGoods")}',
+					data: {sku_id,discount_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							for (var i in selectedGoodsSkuId){
+								if(selectedGoodsSkuId[i] == sku_id){
+									selectedGoodsSkuId.splice(i,1);
+								}
+							}
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+				repeat_flag = false;
+			});
+		}
+	});
+	
+	
+	// 监听单元格编辑
+	function editSort(sku_id, event){
+		var data = $(event).val();
+		if(data <= 0){
+			layer.msg("折扣价格必须大于0");
+			$(event).val(1);
+			return;
+		}
+		
+		var goods_price = $(event).parents("tr").find(".goods-price").text();
+		if (data > Number(goods_price)) {
+			layer.msg("折扣价格不能大于商品价格");
+			$(event).val(Number(goods_price));
+			return;
+		}
+		
+		$.ajax({
+			type: 'POST',
+			dataType: 'JSON',
+			url: ns.url("discount://shop/discount/updateGoods"),
+			data: {
+				sku_id,
+				discount_id,
+				"discount_price": data
+			},
+			success: function(res) {
+				layer.msg(res.message);
+                table.reload();
+			}
+		});
+	}
+
+	/**
+	 * 添加商品
+	 */
+	function addGoods () {
+		goodsSelect(function (res) {
+			if (!res.length) return false;
+			var sku_ids = [];
+			for (var i = 0; i < res.length; i++) {
+				for (var k = 0; k < res[i].selected_sku_list.length; k++) {
+					sku_ids.push(res[i].selected_sku_list[k].sku_id);
+				}
+			}
+			$.ajax({
+				type: 'POST',
+				async: false,
+				url: '{:addon_url("discount://shop/discount/addGoods")}',
+				data: {
+					'sku_ids': sku_ids.toString(),
+					discount_id
+				},
+				dataType: 'JSON',
+				success: function (res) {
+					layer.msg(res.message);
+					table.reload();
+				}
+			});
+		}, selectedGoodsSkuId, {mode: "sku", disabled: 1});
+	}
+
+	function removeDuplicates(arr){
+		if (!Array.isArray(arr)) {
+			console.log('type error!');
+			return
+		}
+		var array = [];
+		for (var i = 0; i < arr.length; i++) {
+			if (array.indexOf(arr[i]) === -1) {
+				array.push(arr[i])
+			}
+		}
+		return array;
+	};
+</script>
+{/block}

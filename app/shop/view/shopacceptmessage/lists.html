@@ -1,0 +1,247 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-reason-box{display: none;width: 350px;box-sizing: border-box;padding: 20px;border: 1px solid #aaa;border-radius: 5px;background-color: #FFF;position: absolute;top: 50px;z-index: 999;color: #666;line-height: 30px;left: 0px;font-weight: normal;}
+	.ns-reason-box:before, .ns-reason-box:after{content: "";border: solid transparent;height: 0;position: absolute;width: 0;}
+	.ns-reason-box:before{border-width: 12px;border-bottom-color: #aaa;top: -12px;left: 43px;border-top: none;}
+	.ns-reason-growth:before{left: 56px;}
+	.ns-reason-box:after{border-width: 10px;border-bottom-color: #FFF;top: -20px;left: 45px;}
+	.ns-reason-growth:after{left: 58px;}
+	.ns-reason-box p{white-space: normal;line-height: 1.5;}
+	.layui-table-header{overflow: inherit;}
+	.layui-table-header .layui-table-cell{overflow: inherit;}
+	.ns-prompt .iconfont{font-size: 16px;color: rgba(0,0,0,0.7);cursor: pointer;font-weight: 500;margin-left: 3px;}
+	.ns-prompt-block.balance, .ns-prompt-block.growth {justify-content: flex-end;}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {margin-top: 0;}
+</style>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member.css" />
+{/block}
+{block name="main"}
+
+<!-- 添加会员 -->
+<div class="ns-single-filter-box">
+	<button type="button" class="layui-btn ns-bg-color" onclick="bindingMember()">绑定会员</button>
+</div>
+
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="nickname">昵称</option>
+							<option value="mobile">手机号</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="昵称/手机号" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+			</div>
+
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 用户信息 -->
+<script type="text/html" id="userdetail">
+	<div class='ns-table-title'>
+		<div class='ns-title-pic'>
+			<img layer-src src="{{d.headimg ? ns.img(d.headimg) : 'SHOP_IMG/default_headimg.png'}}" onerror="this.src = 'SHOP_IMG/default_headimg.png' ">
+		</div>
+		<div class='ns-title-content'>
+			<p class="layui-elip">{{d.nickname ? d.nickname : ''}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- 手机号 -->
+<script type="text/html" id="mobile">
+	<div class='ns-table-title'>
+		{{# if(d.mobile){ }}
+			<span>{{ d.mobile }}</span>
+		{{# }else{ }}
+			<span style="color: red;">未绑定（不能接收短信消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 微信公众号 -->
+<script type="text/html" id="wx_openid">
+	<div class='ns-table-title'>
+		{{# if(d.wx_openid != ''){ }}
+		<span style="color: green;">已绑定</span>
+		{{# }else{ }}
+		<span style="color: red;">未绑定（不能接收微信公众号消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="operation" lay-event="delete">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var table, form, laytpl,
+		repeat_flag = false;
+
+	layui.use(['form', 'laytpl'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		form.render();
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#member_list',
+			url: ns.url("shop/Shopacceptmessage/lists"),
+			cols: [
+				[
+					{
+						field: 'userdetail',
+						title: '账户',
+						width: '25%',
+						unresize: 'false',
+						templet: '#userdetail'
+					}, {
+						title: '手机号',
+						unresize: 'false',
+                        templet: "#mobile"
+					}, {
+						title: '微信openid',
+						unresize: 'false',
+						templet: "#wx_openid"
+					}, {
+						title: '操作',
+						width: '10%',
+						unresize: 'false',
+						toolbar: '#operation'
+					}
+				]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		 table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'delete': //删除
+					delMember(data.member_id);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function delMember(member_id) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('删除后，该会员将不能接收消息，请谨慎操作！', function() {
+				$.ajax({
+					url: ns.url("shop/shopacceptmessage/delete"),
+					data: {member_id:member_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		form.on('submit(repass)', function(data) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/modifyPassword"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.closeAll('page');
+					}
+				}
+			});
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			repass: function(value) {
+				if (value != $(".new_pass").val()) {
+					return "输入错误,两次密码不一致!";
+				}
+			}
+		});
+
+	});
+
+    /**
+	 * 绑定会员
+     */
+	function bindingMember()
+	{
+        var url = ns.url("shop/shopacceptmessage/memberList");
+        //iframe层-父子操作
+        var layerIndex = layer.open({
+            title: "绑定会员",
+            type: 2,
+            area: ['1200px', '800px'],
+            // btn: '保存',
+            content: url,
+            end: function () {
+                location.reload();
+            }
+        });
+	}
+
+</script>
+{/block}

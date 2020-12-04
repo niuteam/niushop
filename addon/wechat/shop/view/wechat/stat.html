@@ -1,0 +1,129 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WECHAT_CSS/wx_access_statistics.css">
+<script src="WECHAT_JS/echarts.min.js"></script>
+{/block}
+{block name="main"}
+<div class="access-statistics">
+	<div class="nc-quote-box">
+		<blockquote class="layui-quote-nm layui-elem-quote">用户分析/昨日</blockquote>
+		<ul class="access-api-list ">
+			<li class="access-api-item">
+				<div class="access-api-item-title ">
+					<h3 class="nc-text-color-black-999">新关注人数</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_user_data.new_user)}{$yesterday_user_data.new_user}{else/}0{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">取消关注人数</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_user_data.cancel_user)}{$yesterday_user_data.cancel_user}{else/}0{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">净增关注人数</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_user_data.net_growth_user)}{$yesterday_user_data.net_growth_user}{else/}0{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">累积关注人数</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_user_data.cumulate_user)}{$yesterday_user_data.cumulate_user}{else/}0{/if}</p>
+			</li>
+		</ul>
+	</div>
+	<div class="nc-quote-box">
+		<blockquote class="layui-quote-nm layui-elem-quote">接口分析/昨日</blockquote>
+		<ul class="access-api-list">
+			<li class="access-api-item">
+				<div class="access-api-item-title ">
+					<h3 class="nc-text-color-black-999">调用次数</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_interface_data.callback_count)}{$yesterday_interface_data.callback_count}{else/}--{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">失败率</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_interface_data.fail_count)}{$yesterday_interface_data.fail_count}{else/}--{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">平均耗时(毫秒)</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_interface_data.callback_count) && !empty($yesterday_interface_data.total_time_cost)}{php}echo round($yesterday_interface_data['total_time_cost']/$yesterday_interface_data['callback_count'],2);{/php}{else/}--{/if}</p>
+			</li>
+			<li class="access-api-item">
+				<div class="access-api-item-title">
+					<h3 class="nc-text-color-black-999">最大耗时(毫秒)</h3>
+				</div>
+				<p class="access-api-itme-content">{if !empty($yesterday_interface_data.max_time_cost)}{$yesterday_interface_data.max_time_cost}{else/}--{/if}</p>
+			</li>
+		</ul>
+	</div>
+	<div class="nc-quote-box">
+		<blockquote class="layui-quote-nm layui-elem-quote">趋势图</blockquote>
+
+		<div class="layui-tab layui-tab-brief" lay-filter="chart_tab">
+			<ul class="layui-tab-title">
+				<li class="layui-this" lay-id="user">用户分析</li>
+				<li lay-id="interface">接口分析</li>
+			</ul>
+			<blockquote class="layui-elem-quote" style="margin-top:10px;" >
+                <span class="layui-breadcrumb" lay-separator="|" >
+                    <a href="javascript:void(0)" class="layui-breadcrumb-item layui-breadcrumb-active" lay-util="week">最近7天</a>
+                    <a href="javascript:void(0)"class="layui-breadcrumb-item"  lay-util="month">最近30天</a>
+                </span>
+			</blockquote>
+			<div class="layui-tab-content nc-border-color-gray">
+				<div class="layui-tab-item layui-show">
+					<div id="user_chart" style="width: 100%;height:400px;"></div>
+				</div>
+				<div class="layui-tab-item" id="interface_main">
+					<div id="interface_chart" style="width: 100%;height:400px;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    var is_render = true;
+    var date_type = "week";
+    layui.use(['element', 'util'], function(){
+        var element = layui.element,
+            util = layui.util;
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(chart_tab)', function(){
+            if(this.getAttribute('lay-id') == "interface" && is_render){
+                is_render = false;
+                getInterfaceStatistics();
+            }
+        });
+
+        //按钮事件
+        util.event('lay-util', {
+            week: function(othis){
+                $(".layui-breadcrumb-item").removeClass("layui-breadcrumb-active");
+                $(othis).addClass("layui-breadcrumb-active");
+                date_type = "week";
+                if(is_render == false){
+                    getInterfaceStatistics();
+                }
+            }
+            ,month: function(othis){
+                $(".layui-breadcrumb-item").removeClass("layui-breadcrumb-active");
+                $(othis).addClass("layui-breadcrumb-active");
+                date_type = "month";
+                if(is_render == false){
+                }
+            }
+        });
+	    
+    });
+</script>
+{/block}

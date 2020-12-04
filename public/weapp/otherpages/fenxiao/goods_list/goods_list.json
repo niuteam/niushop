@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "uni-drawer": "/components/uni-drawer/uni-drawer",
+    "uni-tag": "/components/uni-tag/uni-tag",
+    "loading-cover": "/components/loading-cover/loading-cover"
+  }
+}

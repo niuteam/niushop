@@ -1,0 +1,25 @@
+@CHARSET "UTF-8";
+.draggable-element .top-category .preview-draggable .preview-box {border-radius: 0;}
+.draggable-element .top-categorty{}
+.topCategorty{width: 100%;height: 35px;box-sizing: border-box;display: flex;align-items: center;}
+.topCategorty .top-categorty-item{display: inline-block;padding: 3px 10px;font-size: 14px;}
+.topCategorty .top-categorty-item.active{font-size: 16px;font-weight: 600;color: red;}
+.topCategorty .top-categorty-item.active .line {width: 100%;height: 2px;margin-top: 5px;}
+
+/* 弹框 */
+.top-category .top-category-style {display: none;}
+.style-list-con-top-category {display: flex;flex-wrap: wrap;}
+.style-list-con-top-category .style-li-top-category {width: 32%;height: 100px;margin-right: 2%;margin-bottom: 60px;cursor: pointer;border: 1px solid #ededed;background: #f7f8fa;box-sizing: border-box;}
+.style-list-con-top-category .style-li-top-category:nth-child(3n) {margin-right: 0;}
+.style-list-con-top-category .style-li-top-category .title{margin-top:20px;text-align: center;display: block;}
+
+.style-list-con-top-category .style-li-top-category .style-list1{display: flex;justify-content: center;line-height: 100px;}
+.style-list-con-top-category .style-li-top-category .style-list1>div{position:relative;font-size: 12px;margin:0 5px;}
+.style-list-con-top-category .style-li-top-category .style-list1>div:first-child{font-size: 14px;font-weight: 600;}
+.style-list-con-top-category .style-li-top-category .style-list1>div:first-child>.line{position: absolute;height:2px;width:100%;background-color: #FF6A00;bottom: 30px;left:0;}
+.style-list-con-top-category .style-li-top-category .style-list1>div:last-child{ margin-right: 0;}
+
+.style-list-con-top-category .style-li-top-category .style-list2{display: flex;justify-content: center;line-height: 100px;height: 100px;}
+.style-list-con-top-category .style-li-top-category .style-list2>div{position:relative;border-radius: 25px;font-size: 12px;height: 25px;line-height: 25px; padding: 0 3px; text-align: center;margin-right:5px;margin-top: 37.5px;}
+.style-list-con-top-category .style-li-top-category .style-list2>div:first-child{ color: #fff;}
+.style-list-con-top-category .style-li-top-category .style-list2>div:last-child{ margin-right: 0;}

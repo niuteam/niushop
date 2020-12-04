@@ -1,0 +1,89 @@
+<nc-component v-bind:data="data[index]" class="component-seckill" v-bind:style="{ backgroundColor : nc.backgroundColor  }">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="seckill-list-preview" v-bind:class="'text-title-'+ nc.style" v-if="nc.style == 1" v-bind:style="{ paddingTop: (nc.padding + 'px'), paddingBottom: (nc.padding + 'px'), paddingLeft: (nc.paddingLeftRight + 'px'), paddingRight: (nc.paddingLeftRight + 'px') }">
+			
+			<template v-if="nc.lazyLoad">
+				<seckill-top-content></seckill-top-content>
+			</template>
+			
+			<div class="list-wrap" v-if="nc.style==1">
+				<div class="item">
+					<div class="img-wrap">
+						<img src="STATIC_EXT/diyview/img/crack_figure.png" />
+					</div>
+					<p class="good-name ns-line-hiding" v-show="nc.isShowGoodsName == 1">商品名称</p>
+					<p class="good-desc ns-line-hiding" v-show="nc.isShowGoodsDesc == 1">商品描述</p>
+					<span class="old-price" v-show="nc.isShowGoodsPrimary == 1">￥1200.00</span>
+					<span class="new-price ns-red-color" v-show="nc.isShowGoodsPrice == 1">￥998.00</span>
+					<span class="good-stock" v-show="nc.isShowGoodsStock == 1">仅剩1件</span>
+				</div>
+				<div class="item">
+					<div class="img-wrap">
+						<img src="STATIC_EXT/diyview/img/crack_figure.png" />
+					</div>
+					<p class="good-name ns-line-hiding" v-show="nc.isShowGoodsName == 1">商品名称</p>
+					<p class="good-desc ns-line-hiding" v-show="nc.isShowGoodsDesc == 1">商品描述</p>
+					<span class="old-price" v-show="nc.isShowGoodsPrimary == 1">￥1200.00</span>
+					<span class="new-price ns-red-color" v-show="nc.isShowGoodsPrice == 1">￥998.00</span>
+					<span class="good-stock" v-show="nc.isShowGoodsStock == 1">仅剩1件</span>
+				</div>
+				<div class="item">
+					<div class="img-wrap">
+						<img src="STATIC_EXT/diyview/img/crack_figure.png" />
+					</div>
+					<p class="good-name ns-line-hiding" v-show="nc.isShowGoodsName == 1">商品名称</p>
+					<p class="good-desc ns-line-hiding" v-show="nc.isShowGoodsDesc == 1">商品描述</p>
+					<span class="old-price" v-show="nc.isShowGoodsPrimary == 1">￥1200.00</span>
+					<span class="new-price ns-red-color" v-show="nc.isShowGoodsPrice == 1">￥998.00</span>
+					<span class="good-stock" v-show="nc.isShowGoodsStock == 1">仅剩1件</span>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<!-- 编辑 -->
+	<template slot="edit">
+		<template v-if="nc.lazyLoad">
+			<seckill-style></seckill-style>
+		</template>
+		
+		<color v-bind:data="{ field : 'backgroundColor', 'label' : '背景颜色' }"></color>
+		<slide v-bind:data="{ field : 'padding', label : '上下边距' }"></slide>
+		<!-- <slide v-bind:data="{ field : 'paddingLeftRight', label : '左右边距' }"></slide> -->
+		
+		<h3>显示内容</h3>
+		<template v-if="nc.lazyLoad">
+			<seckill-content></seckill-content>
+		</template>
+		
+		<h3>顶部标题设置</h3>
+		<template v-if="nc.lazyLoad">
+			<seckill-top-list></seckill-top-list>
+		</template>
+
+		<!-- 弹框 -->
+		<div class="seckill-list-style">
+			<div class="style-list-seckill layui-form">
+				<div class="style-list-con-seckill">
+					<div class="style-li-seckill" v-bind:class="{'selected ns-border-color': nc.style == 1}">
+						<img src="{$resource_path}/seckill/img/seckill_style_1.png" />
+					</div>
+				</div>
+
+				<input type="hidden" name="style">
+			</div>
+		</div>
+	
+	</template>
+	
+	<!-- 资源 -->
+	<template slot="resource">
+
+		<js src="{$resource_path}/seckill/js/design.js"></js>
+		<css src="{$resource_path}/seckill/css/design.css"></css>
+
+	</template>
+	
+</nc-component>

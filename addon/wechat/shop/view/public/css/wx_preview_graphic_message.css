@@ -1,0 +1,77 @@
+.preview-box {
+    max-width: 600px;
+    height: 779px;
+    background: #FFF;
+    margin: 0 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+}
+
+.rich-media-thumb img {
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+}
+
+.preview-box::-webkit-scrollbar {
+    width: 5px;
+}
+
+.preview-box::-webkit-scrollbar-track {
+    background-color: #EEE;
+}
+
+.preview-box::-webkit-scrollbar-thumb {
+    background-color: #CCC;
+}
+
+.preview-box::-webkit-scrollbar-thumb:hover {
+    background-color: #AAA
+}
+
+.preview-box::-webkit-scrollbar-thumb:active {
+    background-color: #AAA
+}
+
+.preview-box > img.head {
+    position: relative;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+.preview-box > .graphic-message {
+    position: relative;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 150px;
+}
+
+.preview-box > .graphic-message > span.time, .preview-box > .graphic-message > span.author {
+    display: inline-block;
+    color: #AAA;
+    margin-top: 7px;
+}
+
+.preview-box > .graphic-message > content {
+    display: block;
+    position: relative;
+    margin-top: 20px;
+}
+
+.preview-box > .graphic-message > .graphic-message-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.preview-box > .graphic-message a.original-text {
+    position: absolute;
+    bottom: 50px;
+    left: 0px;
+    color: #607fa6;
+}
+
+img {
+    max-width: 100% !important;
+}

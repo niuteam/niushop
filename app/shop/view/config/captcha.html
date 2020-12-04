@@ -1,0 +1,57 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">后台登录验证码：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="shop_login" value="1" lay-skin="switch" {if condition="$config_info.shop_login == 1" }checked {/if} lay-title="启用|关闭"/>
+		</div>
+		<div class="ns-word-aux">设置后台登录验证码是否开启</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">前台登录验证码：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="shop_reception_login" value="1" lay-skin="switch" {if condition="$config_info.shop_reception_login == 1" }checked {/if} lay-title="启用|关闭"/>
+		</div>
+		<div class="ns-word-aux">设置前台登录验证码是否开启</div>
+	</div>
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		form.on('submit(save)', function(data) {
+			
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			$.ajax({
+				type: 'POST',
+				dataType: 'JSON',
+				url: ns.url("shop/config/captcha"),
+				data: data.field,
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+	});
+</script>
+{/block}

@@ -1,0 +1,224 @@
+{extend name="base"/}
+
+{block name="resources"}
+{/block}
+
+{block name="main"}
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="username">用户名</option>
+							<option value="nickname">昵称</option>
+							<option value="mobile">手机号</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="用户名/昵称/手机号" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+			</div>
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 用户信息 -->
+<script type="text/html" id="userdetail">
+	<div class='ns-table-title'>
+		<div class='ns-title-pic'>
+            <img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = 'SHOP_IMG/default_headimg.png' ">
+		</div>
+		<div class='ns-title-content'>
+			<p class="layui-elip">{{d.nickname}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="remove">移除</a>
+	</div>
+</script>
+
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="remove">批量移除</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="remove">批量移除</button>
+</script>
+{/block}
+
+{block name="script"}
+<script type="text/javascript">
+var table, form;
+		
+layui.use(['form', 'laytpl'], function() {
+	form = layui.form;
+
+	table = new Table({
+		elem: '#member_list',
+		url: ns.url("shop/member/blacklist"),
+		cols: [
+			[
+				{
+					width: "3%",
+					type: 'checkbox',
+					unresize: 'false'
+				}, {
+					field: 'userdetail',
+					title: '账户',
+					width: '15%',
+					unresize: 'false',
+					templet: '#userdetail'
+				}, {
+					field: 'member_level_name',
+					title: '会员等级',
+					width: '10%',
+					unresize: 'false'
+				}, {
+					field: 'point',
+					title: '积分',
+					width: '8%',
+					unresize: 'false',
+					align: 'left',
+					templet: function (data) {
+						return parseInt(data.point);
+					}
+				}, {
+					field: 'balance',
+					title: '余额',
+					width: '8%',
+					unresize: 'false',
+					align: 'left',
+					templet: function(data) {
+						var balance = parseFloat(data.balance) + parseFloat(data.balance_money);
+						return '<span style="color: red;" title="'+ balance.toFixed(2) +'">￥' + balance.toFixed(2) + '</span>';
+					}
+				}, {
+					field: 'growth',
+					title: '成长值',
+					width: '8%',
+					unresize: 'false',
+					align: 'left'
+				}, {
+					field: 'reg-login',
+					title: '最后登录时间',
+					width: '15%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.last_login_time);
+					}
+				}, {
+					title: '操作',
+					width: '10%',
+					unresize: 'false',
+					toolbar: '#operation'
+				}
+			]
+		],
+		toolbar: '#toolbarOperation',
+		bottomToolbar: "#batchOperation"
+	});
+
+	/**
+	 * 批量操作
+	 */
+	table.bottomToolbar(function(obj) {
+
+		if (obj.data.length < 1) {
+			layer.msg('请选择要操作的数据');
+			return;
+		}
+
+		switch (obj.event) {
+			case "remove":
+				var id_array = new Array();
+				for (i in obj.data) id_array.push(obj.data[i].member_id);
+				removeBlacklist(id_array.toString());
+				break;
+		}
+	});
+
+	/**
+	 * 批量操作
+	 */
+	table.toolbar(function(obj) {
+
+		if (obj.data.length < 1) {
+			layer.msg('请选择要操作的数据');
+			return;
+		}
+
+		switch (obj.event) {
+			case "remove":
+				var id_array = new Array();
+				for (i in obj.data) id_array.push(obj.data[i].member_id);
+				removeBlacklist(id_array.toString());
+				break;
+		}
+	});
+
+	/**
+	 * 监听工具栏操作
+	 */
+	 table.tool(function(obj) {
+		var data = obj.data;
+		switch (obj.event) {
+            case 'remove': // 移除黑名单
+            	removeBlacklist(data.member_id);
+            	break;
+		}
+	});
+
+	function removeBlacklist(member_ids) {
+		layer.confirm('确定要移除黑名单？', function() {
+			$.ajax({
+				url: ns.url("shop/member/modifyStatus"),
+				data: {
+					member_ids: member_ids,
+					status: 1
+				},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					if (res.code == 0) {
+						table.reload();
+					}
+				}
+			});
+		}, function () {
+			layer.close();
+		});
+	}
+
+	/**
+	 * 搜索功能
+	 */
+	form.on('submit(search)', function(data) {
+		table.reload({
+			page: {
+				curr: 1
+			},
+			where: data.field
+		});
+		return false;
+	});
+})
+
+</script>
+{/block}

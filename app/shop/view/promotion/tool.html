@@ -1,0 +1,97 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-item-block-parent .ns-item-poa-pic {
+		background-image: linear-gradient(to right, #fb8700, #fb6400);
+		text-align: center;
+		color: #FFFFFF;
+		width: 70px;
+		height: 30px;
+		line-height: 30px;
+		border-bottom-left-radius: 3px;
+	}
+	.ns-item-block .item-hide{
+		position: absolute;
+		top: 0;
+		right: -1px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card ns-card-common ns-card-brief" id="promotion">
+	<div class="layui-card-header ">
+		<span class="ns-card-title">应用工具</span>
+	</div>
+
+	<div class="layui-card-body">
+		<div class="ns-item-block-parent ns-item-five">
+			{foreach $promotion as $list_k => $list_v}
+			{if  condition="$list_v['show_type'] eq 'tool'"}
+			{empty name="$list_v['is_developing']"}
+			<a class="ns-item-block ns-item-block-hover-a" href="{:addon_url($list_v['url'])}">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$list_v.title}</div>
+						<p class="ns-item-content-desc ns-line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+			</a>
+			{else/}
+			<a class="ns-item-block ns-item-block-hover-a" href="javascript:;">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$list_v.title}</div>
+						<p class="ns-item-content-desc ns-line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+					<div class="ns-item-poa-pic">敬请期待</div>
+				</div>
+			</a>
+			{/empty}
+			{/if}
+			{/foreach}
+			{foreach $tool_addon as $tool_addon_k => $tool_addon_v}
+			
+			<div class="ns-item-block ns-item-block-hover">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="{$tool_addon_v.logo_img}" />
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$tool_addon_v.goods_name}</div>
+						<p class="ns-item-content-desc ns-line-hiding" title="{$tool_addon_v.package_name}">{$tool_addon_v.introduction}</p>
+					</div>
+					<img class="item-hide" src="SHOP_IMG/recommend.png" alt="">
+				</div>
+				<div class="ns-item-float-wrap ">
+					<div class="ns-item-float">
+						<div class="ns-item-float-con"></div>
+						<div class="ns-item-float-con now_btn" >
+							<!-- href="https://www.niushop.com" target="_blank" -->
+							<a  >立即升级</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			{/foreach}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script >
+	$('.now_btn').click(function(){
+		layer.confirm('当前插件可在官网订购', {
+			title:"插件提示",
+			btn: ['去订购','取消'] //按钮
+		}, function(){
+		 window.location.href = 'https://www.niushop.com/web/addon/lists.html?product_key=B2C_V4'
+		});
+	})
+</script>
+{/block}

@@ -1,0 +1,1 @@
+<view class="page" data-theme="{{themeStyle}}"><view class="notice-title">{{detail.title}}</view><view class="notice-content"><rich-text nodes="{{content}}"></rich-text></view><view class="notice-meta"><text class="notice-time">{{"发表时间: "+$root.g0}}</text></view><loading-cover class="vue-ref" vue-id="d7547e1e-1" data-ref="loadingCover" bind:__l="__l"></loading-cover></view>

@@ -1,0 +1,99 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="ns-function-search">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加</button>
+	
+	<div class="layui-form">
+		<div class="layui-input-inline ns-len-mid">
+			<input type="text" name="search_keys" placeholder="请输入" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="card_list" lay-filter="card_list"></table>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 1 ? '正常' : '锁定' }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<a class="layui-btn" lay-event="edit">编辑</a>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table,
+			form = layui.form;
+		form.render();
+		
+		table = new Table({
+			elem: '#card_list',
+			url: ns.url("shop/cardgoods/lists"),
+			cols: [
+				[{
+					type: 'checkbox',
+					unresize: 'false',
+					width: '3%'
+				}, {
+					field: 'card_name',
+					title: '名称',
+					unresize: 'false',
+					width: '47%'
+				}, {
+					field: 'status',
+					title: '状态',
+					unresize: 'false',
+					width: '25%',
+					templet: '#status'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					align: 'right',
+					unresize: 'false',
+					width: '25%'
+				}]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/cardgoods/editGoods?card_id=" + data.card_id);
+					break;
+			}
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+	
+	function add() {
+		location.href = ns.url("shop/cardgoods/addGoods");
+	}
+</script>
+{/block}

@@ -1,0 +1,99 @@
+{extend name="app/shop/view/base.html" /}
+
+{block name="resources"}
+<style>
+.applet-list {
+}
+.applet-item {
+	padding:10px;
+	margin:0 10px 10px 0;
+	display:inline-block;
+	width:280px;
+	border: 1px solid #eee;
+	border-radius: 5px;
+}
+.applet-item .applet-img {
+	width:100%;
+	padding:50% 0;
+	position:relative;
+	overflow:hidden;
+}
+.applet-item .applet-img img {
+	position:absolute;
+	width:100%;
+	height:auto;
+	max-height:100%;
+	left:50%;
+	top:50%;
+	transform:translate(-50%,-50%);
+}
+.applet-item .applet-name {
+	font-size:14px;
+	line-height:1;
+	background:none;
+	padding:0;
+	margin-top:10px
+}
+.applet-item .applet-desc {
+	line-height:1.5;
+	font-size:12px;
+	color:#666;
+	margin:10px 0;
+	height:38px;
+	overflow:hidden;
+	text-overflow:ellipsis;
+}
+.empty {
+	text-align:center;
+	height:150px;
+	line-height:150px;
+}
+</style>
+{/block}
+
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>已购买的小程序会出现在下方,购买可前往<a href="https://www.niushop.com" target="_blank">Niushop官网</a>进行购买</li>
+			<li>下载之后需使用HBuilderX编译成微信小程序,然后进行发布,HBuilderX下载地址: <a href="https://www.dcloud.io/hbuilderx.html" target="_blank">https://www.dcloud.io/hbuilderx.html</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">已购小程序</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="applet-list">
+			{notempty name="list"}
+				{foreach name="list" item="item"}
+				<div class="applet-item">
+					<div class="applet-img">
+						<img src="{$item.product_info.image}" alt="">
+					</div>
+					<h4 class="applet-name">{$item.product_info.module_name}</h4>
+					<p class="applet-desc">
+						{$item.product_info.summary}
+					</p>
+					<div>
+						<a href="{:addon_url('weapp://shop/weapp/package?mark='. $item['module_mark'] )}">
+							<button class="layui-btn ns-bg-color">下载小程序源码包</button>
+						</a>
+					</div>
+				</div>
+				{/foreach}
+			{else/}
+				<div class="empty">
+					您还未购买过小程序，<a href="https://www.niushop.com" target="_blank">前去购买</a>
+				</div>
+			{/notempty}
+		</div>
+	</div>
+</div>
+{/block}
+
+{block name="script"}
+{/block}

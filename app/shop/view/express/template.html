@@ -1,0 +1,205 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>设为默认的运费模板，订单运费计算时，该运费总是优先于任何运费</li>
+			<li>可以针对具体商品设置运费模板，可根据运费计算方式（如：商品的重量、体积等）设置不同的运费模板</li>
+			<li>根据配送地点的不同可设置不同的运费模板</li>
+			<li>只可设置一个默认运费模板，当某个运费模板设为默认时，其余的运费模板都为非默认</li>
+		</ul>
+	</div>
+</div>
+
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加模板</button>
+	
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="keyword" placeholder="请输入模板名称关键字" class="layui-input ns-len-mid" autocomplete="off">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+			  <i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="template" lay-filter="template"></table>
+
+<!-- 默认 -->
+<script type="text/html" id="is_default">
+	{{ d.is_default == 1 ? '是' : '否' }}
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="fee_type">
+	{{# if(d.fee_type == 1){ }}
+	重量(kg)
+	{{# } }}
+	{{# if(d.fee_type == 2){ }}
+	体积(m³)
+	{{# } }}
+	{{# if(d.fee_type == 3){ }}
+	按件
+	{{# } }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		{{# if(d.is_default == 0){ }}
+		<a class="layui-btn" lay-event="default">设为默认</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+		{{# }}}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+	</div>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">删除</button>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table,
+			form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		table = new Table({
+			elem: '#template',
+			url: ns.url("shop/express/template"),
+			cols: [
+				[{
+					type: 'checkbox',
+					unresize: 'false',
+					width: '3%'
+				}, {
+					field: 'template_name',
+					title: '名称',
+					unresize: 'false',
+					align: 'left',
+					width: '27%'
+				}, {
+					field: 'fee_type',
+					title: '运费计算方式',
+					unresize: 'false',
+					align: 'center',
+					width: '20%',
+					templet: '#fee_type'
+				}, {
+					field: 'is_default',
+					title: '是否默认',
+					unresize: 'false',
+					align: 'center',
+					width: '25%',
+					templet: '#is_default'
+				}, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '25%'
+				}]
+			],
+			// bottomToolbar: "#batchOperation"
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/express/editTemplate", {"template_id": data.template_id});
+					break;
+				case 'delete': //删除
+					deleteCompany(data.template_id);
+					break;
+				case 'default': //默认
+					defaultTemplate(data.template_id);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function deleteCompany(template_id) {
+			layer.confirm('确定要删除该运费模板吗?', function() {
+				$.ajax({
+					url: ns.url("shop/express/deleteTemplate"),
+					data: {template_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function(obj) {
+
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].template_id);
+					deleteCompany(id_array.toString());
+					break;
+			}
+		});
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		/**
+		 * 设置默认
+		 */
+		function defaultTemplate(template_id){
+			$.ajax({
+				url: ns.url("shop/express/defaultTemplate"),
+				data: {template_id},
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						table.reload();
+					}
+				}
+			});
+		}
+	});
+	
+	function add() {
+		location.href = ns.url("shop/express/addTemplate");
+	}
+</script>
+{/block}

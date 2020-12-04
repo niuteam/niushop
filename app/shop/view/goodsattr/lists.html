@@ -1,0 +1,237 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>属性模板用在商品添加编辑中批量设置</li>
+			<li>商品属性，例如蔬菜、水果、数码等模板</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="addAttr()">添加属性模板</button>
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_keys" placeholder="请输入属性模板名称" autocomplete="off" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+				<i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="attr_class_list" lay-filter="attr_class_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">管理</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+
+<script type="text/html" id="addAttr">
+
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>属性名称：</label>
+			<div class="layui-input-block">
+				<input name="class_name" type="text" placeholder="请输入属性名称" lay-verify="required" class="layui-input ns-len-mid">
+			</div>
+		</div>
+		
+		<div class="layui-form-item">
+			<label class="layui-form-label mid">排序</label>
+			<div class="layui-input-block">
+				<input name="sort" type="number" value="0" placeholder="请输入排序" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<p class="ns-word-aux mid">排序值必须为整数</p>
+		</div>
+		
+		<div class="ns-form-row mid">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeAttrLayer()">返回</button>
+		</div>
+	</div>
+	
+</script>
+
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.class_id}},this)" value="{{d.sort}}" placeholder="请输入排序" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl, add_attr_index = -1,
+		form, table;
+	layui.use(['form', 'laytpl'], function() {
+		var repeat_flag = false; //防重复标识
+		laytpl = layui.laytpl;
+		form = layui.form;
+		form.render();
+
+		table = new Table({
+			elem: '#attr_class_list',
+			url: ns.url("shop/goodsattr/lists"),
+			cols: [
+				[ {
+					field: 'class_name',
+					title: '模板名称',
+					width: '50%',
+					unresize: 'false'
+				}, {
+					unresize: 'false',
+					title: '排序',
+					width: '30%',
+					templet: '#editSort'
+				}, {
+					title: '操作',
+					width: '15%',
+					toolbar: '#operation',
+					unresize: 'false'
+				}]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit':
+					location.href = ns.url("shop/goodsattr/editattr?class_id=" + data.class_id);
+					break;
+				case 'delete':
+					deleteAttr(data.class_id);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function deleteAttr(class_id) {
+			layer.confirm('删除属性后将会删除对应关联关系，移除后数据会发生不可逆转的行为，请谨慎操作', function() {
+				$.ajax({
+					url: ns.url("shop/goodsattr/deleteAttr"),
+					data: {
+						class_id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+		form.on('submit(save)', function(data) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				url: '{:addon_url("shop/goodsattr/addAttr")}',
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(data) {
+					layer.msg(data.message);
+					if (data.code == 0) {
+						table.reload();
+						layer.close(add_attr_index);
+					}
+					repeat_flag = false;
+				}
+			});
+			return false;
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			num: function(value) {
+				if (value == '') {
+					return;
+				}
+				if (value % 1 != 0) {
+					return '排序数值必须为整数';
+				}
+				if (value < 0) {
+					return '排序数值必须为大于0';
+				}
+			}
+		});
+	});
+
+	// 监听单元格编辑
+	function editSort(id, event) {
+		var data = $(event).val();
+		if (!new RegExp("^-?[1-9]\\d*$").test(data)) {
+			layer.msg("排序号只能是整数");
+			return;
+		}
+		if(data<0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+		$.ajax({
+			type: 'POST',
+			url: ns.url("shop/goodsattr/modifySort"),
+			data: {
+				sort: data,
+				class_id: id
+			},
+			dataType: 'JSON',
+			success: function(res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					table.reload();
+				}
+			}
+		});
+	}
+
+	function addAttr() {
+		var add_attr = $("#addAttr").html();
+		laytpl(add_attr).render({}, function(html) {
+			add_attr_index = layer.open({
+				title: '添加商品属性',
+				skin: 'layer-tips-class',
+				type: 1,
+				area: ['500px'],
+				content: html
+			});
+		});
+
+	}
+	
+	function closeAttrLayer() {
+		layer.close(add_attr_index);
+	}
+</script>
+{/block}

@@ -1,0 +1,218 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<style>
+	.layui-elem-quote{color: #999;}
+	.ns-table-btn{justify-content: center;}
+	.layui-card-header{border: 1px solid #f6f6f6;}
+	.layui-card-header .ns-card-title{font-size: 14px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li> 注意：请将公众平台模板消息所在行业选择为：消费品/消费品，其他/其他，所选行业不一致将会导致模板消息不可用。</li>
+			<li>公众平台模板消息所在行业选择一个月只能修改一次,请谨慎选择。</li>
+			<li>公众号最多支持25个模板消息获取时请注意公众号剩余模板数量是否充足</li>
+			<li>所需跳转到的小程序必须与发模板消息的公众号是绑定关联关系，暂不支持小游戏</li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-form">
+	<div class="layui-card ns-card-common">
+		<div class="layui-card-header">
+			<span class="ns-card-title">是否需跳转到小程序</span>
+			<input type="checkbox" name="" value="1" lay-skin="switch" {if $config.is_jump_weapp == 1} checked {/if} lay-filter="is_jump_weapp" />
+		</div>
+	</div>
+</div>
+
+<table id="template_list" lay-filter="template_list"></table>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="open">批量开启</button>
+	<button class="layui-btn layui-btn-primary" lay-event="close">批量关闭</button>
+	<button class="layui-btn layui-btn-primary" lay-event="getAll">批量获取</button>
+</script>
+
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+	{{# if(d.wechat_is_open == 0){ }}
+		<a class="layui-btn" lay-event="open">开启</a>
+	{{# }else{ }}	
+		<a class="layui-btn" lay-event="close">关闭</a>
+	{{# } }}
+
+	{{# if(d.wechat_template_id != undefined && d.wechat_template_id != ''){ }}
+		<a class="layui-btn" lay-event="getTemplateNo">重新获取</a>
+	{{# } }}
+
+	</div>
+</script>
+
+<script type="text/html" id="message_type">
+	{{ d.message_type == 1 ? '买家消息' : '卖家消息' }}
+</script>
+
+<script type="text/html" id="template_no">
+	{{ d.wechat_template_id ? d.wechat_template_id : '' }}
+</script>
+
+<script type="text/html" id="wechat_is_open">
+	{{ d.wechat_is_open == 1 ? '已启动' : '已关闭' }}
+</script>
+
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var form,table;
+	layui.use(['form'], function(){
+		form = layui.form;
+		var repeat_flag = false;//防重复标识
+
+		form.on('switch(is_jump_weapp)', function(data){
+            data.value = data.elem.checked ? data.value : 0;
+
+            $.ajax({
+                dataType: "JSON",
+                type: "POST",
+                data:{"is_jump_weapp": data.value},
+                url: ns.url("wechat://shop/message/messageConfig"),
+                success: function(res){
+                }
+            })
+        });
+
+		table = new Table({
+			elem: '#template_list',
+			url: ns.url("wechat://shop/message/config"),
+			cols: [
+				[
+					{
+						width: "3%",
+						type: 'checkbox',
+						unresize: 'false'
+					},
+					{
+						field: 'title',
+						title: '类型',
+						align: 'left'
+					},
+					{
+						field: 'message_type',
+						title: '消息类型',
+						templet: '#message_type',
+						align: 'center'
+					},
+					{
+						field: 'wechat_is_open',
+						title: '是否启用',
+						templet: '#wechat_is_open',
+						align: 'center'
+					},
+					{
+						field: 'wechat_template_id',
+						title: '编号',
+						align: 'center',
+						templet: '#template_no'
+					},
+					{
+						align: 'center',
+						title: '操作',
+						toolbar: '#operation'
+					}
+				]
+			],
+			bottomToolbar: "#batchOperation"
+		});
+
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function(obj) {
+
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+
+			var keywords_array = new Array();
+			for (i in obj.data) keywords_array.push(obj.data[i].keywords);
+			switch (obj.event) {
+				case 'open': //开启
+					setStatus(keywords_array.toString(), 1);
+					break;
+				case 'close': //关闭
+					setStatus(keywords_array.toString(), 0);
+					break;
+				case 'getAll': //关闭
+					getTemplate(keywords_array.toString());
+					break;
+			}
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'getTemplateNo': //获取模板id
+					getTemplate(data.keywords);
+					break;
+                case 'open': //开启
+                    setStatus(data.keywords, 1);
+                    break;
+                case 'close': //关闭
+                    setStatus(data.keywords, 0);
+                    break;
+			}
+		});
+
+		function setStatus(keywords, status) {
+			$.ajax({
+				type : "post",
+				url : '{:addon_url("wechat://shop/message/setWechatStatus")}',
+				data : {
+					"wechat_is_open":status,
+					'keywords' : keywords
+				},
+				dataType : "JSON",
+				success : function(res) {
+					repeat_flag = false;
+					layer.msg(res.message);
+					table.reload('template_list');
+				}
+			});
+		}
+
+		function getTemplate(keywords) {
+			var loadLayer;
+			layer.confirm('已存在的模板再次获取会导致模板重复存在，是否继续?', function () {
+				$.ajax({
+					type : "post",
+					url : '{:addon_url("wechat://shop/message/getWechatTemplateNo")}',
+					data : {
+						'keywords' : keywords
+					},
+					dataType : "JSON",
+					beforeSend: function(){
+						loadLayer = layer.msg("模板获取中，请耐心等待，请勿进行其他操作！",{ time : 1000 * 10000});
+					},
+					complete: function(){
+						layer.close(loadLayer);
+					},
+					success : function(res) {
+						repeat_flag = false;
+						layer.msg(res.message);
+						table.reload('template_list');
+					}
+				});
+			})
+		}
+		
+	});
+</script>
+{/block}

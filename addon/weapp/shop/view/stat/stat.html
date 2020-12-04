@@ -1,0 +1,231 @@
+{extend name="app/shop/view/base.html" /}
+{block name="resources"}
+<link rel="stylesheet" href="WEAPP_CSS/wx_access_statistics.css">
+<script src="WEAPP_JS/echarts.min.js"></script>
+{/block}
+{block name="main"}
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">昨日分析</span>
+	</div>
+	
+	<div class="layui-card-body access-statistics">
+		<ul class="access-api-list">
+		    <li class="access-api-item">
+		        <div class="access-api-item-title ">
+		            <h3 class="nc-text-color-black-999">打开次数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="session_cnt">0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">访问次数/人数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="visit_pv_visit_uv">0/0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">新访问用户数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="visit_uv_new">0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">人均/次均停留时长(秒)</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="stay_time_uv_stay_time_session">0/0</p>
+		    </li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">上月概况</span>
+	</div>
+	
+	<div class="layui-card-body access-statistics">
+		<ul class="access-api-list ">
+		    <li class="access-api-item">
+		        <div class="access-api-item-title ">
+		            <h3 class="nc-text-color-black-999">打开次数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="month_session_cnt">0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">访问次数/人数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="month_visit_pv_visit_uv">0/0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">新访问用户数</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="month_visit_uv_new">0</p>
+		    </li>
+		    <li class="access-api-item">
+		        <div class="access-api-item-title">
+		            <h3 class="nc-text-color-black-999">人均/次均停留时长(秒)</h3>
+		        </div>
+		        <p class="access-api-itme-content" id="month_stay_time_uv_stay_time_session">0/0</p>
+		    </li>
+		</ul>
+	</div>
+</div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-body access-statistics">
+		<div class="layui-tab-content-time">
+		    <span>时间</span>
+		    <div class="layui-input-inline daterange-input-wrap">
+		        <input type="text" class="layui-input daterange-input nc-len-mid" id="daterange" placeholder=" - ">
+		    </div>
+		</div>
+		<div class="info-img">
+		    <div id="main" style="width: 100%;height:400px;"></div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+
+    var daterange = '{:date("Y-m-d", strtotime("-6 days"))} 至 {:date("Y-m-d")}';
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#daterange'
+            ,format: 'yyyy-MM-dd'
+            ,range: '至'
+            ,value:daterange //必须遵循format参数设定的格式
+            ,done: function(value, date, endDate){
+                daterange = value;
+                visitStatistics();
+            }
+        });
+        visitData("yesterday");
+        visitData("month");
+        visitStatistics();
+
+    });
+
+    //折线图
+    var chart = echarts.init(document.getElementById('main'));
+
+    //获取微信小程序访问统计数据(按日)
+    function visitStatistics(){
+        chart.showLoading();//加载视图
+        $.ajax({
+            type: "post",
+            url: "{:addon_url('weapp://shop/stat/visitStatistics')}",
+            dataType: "JSON",
+            data: {daterange : daterange},
+            success: function (result) {
+                var chart_data = result.data;
+				var	option = {
+					legend: {
+						data:['打开次数','访问次数','访问人数','新用户数','人均停留时长','次均停留时长','平均访问深度'],
+						x: 'right',
+						right: '20',
+					},
+					tooltip: {
+						trigger: 'axis'
+					},
+					grid: {
+						left: '20',
+						right: '20',
+						bottom: '20',
+						containLabel: true
+					},
+					xAxis: {
+						type: 'category',
+						data: chart_data.date
+					},
+					yAxis: {
+						type: 'value'
+					},
+					series: [
+						{
+							data: chart_data.data.session_cnt_data,
+							type: 'line',
+							smooth: true,
+							name: "打开次数"
+						},
+						{
+							data: chart_data.data.visit_pv_data,
+							type: 'line',
+							smooth: true,
+							name: "访问次数"
+						},
+						{
+							data: chart_data.data.visit_uv_data,
+							type: 'line',
+							smooth: true,
+							name: "访问人数"
+						},
+						{
+							data: chart_data.data.visit_uv_new_data,
+							type: 'line',
+							smooth: true,
+							name: "新用户数"
+						},
+						{
+							data: chart_data.data.stay_time_uv_data,
+							type: 'line',
+							smooth: true,
+							stack: '秒',
+							name: "人均停留时长"
+						},
+						{
+							data: chart_data.data.stay_time_session_data,
+							type: 'line',
+							smooth: true,
+							stack: '秒',
+							name: "次均停留时长"
+						},
+						{
+							data: chart_data.data.visit_depth_data,
+							type: 'line',
+							smooth: true,
+							name: "平均访问深度"
+						},
+					]
+				};
+
+                chart.setOption(option);
+                chart.hideLoading();
+            }
+        });
+    }
+    /**
+     *统计数据
+     */
+    function visitData(date_type){
+        $.ajax({
+            type: "post",
+            url: "{:addon_url('weapp://shop/stat/visitdata')}",
+            dataType: "JSON",
+            data: {date_type : date_type},
+            success: function (res) {
+                var data = res.data;
+                if(data.length > 0){
+                    if(date_type == "month"){
+                        $("#month_session_cnt").text(data.data.session_cnt);
+                        $("#month_visit_pv_visit_uv").text(data.data.visit_pv +"/"+data.data.visit_uv);
+                        $("#month_visit_uv_new").text(data.data.visit_uv_new);
+                        $("#month_stay_time_uv_stay_time_session").text(data.data.stay_time_uv +"/"+data.data.stay_time_session);
+                    }else{
+                        $("#session_cnt").text(data.data.session_cnt);
+                        $("#visit_pv_visit_uv").text(data.data.visit_pv +"/"+data.data.visit_uv);
+                        $("#visit_uv_new").text(data.data.visit_uv_new);
+                        $("#stay_time_uv_stay_time_session").text(data.data.stay_time_uv +"/"+data.data.stay_time_session);
+                    }
+                }
+            }
+        });
+    }
+</script>
+{/block}

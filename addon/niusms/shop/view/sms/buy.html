@@ -1,0 +1,352 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-card-common{
+		margin-top: 0;
+	}
+
+	.sms-package-list {
+
+	}
+
+	.sms-package-list h3 {
+		border-bottom: 1px solid #f1f1f1;
+		padding: 10px 0;
+		font-size: 16px;
+	}
+
+	.sms-package-list ul {
+		overflow: hidden;
+	}
+
+	.sms-package-list ul li {
+		border: 1px solid #f1f1f1;
+		float: left;
+		width: 150px;
+		padding: 10px;
+		text-align: center;
+		cursor: pointer;
+		margin-right: 10px;
+		margin-bottom: 10px;
+		border-radius: 5px;
+	}
+
+	.sms-package-list ul li .package-name {
+		margin-bottom: 10px;
+		display: block;
+	}
+
+	.sms-num {
+		font-size: 24px;
+		margin-bottom: 10px;
+		display: block;
+	}
+
+	.sms-package-list ul li .price {
+
+	}
+
+	.sms-package-list ul li .original-price {
+		text-decoration: line-through;
+	}
+
+	.sms-invoice-list {
+
+	}
+
+	.sms-invoice-list h3 {
+		border-bottom: 1px solid #f1f1f1;
+		padding: 10px 0;
+		font-size: 16px;
+	}
+
+	.sms-invoice-list .layui-form-item {
+		display: none;
+	}
+
+	.pay-way h3 {
+		border-bottom: 1px solid #f1f1f1;
+		padding: 10px 0;
+		font-size: 16px;
+	}
+
+	.settlement-wrap ul li {
+		margin-bottom: 10px;
+	}
+	.settlement-wrap ul li.invoice{
+		display: none;
+	}
+
+	.settlement-wrap ul li label {
+		width: 80px;
+		display: inline-block;
+		text-align: right;
+	}
+	.js-pay-money span{
+		font-size: 24px;
+		font-weight: 600;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<div>
+				<span class="ns-card-title">选择套餐</span>
+			</div>
+		</div>
+		<div class="layui-card-body sms-package-list">
+			<ul>
+				{foreach name="$sms_package_list['sms_list']" item="vo" key="k"}
+				<li data-package-id="{$vo['package_id']}" {if $k===0 }class="ns-border-color" {/if}>
+				<span class="package-name">{$vo['package_name']}</span>
+				<span class="sms-num ns-text-color">{$vo['sms_num']}条</span>
+				<p>
+					<span class="price">￥{$vo['price']}</span>
+					<span class="original-price ns-text-color-gray">￥{$vo['original_price']}</span>
+				</p>
+				</li>
+				{/foreach}
+			</ul>
+		</div>
+	</div>
+
+	{notempty name="$sms_package_list['invoice_list']"}
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<div>
+				<span class="ns-card-title">发票</span>
+			</div>
+		</div>
+		<div class="layui-card-body sms-invoice-list">
+			<div>
+				<input type="radio" name="invoice" value="0" title="无需发票" lay-filter="invoice" checked>
+				{foreach name="$sms_package_list['invoice_list']" item="vo"}
+				<input type="radio" name="invoice" value="{$vo['id']}" title="{$vo['name']}" lay-filter="invoice"
+					   data-rate="{$vo['rate']}" data-type="{$vo['type']}" data-invoice-type="{$vo['invoice_type']}"
+					   data-invoice-content="{$vo['invoice_content']}">
+				{/foreach}
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>收件人：</label>
+				<div class="layui-input-block">
+					<input type="text" name="consigner" lay-verify="required" autocomplete="off" class="layui-input ns-len-mid">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>手机号：</label>
+				<div class="layui-input-block">
+					<input type="text" name="mobile" lay-verify="required" autocomplete="off" class="layui-input ns-len-mid">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>邮编：</label>
+				<div class="layui-input-block">
+					<input type="text" name="zip_code" lay-verify="required" autocomplete="off" class="layui-input ns-len-mid">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>收货地址：</label>
+				<div class="layui-input-block">
+					<input type="text" name="address" lay-verify="required" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>抬头名称：</label>
+				<div class="layui-input-block">
+					<input type="text" name="invoice_title" lay-verify="required" autocomplete="off" class="layui-input ns-len-mid">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label mid"><span class="required">*</span>纳税人识别号：</label>
+				<div class="layui-input-block">
+					<input type="text" name="invoice_number" lay-verify="required" autocomplete="off" class="layui-input ns-len-mid">
+				</div>
+			</div>
+		</div>
+	</div>
+	{/notempty}
+
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<div>
+				<span class="ns-card-title">选择支付方式</span>
+			</div>
+		</div>
+		<div class="layui-card-body pay-way">
+			<input type="radio" name="pay_way" value="alipay" title="支付宝" checked>
+		</div>
+	</div>
+
+	<div class="settlement-wrap">
+		<ul>
+			{notempty name="$sms_package_list['invoice_list']"}
+			<li class="invoice">
+				<label>税率：</label>
+				<span class="js-rate">0</span>
+			</li>
+			<li class="invoice">
+				<label>类型：</label>
+				<span class="js-type"></span>
+			</li>
+			<li class="invoice">
+				<label>发票类型：</label>
+				<span class="js-invoice-type"></span>
+			</li>
+			<li class="invoice">
+				<label>发票内容：</label>
+				<span class="js-invoice-content"></span>
+			</li>
+			<li class="invoice">
+				<label>税费：</label>
+				<span class="js-invoice-money">￥0.00</span>
+			</li>
+			<li class="invoice">
+				<label>订单金额：</label>
+				<span class="js-order-money">￥0.00</span>
+			</li>
+			{/notempty}
+			<li>
+				<label>应付：</label>
+				<span class="js-pay-money ns-text-color">￥<span class="ns-text-color">0.00</span></span>
+			</li>
+		</ul>
+	</div>
+
+	<input type="hidden" name="invoice_id">
+	<input type="hidden" name="invoice_content">
+
+	<div class="ns-form-row sm">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">支付</button>
+		<button class="layui-btn layui-btn-primary" onclick="location.href=ns.url('niusms://shop/sms/index')">返回</button>
+	</div>
+
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function () {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		calculate(0, 0);
+
+		form.on('radio(invoice)', function (data) {
+			var rate = $(data.elem).attr("data-rate");
+			var type = $(data.elem).attr("data-type");
+			var type_value = "";
+			if (type == 1) {
+				type_value = "纸质发票";
+			} else if (type == 2) {
+				type_value = "电子发票";
+			}
+			var invoice_type = $(data.elem).attr("data-invoice-type");
+			var invoice_type_value = "";
+			if (invoice_type == 1) {
+				invoice_type_value = "普票";
+			} else if (invoice_type == 2) {
+				invoice_type_value = "专票";
+			}
+
+			var invoice_content = $(data.elem).attr("data-invoice-content");
+
+			calculate(parseInt(data.value) ? 1 : 0, data.value);
+			if (parseInt(data.value)) {
+				$(".js-rate").html("<strong class='ns-text-color'>" + rate + "%</strong>");
+				$(".js-type").text(type_value);
+				$(".js-invoice-type").text(invoice_type_value);
+				$(".js-invoice-content").text(invoice_content);
+				$(".settlement-wrap .invoice").show();
+				$(".sms-invoice-list .layui-form-item").show();
+				$("input[name='invoice_id']").val(data.value);
+				$("input[name='invoice_content']").val(invoice_content);
+			} else {
+				$(".settlement-wrap .invoice").hide();
+				$(".sms-invoice-list .layui-form-item").hide();
+				$("input[name='invoice_id']").val(0);
+				$("input[name='invoice_content']").val('');
+			}
+		});
+
+		$("body").off("click").on("click",".sms-package-list ul li",function () {
+			$(this).addClass("ns-border-color").siblings().removeClass("ns-border-color");
+
+			var isInvoice = parseInt($("input[name='invoice']:checked").val()) ? 1 : 0;
+			var packageId =$(".sms-package-list ul li.ns-border-color").attr("data-package-id");
+
+			calculate(isInvoice, packageId);
+		});
+
+		form.verify({
+			required: function (value, item) {
+				var str = $(item).parent().parent().find("label").text().toString().replace("*", "").replace("：", "");
+				if (parseInt($("input[name='invoice']:checked").val())) {
+					if (value.trim() == "" || value == undefined || value == null) {
+						return str + "不能为空";
+					}
+				}
+			}
+		});
+
+		form.on("submit(save)", function (data) {
+
+			data.field.package_id =$(".sms-package-list ul li.ns-border-color").attr("data-package-id");
+			data.field.is_invoice = parseInt($("input[name='invoice']:checked").val()) ? 1 : 0;
+
+			if(repeat_flag) return false;
+			repeat_flag = true;
+
+			var newWin = window.open('about:blank');
+			$.ajax({
+				url: ns.url("niusms://shop/sms/createSmsOrder"),
+				dataType: 'JSON',
+				type: 'POST',
+				data: data.field,
+				success: function (res) {
+					if (res.code == 0) {
+						newWin.location.href = ns.url("niusms://shop/sms/payment", {out_trade_no: res.data.out_trade_no});
+						var index = layer.confirm('请确认支付是否完成',{
+							title: '支付提示',
+							btn: ['已完成支付', '返回'],
+							yes: function() {
+								location.href=ns.url('niusms://shop/sms/index');
+							},btn2: function() {
+								repeat_flag = false;
+								layer.close(index);
+							}
+						});
+					} else {
+						repeat_flag = false;
+						layer.msg(res.message);
+					}
+				}
+			})
+		})
+
+	});
+
+	function calculate(is_invoice, invoice_id) {
+		$.ajax({
+			url: ns.url("niusms://shop/sms/calculate"),
+			dataType: 'JSON',
+			type: 'POST',
+			data: {
+				package_id: $(".sms-package-list ul li.ns-border-color").attr("data-package-id"),
+				is_invoice: is_invoice,
+				invoice_id: invoice_id
+			},
+			success: function (res) {
+				if (res.code >= 0) {
+					var data = res.data;
+					$(".settlement-wrap .js-invoice-money").text("￥" + parseFloat(data.invoice_money).toFixed(2));
+					$(".settlement-wrap .js-order-money").text("￥" + parseFloat(data.order_money).toFixed(2));
+					$(".settlement-wrap .js-pay-money").html("￥" + "<span class='ns-text-color'>" + parseFloat(data.pay_money).toFixed(2) +"</span>");
+				}
+			}
+		});
+	}
+
+</script>
+{/block}

@@ -1,0 +1,289 @@
+.right {
+    float: right;
+}
+
+.layui-tab-content .layui-tab-item.layui-show {
+    /* 	padding-top: 20px;
+    padding-bottom: 20px; */
+}
+
+.layui-table-page {
+    text-align: center;
+}
+
+.layui-table-cell {
+    height: auto;
+    line-height: 28px;
+    min-height: 28px;
+}
+
+.layui-row.add-btn {
+    /* padding: 7px; */
+}
+
+/* ----------------------------------GRAPHIC_MESSAGE_LIST----------------------------- */
+#graphic_message_list + div .layui-table-box .layui-table td {
+    padding: 10px 0;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-row.grid-demo {
+    border: 1px solid #DEDEDE;
+    border-radius: 5px;
+    background: #FFF;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.article-img span {
+    padding: 2px 4px;
+    color: #fff;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12 {
+    padding: 2px 0;
+    border-bottom: 1px solid #DEDEDE;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12.read-all {
+    cursor: pointer;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:first-child {
+    padding: 7px 0;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:last-child {
+    border-bottom: none;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3 {
+    padding-left: 10px;
+    text-align: left;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title {
+    text-align: left;
+    font-size: 13px;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title a {
+    color: #0d73f9;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4 {
+    font-size: 13px;
+    text-align: left;
+    padding-left: 10px;
+}
+
+#graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4.layui-col-md-offset4 {
+    text-align: right;
+    padding-right: 10px;
+}
+
+a.graphic-message-title {
+    width: 100%;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+/* ----------------------------------MATERIAL_GRAPHIC_MESSAGE_LIST----------------------------- */
+#marterial_graphic_message_list + div .layui-table-box .layui-table td {
+    padding: 10px 0;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-row.grid-demo {
+    border: 1px solid #DEDEDE;
+    border-radius: 5px;
+    background: #FFF;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.article-img span {
+    background: green;
+    color: #FFF;
+    padding: 2px 4px;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12 {
+    padding: 2px 0;
+    border-bottom: 1px solid #DEDEDE;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12.read-all {
+    cursor: pointer;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:first-child {
+    padding: 7px 0;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:last-child {
+    border-bottom: none;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3 {
+    padding-left: 10px;
+    text-align: left;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title {
+    text-align: left;
+    font-size: 13px;
+    width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title a {
+    color: #0d73f9;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4 {
+    font-size: 13px;
+    text-align: left;
+    padding-left: 10px;
+}
+
+#marterial_graphic_message_list + div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4.layui-col-md-offset4 {
+    text-align: right;
+    padding-right: 10px;
+}
+
+/* ----------------------------------material_text----------------------------- */
+#material_text div .layui-table-box .layui-table td {
+    padding: 10px 0;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-row.grid-demo {
+    border: 1px solid #DEDEDE;
+    border-radius: 5px;
+    background: #FFF;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.article-img span {
+    background: green;
+    color: #FFF;
+    padding: 2px 4px;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12 {
+    padding: 2px 0;
+    border-bottom: 1px solid #DEDEDE;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12.read-all {
+    cursor: pointer;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:first-child {
+    padding: 7px 0;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md12:last-child {
+    border-bottom: none;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3 {
+    padding-left: 10px;
+    text-align: left;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title {
+    text-align: left;
+    font-size: 13px;
+    width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md3.title a {
+    color: #0d73f9;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4 {
+    font-size: 13px;
+    text-align: left;
+    padding-left: 10px;
+}
+
+#material_text div .layui-table-box .layui-table td[data-field='value'] .layui-col-md4.layui-col-md-offset4 {
+    text-align: right;
+    padding-right: 10px;
+}
+
+/* --------------------------------ADD_MATERIAL_TEXT -------------------------------------- */
+#add_material_text form.layui-form {
+    padding: 15px;
+    padding-right: 50px;
+    padding-left: 0;
+}
+
+#add_material_text .input-text-hint {
+    float: right;
+    color: #AAA;
+    margin-top: 5px;
+}
+
+/* -------------------------------- MATERIAL_IMAGE -----------------------------------------*/
+#material_image .img-list {
+    padding-top: 26px;
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+#material_image .img-list::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+#material_image .img-list .layui-col-md2 .img {
+    display: inline-block;
+    background: #ccc;
+    width: 110px;
+    height: 110px;
+    text-align: center;
+    background-repeat: no-repeat;
+    background-size: cover !important;
+    background-position: 50% !important;
+}
+
+#material_image .buttom-button {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    margin-left: -66px;
+}
+
+#material_image .img-list p.layui-elip {
+    max-width: 110px;
+    padding: 5px 20px;
+}
+
+#material_image .img-list .img-check-mask {
+    position: absolute;
+    top: 0;
+    left: 11px;
+    right: 11px;
+    bottom: 26px;
+    line-height: 120px;
+    background: rgba(0, 0, 0, .5);
+}
+
+#material_image .img-list .img-check-mask[data-show='false'] {
+    display: none;
+}
+
+#material_image .img-list .layui-icon-ok {
+    color: #FFF;
+    font-size: 36px;
+}
+.article-img .ns-bg-color {
+    color: #fff;
+    padding: 2px 4px;
+}

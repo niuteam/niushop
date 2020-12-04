@@ -1,0 +1,132 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-item-con { height: auto!important; }
+	.ns-over-hide-second { line-height: 20px!important; }
+	.ns-item-block-parent .ns-item-block-wrap { align-items: center; }
+	.auth-mark{
+		display:inline-block;
+		margin-left:4px;
+		color:red;
+		font-size:12px;
+	}
+</style>
+{/block}
+{block name="main"}
+{notempty name="$uninstall"}
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">未安装插件</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list ns-item-block-parent ns-item-five">
+			{foreach $uninstall as $list_k => $list_v}
+			<a class="ns-item-block ns-item-block-hover" href="#">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						{if isset($list_v['is_quick']) && $list_v['is_quick'] == 1}
+						<img src="https://www.niushop.com/{$list_v.icon}" />
+						{else/}
+						<img src="{:img($list_v.icon)}" />
+						{/if}
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">
+							{$list_v.title}
+							{if $list_v.download == 1}
+							<div class="auth-mark">未下载</div>
+							{/if}
+						</div>
+						<p class="ns-item-content-desc ns-line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+				<div class="ns-item-float-wrap">
+					<div class="ns-item-float">
+						<div class="ns-item-float-con">
+							<i class="ns-bg-color-red"></i>
+							<span>
+								{if $list_v.download == 1}未下载{else/}未安装{/if}
+							</span>
+						</div>
+						{if $list_v.download == 0}
+						<div class="ns-item-float-con" onclick="manage('{$list_v.name}', 'install')">
+							<span>安装</span>
+						</div>
+						{/if}
+					</div>
+				</div>
+			</a>
+			{/foreach}
+		</div>
+	</div>
+</div>
+{/notempty}
+
+{notempty name="$addons"}
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">已安装插件</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list ns-item-block-parent ns-item-five">
+			{foreach $addons as $list_k => $list_v}
+			<a class="ns-item-block ns-item-block-hover" href="#">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="{:img($list_v.icon)}" />
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$list_v.title}
+						</div>
+						<p class="ns-item-content-desc ns-line-hiding" title="{$list_v.description}">{$list_v.description}</p>
+					</div>
+				</div>
+				<div class="ns-item-float-wrap">
+					<div class="ns-item-float">
+						<div class="ns-item-float-con">
+							<i class="ns-bg-color-blue"></i>
+							<span>已安装</span>
+						</div>
+						<div class="ns-item-float-con" onclick="manage('{$list_v.name}', 'uninstall')">
+							<span>卸载</span>
+						</div>
+					</div>
+				</div>
+			</a>
+			{/foreach} 
+		</div>
+	</div>
+</div>
+{/notempty}
+{/block}
+{block name="script"}
+<script>
+	var repeat_flag = false; //防重复标识
+	function manage(addon_name, tag) {
+		if (repeat_flag) return;
+		repeat_flag = true;
+		$.ajax({
+			url: ns.url("shop/system/addon"),
+			data: {
+				addon_name,
+				tag
+			},
+			type: "POST",
+			dataType: "JSON",
+			success: function(res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					location.href = ns.url('shop/system/addon');
+				}else{
+					repeat_flag = false;
+				}
+			}
+		});
+	}
+
+	//查看插件信息
+	function addonInfo(name){
+		location.href = ns.url('shop/upgrade/addonInfo', {name : name});
+	}
+</script>
+{/block}

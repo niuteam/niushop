@@ -1,0 +1,179 @@
+<!-- 调整价格模态 -->
+<script type="text/html" id="adjust_price_html">
+    <div style="padding:10px;">
+        <div class="layui-form adjust-price-html" id='adjust_price'lay-filter="adjust_price">
+            <div style="color: #666;">注意 : 只有订单未付款时才支持改价,改价后请联系买家刷新订单核实订单金额后再支付。</div>
+            <table class="layui-table">
+                <colgroup>
+                    <col width="10%">
+                    <col width="4%">
+                    <col width="6%">
+                    <col width="4%">
+                    <col width="9%">
+                    <col width="4%">
+                    <col width="8%">
+                    <col width="8%">
+                    <col width="9%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="6%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>商品信息</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>小计</th>
+                    <th>商品总额</th>
+                    <th>优惠</th>
+                    <th>优惠券</th>
+                    <th>积分抵现</th>
+                    <th>发票费用</th>
+                    <th>发票邮寄费用</th>
+                    <th>调整金额</th>
+                    <th>运费</th>
+                    <th>总计</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#  layui.each(d.order_goods, function(index, item){ }}
+                <tr data-order_money="{{ d.order_money }}"data-adjust_money="{{ d.adjust_money }}"data-delivery_money="{{ d.delivery_money }}"
+                    data-promotion_money="{{ d.promotion_money }}" data-coupon_money="{{ d.coupon_money }}" data-goods_money="{{ d.goods_money }}"
+                    data-adjust_money="{{ d.adjust_money }}"data-delivery_money="{{ d.delivery_money }}" data-invoice_rate="{{ d.invoice_rate }}"
+                    data-invoice_delivery_money="{{ d.invoice_delivery_money }}"  data-is_invoice="{{ d.is_invoice }}" data-point_money="{{ d.point_money }}" >
+                    <td>{{ item.sku_name }}</td>
+                    <td>{{ item.price }}</td>
+                    <td>{{ item.num }}</td>
+                    <td>{{ item.goods_money }}</td>
+                    {{#  if(index == 0){ }}
+                    <td rowspan="{{ d.order_goods.length }}">{{ d.goods_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}">{{ d.promotion_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}">{{ d.coupon_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}">{{ d.point_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}" class="adjust-invoice-money">{{ d.invoice_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}" class="adjust-invoice-delivery-money">{{ d.invoice_delivery_money }}</td>
+                    <td rowspan="{{ d.order_goods.length }}"><input type="number" name="adjust_money" min="{{ d.goods_money - d.promotion_money - d.coupon_money }}" class="layui-input ns-len-small adjust-money" onchange="adjustChange(this);" value="{{ d.adjust_money }}"/></td>
+                    <td rowspan="{{ d.order_goods.length }}"><input type="number"  name="delivery_money"class="layui-input ns-len-small delivery-money" onchange="adjustChange(this);" value="{{ d.delivery_money }}"/></td>
+                    <td rowspan="{{ d.order_goods.length }}" class="adjust-pay-money">{{ d.order_money }}</td>
+                    {{#  } }}
+                </tr>
+                {{#  }); }}
+                </tbody>
+            </table>
+            <div style="color: #666;">
+                <p><a class="ns-text-color">实际商品金额</a> = 商品总额 - 优惠金额 - 优惠券金额 - 积分抵现 + 调价</p>
+                <p><a class="ns-text-color">发票费用</a> = 实际商品金额 * 发票比率</p>
+                <p>订单总额 = <a class="ns-text-color">实际商品金额</a> + <a class="ns-text-color">发票费用</a> + 运费 +  发票邮寄费用</p>
+            </div>
+
+            <input type="hidden" name="order_id" value="{{ d.order_id }}"/>
+            <button class="layui-btn"  lay-submit id="submit_price" lay-filter="submit_price" style="display:none;">保存</button>
+        </div>
+    </div>
+</script>
+<script>
+    var form;
+    /**
+     * 订单调价
+     */
+    function orderAdjustMoney(order_id) {
+        $.ajax({
+            type: "post",
+            url: ns.url("shop/order/getOrderDetail"),
+            async: true,
+            dataType: 'json',
+            data: {
+                "order_id": order_id
+            },
+            success: function (res) {
+                if(res.code == 0){
+                    //获取模板
+                    var getTpl = $("#adjust_price_html").html();
+                    var data = res.data;
+                    //渲染模板
+                    laytpl(getTpl).render(data, function(html) {
+                        layer.open({
+                            type: 1,
+                            shadeClose: true,
+                            shade: 0.3,
+                            offset: 'auto',
+                            scrollbar: true,
+                            fixed: false,
+                            title: "调整价格",
+                            area: ['1250px', 'auto'],
+                            btn: ['确定', '取消'],
+                            yes: function(index, layero){
+                                $("#submit_price").click();
+                            },
+                            btn2: function(index, layero){
+                                layer.close(index);
+                            },
+                            content:  html,
+                            cancel: function(){
+                                //右上角关闭回调
+                                //return false 开启该代码可禁止点击该按钮关闭
+                            },
+                            success: function(layero, index){
+                                var repeat_flag = false;//防重复标识
+                                form.render();
+
+                                form.on('submit(submit_price)', function(data){
+                                    if(repeat_flag)return;
+                                    repeat_flag = true;
+
+                                    $.ajax({
+                                        url: ns.url("shop/order/adjustPrice"),
+                                        type: "POST",
+                                        dataType: "JSON",
+                                        async: false,
+                                        data: data.field,
+                                        success: function (res) {
+                                            layer.msg(res.message);
+                                            if(res.code == 0){
+                                                layer.closeAll();
+                                                location.reload();
+                                            }else{
+                                                repeat_flag = false;
+                                            }
+
+                                        }
+                                    });
+                                    return false;
+                                });
+                            }
+                        });
+                        form.render();
+                    });
+                }
+            }
+        })
+
+    }
+
+    function adjustChange(obj){
+        var parent_obj = $(obj).parent().parent();
+        var o_order_money = parent_obj.attr("data-order_money");
+        var o_adjust_money = parent_obj.attr("data-adjust_money");
+        var o_delivery_money = parent_obj.attr("data-delivery_money");
+        var invoice_delivery_money = parent_obj.attr("data-invoice_delivery_money");
+        var promotion_money = parent_obj.attr("data-promotion_money");
+        var coupon_money = parent_obj.attr("data-coupon_money");
+        var goods_money = parent_obj.attr("data-goods_money");
+        var is_invoice = parent_obj.attr("data-is_invoice");
+        var point_money = parent_obj.attr("data-point_money");
+        var adjust_money = $(obj).parent().parent().find(".adjust-money").val();
+        var delivery_money = $(obj).parent().parent().find(".delivery-money").val();
+        var real_goods_money = parseFloat(goods_money) - parseFloat(promotion_money) - parseFloat(coupon_money) + parseFloat(adjust_money) - parseFloat(point_money);
+        var invoice_rate = is_invoice == 1 ? parent_obj.attr("data-invoice_rate") : 0;
+        var invoice_money = Math.round(parseFloat(real_goods_money) * parseFloat(invoice_rate)/100 * 100) / 100;
+
+        var total_money = parseFloat(goods_money) - parseFloat(promotion_money) - parseFloat(coupon_money) - parseFloat(point_money) + parseFloat(adjust_money) + parseFloat(invoice_delivery_money) + parseFloat(invoice_money) + parseFloat(delivery_money)
+        var total_money = Math.round(total_money * 100) / 100;
+        $(obj).parent().parent().find(".adjust-invoice-money").text(invoice_money);
+        // $(obj).parent().parent().find(".adjust-invoice-delivery-money").text(total_money);
+        // var total_money = parseFloat(o_order_money) - parseFloat(o_adjust_money) - parseFloat(o_delivery_money) + parseFloat(adjust_money) + parseFloat(delivery_money);
+        $(obj).parent().parent().find(".adjust-pay-money").text(total_money)
+    }
+
+</script>

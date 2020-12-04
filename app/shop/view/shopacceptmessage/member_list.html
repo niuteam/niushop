@@ -1,0 +1,184 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-reason-box p{white-space: normal;line-height: 1.5;}
+	.layui-table-header .layui-table-cell{overflow: inherit;}
+	.ns-prompt .iconfont{font-size: 16px;color: rgba(0,0,0,0.7);cursor: pointer;font-weight: 500;margin-left: 3px;}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {margin-top: 0;}
+</style>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member.css" />
+{/block}
+{block name="body"}
+
+<!-- 添加会员 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="nickname">昵称</option>
+							<option value="mobile">手机号</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="昵称/手机号" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+			</div>
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 用户信息 -->
+<script type="text/html" id="userdetail">
+	<div class='ns-table-title'>
+		<div class='ns-title-pic'>
+            <img layer-src src="{{d.headimg ? ns.img(d.headimg) : 'SHOP_IMG/default_headimg.png'}}" onerror="this.src = 'SHOP_IMG/default_headimg.png' ">
+		</div>
+		<div class='ns-title-content'>
+			<p class="layui-elip">{{d.nickname ? d.nickname : ''}}</p>
+		</div>
+	</div>
+</script>
+
+<!-- 手机号 -->
+<script type="text/html" id="mobile">
+	<div class='ns-table-title'>
+		{{# if(d.mobile){ }}
+		<span>{{ d.mobile }}</span>
+		{{# }else{ }}
+		<span style="color: red;">未绑定（不能接收短信消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 微信公众号 -->
+<script type="text/html" id="wx_openid">
+	<div class='ns-table-title'>
+		{{# if(d.wx_openid != ''){ }}
+		<span style="color: green;">已绑定</span>
+		{{# }else{ }}
+		<span style="color: red;">未绑定（不能接收微信公众号消息）</span>
+		{{# } }}
+	</div>
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="add">添加</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var table, form, laytpl, laydate,
+		repeat_flag = false;
+
+	layui.use(['form', 'laytpl', 'laydate'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		form.render();
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#member_list',
+			url: ns.url("shop/shopacceptmessage/memberlist"),
+			cols: [
+				[
+                    {
+                        field: 'userdetail',
+                        title: '账户',
+                        width: '25%',
+                        unresize: 'false',
+                        templet: '#userdetail'
+					}, {
+						title: '手机号',
+						unresize: 'false',
+						templet: "#mobile"
+					}, {
+						title: '微信openid',
+						unresize: 'false',
+						templet: "#wx_openid"
+					}, {
+						title: '操作',
+						width: '10%',
+						unresize: 'false',
+						toolbar: '#operation'
+					}
+				]
+			]
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		 table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+
+				case 'add': //添加
+					addShopMember(data.member_id);
+					break;
+			}
+		});
+
+		/**
+		 * 添加商家会员
+		 */
+		function addShopMember(member_id) {
+			layer.confirm('添加后该会员将接收消息通知',{shade: 0},function() {
+				if (repeat_flag) return false;
+				repeat_flag = true;
+				$.ajax({
+					url: ns.url("shop/shopacceptmessage/add"),
+					data: {member_id:member_id},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+                            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                            parent.layer.close(index); //再执行关闭
+						}
+					}
+				});
+			}, function () {
+				console.log(123132)
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+	});
+
+</script>
+
+{/block}

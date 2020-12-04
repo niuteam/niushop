@@ -1,0 +1,529 @@
+{extend name="base" /}
+{block name="resources"}
+<script type="text/javascript" src="SHOP_JS/progressbar.js"></script>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/upgrade/style.css" media="screen">
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/upgrade/jquery.easy-pie-chart.css" media="screen">
+<style>
+	.chart{
+		display:inline-block;
+		float:unset;
+	}
+	.up-footer{padding:20px;text-align:center;}
+	.up-footer button{
+		background-color: #067cf3;
+		padding:8px 15px;
+		color:#FFF;
+		border:none;
+		border-radius:3px;
+		font-size:15px;
+		margin: 0 10px;
+		cursor: pointer;
+	}
+	/*.up-footer button:nth-child(2){
+		display: none;
+	}*/
+	.install-content{
+		margin-top:40px;
+		padding: 10px 0 10px 20px;
+		border: 1px solid #AAD2E5;
+		background-color: #E1F2FA;
+	}
+	.panel-title{
+		font-size:15px;
+		margin:7px auto;
+		line-height:30px;
+		color: #31708f;
+		border-bottom:1px solid #aad2e5 !important;
+	}
+	.step-title{
+		color: #31708f;
+		font-weight:bold;
+	}
+	.step-text{
+		color: #31708f;
+	}
+	#container {
+		width: 300px;
+		height: 300px;
+		margin: 50px auto;
+		position: relative;
+	}
+
+	.alert-warning-word {
+		background-color: #FCF8E3;
+		border-top: 1px solid #FBEED5;
+		border-bottom: 1px solid #FBEED5;
+		padding: 5px 20px;
+		line-height: 30px;
+		color: #C09853;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-tips">
+	<div id="container"></div>
+
+	<div style="clear:both;"></div>
+
+	<div class="alert alert-warning alert-warning-word">
+		<strong>警告！</strong>版本升级中,请不要关闭当前页面!
+	</div>
+
+	<div class="install-content alert alert-info">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					详细过程
+				</h3>
+			</div>
+			<div class="panel-body">
+				<span class="step-title">升级操作&nbsp;：&nbsp;</span><span class="step-text action-name"></span><br/>
+				<span class="step-title">整体进度&nbsp;：&nbsp;</span><span class="step-text count-percent">0%</span><br/>
+				<span class="step-title">操作显示&nbsp;：&nbsp;</span><span class="step-text step-content"></span>
+			</div>
+		</div>
+	</div>
+
+	<div class="space-10"></div>
+
+	<div class="up-view" >
+		<div class="up-footer">
+			<button class="up-btn" onclick="upgradeStart();">开始升级</button>
+			<button class="up-btn" onclick="downloadFile();">下载升级文件</button>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var action_type = 'upgrade';
+	var upgrade_obj = {
+		'data' : [],
+		'total_action' : {
+			'list' : [
+				'backupFile',
+				'backupSql',
+				'downloadFile',
+				'upgradeStart',//升级开始
+				'executeFile',
+				'executeSql',
+				'upgradeEnd',//升级结束
+			],
+			'method' : '',
+			'status' : {},
+			'error_message' : '',
+		},
+		'download_file' : {
+			'index' : -1,
+			'error_index' : -1,
+			'error_num' : 0,
+			'error_limit' : 10,
+			'download_root': ''
+		},
+		'backup_sql' : {
+			'last_table' : '',
+			'index' : 0,
+			'series' : 1,
+		},
+	};
+
+	//总操作控制
+	upgrade_obj.totalActionControl = function(){
+		var that = this;
+		var method = that.total_action.method;
+		var index = that.total_action.list.indexOf(method);
+		if(index < 0){
+			method = that.total_action.method = that.total_action.list[0];
+			that.total_action.status[method] = 'start';
+			that[method]();
+		}else{
+			var status = that.total_action.status[method];
+			if(status === 'end'){
+				index ++;
+				if(index < that.total_action.list.length){
+					method = that.total_action.method = that.total_action.list[index];
+					that.total_action.status[method] = 'start';
+					that[method]();
+				}else{
+					that.totalActionEnd();
+				}
+			}else{
+
+			}
+		}
+	}
+
+	//总操作完成
+	upgrade_obj.totalActionEnd = function(){
+		setActionName('升级完成');
+		layer.msg('升级完成', function(index, layero){
+			window.location.href = ns.url("shop/upgrade/upgrade");
+		})
+	}
+
+	//备份文件
+	upgrade_obj.backupFile = function(){
+		var that = this;
+		var method = 'backupFile';
+
+		setActionName('备份系统文件...');
+
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/backupFile"),
+			dataType : 'json',
+			success:function(res){
+				if(res.code >= 0){
+					that.total_action.status[method] = 'end';
+				}else{
+					that.total_action.status[method] = 'error';
+					setActionContent(res.message);
+				}
+				that.totalActionControl();
+			}
+		})
+	}
+
+	//备份sql
+	upgrade_obj.backupSql = function(){
+		var that = this;
+		var method = 'backupSql';
+
+		var last_table = that.backup_sql.last_table;
+		var index = that.backup_sql.index;
+		var series = that.backup_sql.series;
+
+		if(!last_table){
+			setActionName('备份数据库文件...');
+		}
+
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/backupSql"),
+			dataType : 'json',
+			data : {
+				last_table : last_table,
+				index : index,
+				series : series,
+			},
+			success:function(res){
+				if(res.code >= 0){
+					var data = res.data;
+					//判断是否备份完成
+					if(data.is_backup_end){
+						that.total_action.status[method] = 'end';
+						that.totalActionControl();
+					}else{
+						that.backup_sql.last_table = data.last_table;
+						that.backup_sql.index = data.index;
+						that.backup_sql.series = data.series;
+						setActionContent(res.message);
+						that.backupSql();
+					}
+				}else{
+					that.total_action.status[method] = 'error';
+					setActionContent(res.message);
+					that.totalActionControl();
+				}
+
+			}
+		})
+	}
+
+	//下载文件操作
+	upgrade_obj.downloadFile = function(){
+		var that = this;
+		setActionName('文件下载');
+
+		if(that.data.files.length > 0){
+			that.downloadFileControl();
+		}else{
+			that.total_action.status['downloadFile'] = 'end';
+			if (action_type == 'upgrade') {
+				that.totalActionControl();
+			}
+		}
+	}
+
+	//下载文件控制
+	upgrade_obj.downloadFileControl = function(){
+		var that = this;
+		that.download_file.index ++;
+		var files = that.data['files'];
+		if(that.download_file.index < files.length){
+			that.downloadFileExec();
+		}else{
+			that.download_file.index = -1;
+			that.total_action.status['downloadFile'] = 'end';
+			if (action_type == 'upgrade') {
+				setActionContent("文件下载完成");
+				that.totalActionControl();
+			} else {
+				setActionContent("文件下载完成，升级文件已下载到：网站根目录/" + that.download_file.download_root + "目录下");
+			}
+		}
+	}
+
+	//执行下载文件
+	upgrade_obj.downloadFileExec = function(){
+		var that = this;
+		var download_file_index = that.download_file.index;
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/download"),
+			dataType : 'json',
+			data:{
+				'action_type': action_type,
+				'tag' : 'system_upgrade',
+				'download_file_index':download_file_index
+			},
+			success:function(data){
+				if(data.code >= 0){
+					//显示进度条和下载文件
+					that.download_file.download_root = data.download_root;
+					setCountPercent((that.download_file.index + 1) / that.data.files.length);
+					setActionContent(that.data.files[that.download_file.index]['file_path']);
+					that.downloadFileControl();
+				}else{
+					//如果下载文件有错误可以在一定时间后重新发起请求
+					if(that.download_file.index === that.download_file.error_index){
+						that.download_file.error_num ++;
+					}else{
+						that.download_file.error_num = 1;
+					}
+					if(that.download_file.error_num <= that.download_file.error_limit){
+						that.download_file.index --;
+						setActionContent("文件下载出错，即将重新发起请求");
+						setTimeout(function(){
+							that.downloadFileControl();
+						}, 300);
+					}else{
+						setActionContent("文件下载出错,已达到最大错误次数，请稍后重新进行系统升级");
+						layer.msg('error',data.message);
+					}
+				}
+			}
+		})
+	}
+
+	//覆盖文件
+	upgrade_obj.executeFile = function(){
+		var that = this;
+		var method = 'executeFile';
+		setActionName('覆盖文件');
+		if(that.data.files.length > 0){
+			$.ajax({
+				type:'post',
+				url : ns.url("shop/upgrade/executeFile"),
+				dataType : 'json',
+				data:{},
+				success:function(data){
+					if(data.code >= 0){
+						//显示进度条和下载文件
+						that.total_action.status[method] = 'end';
+						that.totalActionControl();
+					}else{
+						layer.msg(data.message);
+					}
+				}
+			})
+		}else{
+			that.total_action.status[method] = 'end';
+			that.totalActionControl();
+		}
+	}
+
+	//执行sql
+	upgrade_obj.executeSql = function(){
+		var that = this;
+		var method = 'executeSql';
+		setActionName('执行数据库脚本');
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/executeSql"),
+			dataType : 'json',
+			success:function(data){
+				if(data.code >= 0){
+					that.total_action.status[method] = 'end';
+					that.totalActionControl();
+				}else{
+					layer.msg(data.message);
+					setActionContent(data.message);
+					that.executeRecovery();
+				}
+			}
+		})
+	}
+
+	//开始系统升级
+	upgrade_obj.upgradeStart = function(){
+		var that = this;
+		var method = 'upgradeStart';
+
+		setActionName('开始系统升级...');
+
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/upgradeStart"),
+			dataType : 'json',
+			success:function(res){
+				if(res.code >= 0){
+					that.total_action.status[method] = 'end';
+				}else{
+					that.total_action.status[method] = 'error';
+					setActionContent(res.message);
+				}
+				that.totalActionControl();
+			}
+		})
+	}
+
+	//结束系统升级
+	upgrade_obj.upgradeEnd = function(){
+		var that = this;
+		var method = 'upgradeEnd';
+
+		setActionName('结束系统升级...');
+
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/upgradeEnd"),
+			dataType : 'json',
+			success:function(res){
+				if(res.code >= 0){
+					that.total_action.status[method] = 'end';
+					that.totalActionControl();
+				}else{
+					that.total_action.status[method] = 'error';
+					layer.msg(res.message);
+					setActionContent(res.message);
+					that.executeRecovery();
+				}
+			}
+		})
+	}
+
+	//执行sql
+	upgrade_obj.executeRecovery = function(){
+		var that = this;
+		setActionName('升级出错，系统正在执行回滚操作，请勿关闭浏览器');
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/executeRecovery"),
+			dataType : 'json',
+			data : {
+				upgrade_no : that.data.upgrade_no,
+			},
+			success:function(data){
+				if(data.code >= 0){
+					setActionName('回滚完成');
+					layer.msg('回滚完成', function(index, layero){
+						window.location.href = ns.url("shop/upgrade/upgrade");
+					})
+				}else{
+					layer.msg(data.message);
+				}
+			}
+		})
+	}
+
+	var container = document.querySelector('#container');
+	var bar = new ProgressBar.Circle(container, {
+		color: '#067cf3',
+		strokeWidth: 5,  // 正好是从圆心开始画起，>50会越过圆心，<50画出的是圆环
+		trailWidth: 0,  // 也设置为50，就是一个未填充的圆形，而不是圆环。要么设置为0
+		easing: 'easeInOut',
+		duration: 10,
+		text: {
+			style: {
+				color: '#31708f',
+				display: 'inline-block',
+				position: 'absolute',
+				top: '50%',
+				left: '50%',
+				transform: 'translate(-50%,-50%)'
+			},
+			autoStyleContainer: false
+		},
+		fill: '#e1f2fa',   // 圆形内容区域填充色，当需要画圆环时，效果应该最好。
+		from: { color: '#aaa', width: 1},
+		to: { color: '#333', width: 5},
+		step: function(state, circle) {
+			circle.path.setAttribute('stroke-width', state.width);
+
+			var value = Math.round(circle.value() * 100);
+			circle.setText(value+'%');
+		}
+	});
+	bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+	bar.text.style.fontSize = '32px';
+
+	//升级操作
+	function upgradeStart(){
+		action_type = 'upgrade';
+		$(".up-btn").attr('disabled',true);
+		$(".up-footer .up-btn").css({"background-color":"#c0c1c1", "cursor": "not-allowed"});
+		upgrade_obj.totalActionControl();
+	}
+
+	//控制进度条
+	function setProgress(width, text){
+		var barValue = width / 100;
+		width = width.toFixed(2);
+		bar.animate(barValue);
+		$(".count-percent").text(width+"%");
+		$(".step-content").text(text);
+	}
+
+	//设置操作名称
+	function setActionName(action_name)
+	{
+		$(".action-name").text(action_name);
+	}
+
+	//设置统计进度
+	function setCountPercent(percent)
+	{
+		bar.animate(percent);
+		percent = percent * 100;
+		percent = percent.toFixed(2);
+		$(".count-percent").text(percent + "%");
+	}
+
+	//设置操作名称
+	function setActionContent(content){
+		$(".step-content").text(content);
+	}
+
+	/**
+	 * 获取升级信息
+	 */
+	function getUpgradeInfo() {
+		$.ajax({
+			type:'post',
+			url : ns.url("shop/upgrade/upgradeAction"),
+			dataType : 'json',
+			success:function(res){
+				if(res.code >= 0){
+					upgrade_obj.data = res.data;
+				}
+			}
+		})
+	}
+
+	/**
+	 * 下载升级文件
+	 */
+	function downloadFile(){
+		action_type = 'download';
+		$(".up-btn").attr('disabled',true);
+		$(".up-footer .up-btn").css({"background-color":"#c0c1c1", "cursor": "not-allowed"});
+		upgrade_obj.downloadFile();
+	}
+
+	$(function(){
+		getUpgradeInfo();
+	})
+
+</script>
+{/block}

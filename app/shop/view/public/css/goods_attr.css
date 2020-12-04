@@ -1,0 +1,148 @@
+#page {
+	text-align: right;
+	padding: 10px;
+}
+
+.ns-custom-panel {
+	background: #fff;
+	padding: 10px 20px;
+}
+
+.ns-custom-panel .custom-panel-title {
+	display: flex;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #f5f5f5;
+}
+
+.ns-custom-panel .custom-panel-title .panel-pic {
+	overflow: hidden;
+	width: 80px;
+	height: 80px;
+	line-height: 80px;
+	text-align: center;
+	border-radius: 50%;
+	margin-left: 15px;
+}
+
+.ns-custom-panel .custom-panel-title .panel-pic img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.ns-custom-panel .custom-panel-title .panel-content {
+	align-self: center;
+	width: calc(100% - 130px);
+}
+
+.ns-custom-panel .custom-panel-title .panel-content li {
+	display: flex;
+	margin-bottom: 5px;
+	height: 20px;
+	line-height: 20px;
+}
+
+.ns-custom-panel .custom-panel-title .panel-content li:first-of-type {
+	margin-top: 5px;
+}
+
+.ns-custom-panel .custom-panel-title .panel-content li div {
+	width: 33.3%;
+}
+
+.ns-custom-panel .custom-panel-title .panel-content li span {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 14px;
+	color: #333;
+}
+
+.ns-custom-panel .custom-panel-title .panel-content li span:first-of-type {
+	width: 90px;
+}
+
+.ns-custom-panel .custom-panel-title .panel-operation {
+	align-self: center;
+	margin-left: auto;
+	font-size: 14px;
+}
+
+.ns-custom-panel .custom-panel-from {
+	display: flex;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #f5f5f5;
+}
+
+.ns-custom-panel .custom-panel-content {
+	display: flex;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #f5f5f5;
+}
+
+.ns-custom-panel .custom-panel-content .panel-content {
+	width: calc(100% - 30px);
+}
+
+.ns-custom-panel .custom-panel-content .panel-content li {
+	display: flex;
+	margin-bottom: 5px;
+	height: 20px;
+	line-height: 20px;
+}
+
+.ns-custom-panel .custom-panel-content .panel-content li:first-of-type {
+	margin-top: 5px;
+}
+
+.ns-custom-panel .custom-panel-content .panel-content li div {
+	width: 25%;
+}
+
+.ns-custom-panel .custom-panel-content .panel-content li span {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 14px;
+	color: #333;
+}
+
+.ns-custom-panel .custom-panel-content .panel-content li span:first-of-type {
+	width: 90px;
+}
+
+.ns-custom-panel .custom-panel-content .panel-operation {
+	align-self: center;
+	margin-left: auto;
+	font-size: 14px;
+}
+
+.attribute-value-list {
+	margin-bottom: 10px;
+}
+
+.attribute-value-list .table-wrap {
+	margin-bottom: 10px;
+}
+
+.attribute-value-list .layui-table {
+	margin-bottom: 0;
+}
+
+.attribute-value-list .layui-table:first-child th {
+	border-bottom: 0;
+}
+
+.attribute-value-list .layui-table:last-child {
+	margin-top: 0;
+}
+
+.ns-custom-panel .custom-panel-content.attribute {
+	display: block
+}
+
+.goods-type-edit {
+	text-align: center;
+}

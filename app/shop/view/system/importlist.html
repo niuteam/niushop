@@ -1,0 +1,149 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="__STATIC__/loading/msgbox.css" />
+<script type="text/javascript" src="__STATIC__/loading/msgbox.js"></script>
+<style>
+	.ns-data-table {
+		border-width: 0 !important;
+	}
+
+	.ns-data-table[lay-size=lg] th,
+	.ns-data-table[lay-size=lg] td {
+		padding: 15px 15px;
+	}
+
+	.ns-data-table[lay-size=lg] .ns-check-box {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.ns-check-box .layui-form {
+		text-align: center;
+	}
+
+	.layui-form-checkbox[lay-skin=primary] {
+		padding-left: 0;
+	}
+
+	.ns-data-null {
+		text-align: center;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>展示备份文件列表</li>
+			<li>点击还原可使备份数据还原到数据库</li>
+		</ul>
+	</div>
+</div>
+
+<table class="layui-table ns-data-table" lay-skin="line" lay-size="lg">
+	<colgroup>
+		<col width="40%">
+		<col width="20%">
+		<col width="25%">
+		<col width="15%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th>文件名称</th>
+			<th>文件大小</th>
+			<th>备份时间</th>
+			<th class="toolbar">操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		{if condition="$list"}
+		{foreach name=$list as $list_k => $list_v}
+		<tr>
+			<td>{$list_v.name}</td>
+			<td>{$list_v.size}</td>
+			<td class="ns-backup-time">
+				{ns.time_to_data($list_v.time)}
+				<input type="hidden" value="{$list_v.time}" />
+			</td>
+			<td class="toolbar">
+				<div class="ns-table-btn">
+					<a class="layui-btn" onclick="isSureImport({$list_v.time}, null, null)">还原</a>
+					<a class="layui-btn" onclick="deleteDataBase({$list_v.time})">删除</a>
+				</div>
+			</td>
+		</tr>
+		{/foreach}
+		{else/}
+		<tr>
+			<td colspan="4" class="ns-data-null">无数据</td>
+		</tr>
+		{/if}
+	</tbody>
+</table>
+{/block}
+{block name="script"}
+<script>
+	var date = ns.time_to_date($(".ns-backup-time input").val());
+	$(".ns-backup-time").text(date);
+	
+	function isSureImport(time, part, start) {
+		layer.confirm('是否恢复此备份文件?', function(index){
+		    layer.close(index);
+		    replay(time, part, start);
+		});
+	}
+	
+	function replay(time, part, start) {
+		ZENG.msgbox.show("正在读取文件", 6);
+		$.ajax({
+			url: ns.url("shop/system/importData"),
+			data: {
+				"time": time,
+				"part": part,
+				"start": start
+			},
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(data) {
+				if (data.code == 1) {
+				    ZENG.msgbox.show(data.message, 6, 100000);
+				    if (data.data.part) {
+				        replay(time, data.data.part, data.data.start);
+				        ZENG.msgbox.show("正在还原...", 6, 100000);
+				    } else {
+				        ZENG.msgbox.show(data.message, 4, 3000);
+				    }
+				} else {
+				    ZENG.msgbox.show(data.message, 4, 3000);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * 删除备份文件
+	 */
+	function deleteDataBase(time){
+		layer.confirm('是否删除此备份文件?', function(index){
+		    layer.close(index);
+		
+			ZENG.msgbox.show("正在删除文件", 6, 100000);
+			$.ajax({
+				url : ns.url("shop/system/deleteData"),
+				dataType: 'JSON',
+				type: 'POST',
+				data : {"time": time},
+				success : function(data) {
+					if (data.code){
+						ZENG.msgbox.show(data.message, 4, 3000);
+						location.reload();
+					} else {
+						ZENG.msgbox.show(data.message, 5);
+					}
+				}
+			})
+		});
+	}
+</script>
+{/block}

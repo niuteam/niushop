@@ -1,0 +1,72 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-over-hide-second { line-height: 20px!important; }
+	.ns-item-block-parent .ns-item-block-wrap { align-items: center; }
+	.ns-item-block-parent .ns-item-poa-pic {
+		top: 50%;
+		transform: translateY(-50%);
+		line-height: 50px;
+		text-align: center;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card ns-card-common ns-card-brief">
+	<div class="layui-card-header">
+		<span class="ns-card-title">缓存管理</span>
+	</div>
+	<div class="layui-card-body layui-field-box">
+		<div class="site_list ns-item-block-parent ns-item-five">
+			{foreach $cache_list as $k => $val}
+			<a class="ns-item-block ns-item-block-hover-a" href="#">
+				<div class="ns-item-block-wrap">
+					<div class="ns-item-pic">
+						<img src="{:img($val.icon)}" />
+					</div>
+					<div class="ns-item-con">
+						<div class="ns-item-content-title">{$val.name}</div>
+						<p class="ns-item-content-desc ns-over-hide-second">{$val.desc}</p>
+					</div>
+					<div class="ns-item-poa-pic" onclick="clear_cache('{$val.key}')">
+						<span class="ns-text-color">清除</span>
+					</div>
+				</div>
+				<!-- <div class="ns-item-float-wrap">
+					<div class="ns-item-float">
+						<div class="ns-item-float-con">
+							<spa></span>
+						</div>
+						<div class="ns-item-float-con" onclick="clear_cache('{$val.key}')">
+							<i class="ns-bg-color-red"></i>
+							<span>清除</span>
+						</div>
+					</div>
+				</div>
+ -->
+			</a>
+			{/foreach}
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	//清除缓存
+	function clear_cache(key) {
+		layer.confirm('确定要删除对应缓存吗?', function() {
+			$.ajax({
+				url: ns.url("shop/system/cache"),
+				data: {
+					key
+				},
+				type: "POST",
+				dataType: "JSON",
+				success: function(res) {
+					layer.msg(res.message);
+				}
+			});
+		});
+	}
+</script>
+{/block}

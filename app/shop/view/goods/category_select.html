@@ -1,0 +1,161 @@
+<style>
+    .goods-category-container {display: inline-block;position: relative;z-index: 10}
+    .goodsCategory{width: 185px;height: 300px;border: 1px solid #CCCCCC;position: absolute;z-index: 100;background: #fff;right: 0;overflow-y: auto;box-sizing: border-box}
+    .goodsCategory::-webkit-scrollbar{width: 3px;}
+    .goodsCategory::-webkit-scrollbar-track{-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);border-radius: 10px;background-color: #fff;}
+    .goodsCategory::-webkit-scrollbar-thumb{height: 20px;border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);background-color: #ccc;}
+    .goodsCategory ul{height: 280px;margin-top: -2px;margin-left: 0;}
+    .goodsCategory ul li{text-align: left;padding:0 10px;line-height: 30px;}
+    .goodsCategory ul li i{float: right;line-height: 30px;}
+    .goodsCategory ul li:hover{cursor: pointer;}
+    .goodsCategory ul li:hover,.goodsCategory ul li.selected{background: #ff8143;color: #fff;}
+    .goodsCategory ul li span{width: 110px;display: inline-block;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;vertical-align: middle;font-size:12px;}
+    .one{left: 0;}
+    .two{left: 185px;border-left:0;}
+    .three{left: 370px;width: 185px;border-left:0;}
+    .selectGoodsCategory{width: 185px;height: 45px;border:1px solid #CCCCCC;position: absolute;z-index: 100;left: 0;margin-top: 296px;box-sizing: border-box;border-collapse: collapse;background: #fff;}
+    .selectGoodsCategory a{height: 30px;text-align: center;color: #fff;line-height: 30px; margin: 6px;padding: 0 5px;text-decoration:none;}
+    .goodsCategory ul li i {float: right;line-height: 30px;}
+    .hide {display: none;}
+    .goods-category-mask {width: 100%;height: 100%;position: fixed;left: 0;top: 0;z-index: 9;}
+	.confirm-select {border: 1px solid #ff8143;}
+</style>
+<div class="goods-category-container">
+    <input type="text" autocomplete="off" show="false" class="layui-input select-category" placeholder="全部" readonly />
+    <input type="hidden"  id="select_category_id">
+    <input type="text" class="layui-hide" name="category_id">
+    <div class="category-wrap hide">
+        <div class="goodsCategory one goodsCategory_1">
+            <ul></ul>
+        </div>
+        <div class="goodsCategory goodsCategory_2 two hide" style="border-left:0;">
+            <ul></ul>
+        </div>
+        <div class="goodsCategory goodsCategory_3 three hide">
+            <ul></ul>
+        </div>
+        <div class="selectGoodsCategory">
+            <a href="javascript:;" style="float:right;"  class="ns-bg-color confirm-select">确认选择</a>
+            <a href="javascript:;" style="float:right;"  class="layui-btn-primary ns-text-color cancel-select">清空</a>
+        </div>
+    </div>
+</div>
+<div class="goods-category-mask hide"></div>
+
+<script>
+$(function() {
+    getCategoryTree(1, 0);
+});
+
+//初始化分类
+function getCategoryTree(level, pid) {
+    $.ajax({
+        url : ns.url("shop/goodscategory/getCategoryByParent"),
+        dataType: 'JSON',
+        type: 'POST',
+        data: {'level':level, 'pid':pid},
+        async: false,
+        success: function(data) {
+            var category_html = '';
+            if(data['data']) {
+                $.each(data.data, function(category_key, category_val) {
+                    //一级分类
+                    category_html += '<li data-value="'+category_val.category_id+'" data-level="'+level+'" pid="'+pid+'" child="'+(category_val.child_count >0)+'">';
+                    category_html += '<span>'+category_val.category_name+'</span>';
+                    if(category_val.child_count > 0) {
+                        category_html += '<i class="layui-icon-right layui-icon"></i>';
+                    }
+                    category_html += '</li>';
+                })
+            }
+            $('.goodsCategory_'+level+' ul').html(category_html);
+        }
+    })
+}
+
+$("body").on('click', '.goods-category-container .goodsCategory ul li', function(){
+    var level = $(this).attr('data-level');
+    var value = $(this).attr('data-value');
+    $('.goods-category-container .goodsCategory_2, .goods-category-container .goodsCategory_3').addClass('hide');
+    if($(this).attr('child') == 'true') {
+        getCategoryTree(parseInt(level)+1, value);
+        $('.goods-category-container .goodsCategory_'+(parseInt(level)+1)+' ul li').addClass('hide');
+        $('.goods-category-container .goodsCategory_'+(parseInt(level)+1)+' ul li[pid="'+value+'"]').removeClass('hide');
+        $('.goods-category-container .goodsCategory_'+level).removeClass('hide');
+        $('.goods-category-container .goodsCategory_'+(parseInt(level)+1)).removeClass('hide');
+    }else {
+        $('.goods-category-container .category-wrap,.goods-category-mask').addClass('hide');
+    }
+    $('.goods-category-container .goodsCategory_'+level+' ul li').removeClass('selected');
+    $('.goods-category-container .goodsCategory_'+(parseInt(level)+1) + ' ul li').removeClass('selected');
+    $('.goods-category-container .goodsCategory_'+(parseInt(level)+2) + ' ul li').removeClass('selected');
+    $(this).addClass('selected');
+    categoryBottom();
+    setSelectCaregory();
+});
+
+//设置选中分类
+function setSelectCaregory() {
+    var level_text_1 = '';
+    var level_text_2 = '';
+    var level_text_3 = '';
+    var select_id = '';
+    $('.goods-category-container .goodsCategory ul li.selected').each(function(i, e) {
+        var level = $(e).attr('data-level');
+        if(level == 1) {
+            level_text_1 = $(e).find('span').text() + '>';
+            select_id += $(e).attr('data-value') +',';
+        }
+        if(level == 2) {
+            level_text_2 = $(e).find('span').text() + '>';
+            select_id += $(e).attr('data-value') +',';
+        }
+        if(level == 3) {
+            level_text_3 = $(e).find('span').text();
+            select_id += $(e).attr('data-value') +',';
+        }
+    });
+    $('.goods-category-container .select-category').val(level_text_1+level_text_2+level_text_3);
+    select_id = select_id.substring(0,select_id.length-1);
+    $('.goods-category-container #select_category_id').val(select_id);
+    var category_arr = select_id.split(',');
+    $('.goods-category-container input[name="category_id"]').val(category_arr.pop());
+}
+
+$("body").on('focus', '.goods-category-container .select-category', function() {
+    $('.goods-category-container .category-wrap, .goods-category-mask').removeClass('hide');
+    var select_id =  $('.goods-category-container #select_category_id').val();
+    var category_arr = select_id.split(',');
+
+    $.each(category_arr, function(i, e) {
+        var level = parseInt(i)+1;
+        $('.goods-category-container .goodsCategory_'+level).removeClass('hide');
+        $('.goods-category-container .goodsCategory_'+level+' ul li[data-value="'+e+'"]').addClass('selected');
+    });
+    categoryBottom();
+});
+
+$("body").on('keyup', '.goods-category-container .select-category', function() {
+	if($(this).val().length==0) {
+		$('.goods-category-container #select_category_id').val("");
+		$('.goods-category-container input[name="category_id"]').val("");
+	}
+});
+
+function categoryBottom() {
+    var num = $('.goods-category-container .goodsCategory.hide').length;
+    $('.goods-category-container .selectGoodsCategory').css('width', 185*(3-num)+'px');
+}
+
+$('body').on('click', '.goods-category-container .confirm-select', function () {
+    setSelectCaregory();
+    $('.goods-category-container .category-wrap,.goods-category-mask').addClass('hide');
+});
+$('body').on('click', '.goods-category-mask', function () {
+    $('.goods-category-container .category-wrap,.goods-category-mask').addClass('hide');
+});
+$('body').on('click', '.goods-category-container .cancel-select', function () {
+    $('.goods-category-container .category-wrap, .goods-category-mask').addClass('hide');
+	$(".goods-category-container .select-category").val("");
+});
+</script>

@@ -1,0 +1,425 @@
+@CHARSET "UTF-8";
+/*  common start */
+* {
+	margin:0;
+	padding:0;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
+	box-sizing:border-box;
+}
+html, body{
+	height:100%;
+}
+body {
+	font: 14px Helvetica Neue,Helvetica,PingFang SC,\5FAE\8F6F\96c5\9ED1,Tahoma,Arial,sans-serif;
+	line-height: 24px;
+}
+a:active,a:hover{
+	outline: 0
+}
+a{
+/* 	color: #FFF; */
+	text-decoration: none
+}
+a:hover{
+	color: #777
+}
+.nui-show {
+	display:block!important;
+}
+.nui-hide {
+	display:none!important;
+}
+.nui-left{
+	float:left!important;
+}
+.nui-right{
+	float:right!important;
+}
+.nui-clearfix {
+	clear: both;
+	*zoom: 1
+}
+.nui-clearfix:after {
+    content: "";
+    display: block;
+    clear: both;
+	*zoom: 1
+}
+/*  common end */
+
+.nui-nav{
+    position: relative;
+    color: #fff;
+}
+.nui-nav .nui-nav-item {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 50px;
+}
+.nui-nav-vert .nui-nav-item {
+	width: 100%;
+    display: block;
+    line-height: 40px;
+}
+.nui-nav .nui-nav-item a {
+    display: block;
+    padding: 0 20px;
+    color: #fff;
+    transition: all .3s;
+    -webkit-transition: all .3s;
+	margin:0;
+}
+.nui-nav .nui-nav-item a:hover{
+    background-color:#000;
+}
+.nui-nav .nui-nav-item.active{
+    background-color:#000;
+}
+
+/* 栅格 start */
+.nui-box{
+	padding:10px;
+}
+.nui-row:after{
+	content: "";
+    display: block;
+    clear: both;
+}
+.nui-block{
+	height:100%;
+	background-color:#FFF;
+}
+.nui-col-1, 
+.nui-col-2, 
+.nui-col-3, 
+.nui-col-4, 
+.nui-col-5, 
+.nui-col-6, 
+.nui-col-7, 
+.nui-col-8, 
+.nui-col-9,
+.nui-col-10, 
+.nui-col-11, 
+.nui-col-12{ 
+    float: left;
+}
+.nui-col-1{width:8.333333%}
+.nui-col-2{width:16.666666%}
+.nui-col-3{width:25%}
+.nui-col-4{width:33.333333%}
+.nui-col-5{width:41.666666%}
+.nui-col-6{width:50%;}
+.nui-col-7{width:58.333333%}
+.nui-col-8{width:66.666666%}
+.nui-col-9{width:75%}
+.nui-col-10{width:83.33333%}
+.nui-col-11{width:91.66666%}
+.nui-col-12{width:100%;}
+
+/* 外间距 */
+.nui-col-space1 {margin: -0.5px;}
+.nui-col-space1>* {padding: 0.5px;}
+.nui-col-space5 {margin: -2.5px;}
+.nui-col-space5>* {padding: 2.5px;}
+.nui-col-space10 {margin: -5px;}
+.nui-col-space10>* {padding: 5px;}
+.nui-col-space15 {margin: -7.5px;}
+.nui-col-space15>* {padding: 7.5px;}
+.nui-col-space30 {margin: -15px;}
+.nui-col-space30>* {padding: 15px;}
+
+/* 列偏移 */
+.nui-col-offset1 {margin-left: 8.333333%;}
+.nui-col-offset2 {margin-left: 16.666666%;}
+.nui-col-offset3 {margin-left: 25%;}
+.nui-col-offset4 {margin-left: 33.333333%;}
+.nui-col-offset5 {margin-left: 41.666666%;}
+.nui-col-offset6 {margin-left: 50%;}
+.nui-col-offset7 {margin-left: 58.333333%;}
+.nui-col-offset8 {margin-left: 66.666666%;}
+.nui-col-offset9 {margin-left: 75%;}
+.nui-col-offset10 {margin-left: 83.33333%;}
+.nui-col-offset11 {margin-left: 91.66666%;}
+/* 栅格 end */
+/* 按钮  start */
+.nui-btn {
+    display: inline-block;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 14px;
+    background-color: #126AE4;
+    color: #fff;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+.nui-btn:hover, .nui-btn:active{
+	background-color:rgb(0, 0, 0);
+}
+.nui-btn.disabled, .nui-btn.disabled:active, .nui-btn.disabled:hover{
+	border: 1px solid #e6e6e6;
+    background-color: #FBFBFB;
+    color: #C9C9C9;
+    cursor: not-allowed;
+    opacity: 1;
+}
+.nui-btn-primary{
+	border: 1px solid #C9C9C9;
+    background-color: #fff;
+    color: #555;
+}
+.nui-btn-primary:hover{
+	border: 1px solid #ccc;
+    background-color: #fff;
+    color: #555;
+}
+.nui-btn-success{
+  	background-color: #5cb85c;
+}
+.nui-btn-success:hover{
+  	background-color: #449d44;
+}
+.nui-btn-info{
+  	background-color: #5bc0de;
+}
+.nui-btn-info:hover{
+  	background-color: #31b0d5;
+}
+.nui-btn-warning{
+  	background-color: #f0ad4e;
+}
+.nui-btn-warning:hover{
+  	background-color: #ec971f;
+}
+.nui-btn-danger{
+  	background-color: #d9534f;
+}
+.nui-btn-danger:hover{
+  	background-color: #c9302c;
+}
+.nui-btn-link{}
+.nui-btn-lg {
+    height: 44px;
+    line-height: 44px;
+    padding: 0 25px;
+    font-size: 16px;
+}
+.nui-btn-sm {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+.nui-btn-xs {
+    height: 22px;
+    line-height: 22px;
+    padding: 0 5px;
+    font-size: 12px;
+}
+.btn-block{
+	width: 100%;
+}
+/* 按钮  end */
+/* 表单  start */
+input {
+/*     -webkit-appearance: textfield; */
+/*     background-color: white; */
+/*     -webkit-rtl-ordering: logical; */
+/*     user-select: text; */
+/*     cursor: auto; */
+/*     padding: 1px; */
+/*     border-width: 2px; */
+/*     border-style: inset; */
+/*     border-color: initial; */
+/*     border-image: initial; */
+}
+input, textarea, select, button {
+/*     text-rendering: auto; */
+/*     color: initial; */
+/*     letter-spacing: normal; */
+/*     word-spacing: normal; */
+/*     text-transform: none; */
+/*     text-indent: 0px; */
+/*     text-shadow: none; */
+/*     display: inline-block; */
+/*     text-align: start; */
+/*     margin: 0em; */
+/*     font: 13.3333px Arial; */
+}
+button, input, optgroup, option, select, textarea {
+/*     font-family: inherit; */
+/*     font-size: inherit; */
+/*     font-style: inherit; */
+/*     font-weight: inherit; */
+/*     outline: 0; */
+}
+.nui-form-item{
+	margin-bottom:10px;
+}
+.nui-form-item:after{
+	content: "";
+    display: block;
+    clear: both;
+}
+.nui-form-label{
+    padding: 9px 15px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: right;
+}
+.nui-form-explain{
+    padding: 9px 15px;
+    font-weight: 400;
+    line-height: 20px;
+	color:red;
+}
+.nui-form-box .nui-form-explain{
+	padding: 9px 0;
+/* 	display:none; */
+}
+.nui-input, .nui-select, .nui-textarea{
+	width:100%;
+    height: 38px;
+    line-height: 1.3;
+    line-height: 38px\9;
+    border-width: 1px;
+    border-style: solid;
+    background-color: #fff;
+	border-color: #e6e6e6;
+	padding-left:10px;
+}
+.nui-form input[type=checkbox], .nui-form input[type=radio]{
+/*     display: none; */
+}
+/* 表单  end */
+.nui-tab{
+	width:100%;
+	text-align:left!important;
+}
+.nui-tab-head{
+    position: relative;
+    left: 0;
+    height: 40px;
+    white-space: nowrap;
+    font-size: 0;
+	color:#333;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color:red;
+    transition: all .2s;
+    -webkit-transition: all .2s;
+}
+.nui-tab-head-item{
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    transition: all .2s;
+    -webkit-transition: all .2s;
+    position: relative;
+    line-height: 40px;
+    min-width: 65px;
+    padding: 0 15px;
+    text-align: center;
+    cursor: pointer;
+}
+.nui-tab-head-item.active:after{
+    position: absolute;
+    left: 0;
+    top: 0;
+    content: '';
+    width: 100%;
+    height: 41px;
+    border-width: 1px;
+    border-style: solid;
+    border-bottom-color: #fff;
+    border-radius: 2px 2px 0 0;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+.nui-tab-head-item.active{
+	font-weight:500;
+	color:#126AE4;
+}
+.nui-tab-head-item.active:after{
+	border: none;
+    border-radius: 0;
+    border-bottom: 2px solid #126AE4;
+}
+.nui-tab-body{
+	padding:10px;
+}
+.nui-tab-body-item{
+	display:none;
+}
+/*  表格  start  */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+.nui-table{
+	width:100%;
+	background-color:#FFF;
+	color:#333;
+}
+.nui-table tbody tr:hover, 
+.nui-table thead tr{
+    background-color:#e5e5e5;
+}
+.nui-table tr {
+	transition: all .3s;
+	-webkit-transition: all .3s
+}
+.nui-table th{
+	text-align:left;
+	font-weight:400;
+}
+.nui-table td,.nui-table th{
+	position: relative;
+	padding: 9px 15px;
+	min-height: 20px;
+	line-height: 20px;
+	font-size: 14px
+}
+.nui-table.line{
+	border:1px solid red;
+}
+.nui-table td,.nui-table th{
+	border:1px solid red;
+}
+.nui-table.line td, .nui-table.line th{
+	border-width:0 0 1px;
+}
+.nui-table.no-border td, .nui-table.no-border th{
+	border:none;
+}
+/* .nui-table tr:nth-child(even){ */
+/*     background-color:#f2f2f2; */
+/* } */
+/*  表格 end  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

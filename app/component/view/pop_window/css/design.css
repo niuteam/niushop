@@ -1,0 +1,21 @@
+@CHARSET "UTF-8";
+/*.pop-window{background:rgba(0,0,0,.4)}*/
+
+.pop-window .pop-window-box{}
+.pop-window .pop-window-image{display:block;max-width:90%;margin:0 auto;}
+
+.pop-window .pop-window-config>ul>li{padding:10px;background: #ffffff;border:1px dashed #e5e5e5;position:relative;margin-top:10px;}
+.pop-window .pop-window-config>ul>li:first-child{margin-top:0;}
+.pop-window .pop-window-config>ul>li .image-block{display:inline-block;width:28%;vertical-align: top;}
+.pop-window .pop-window-config>ul>li .content-block{display:inline-block;width:71%;}
+.pop-window .pop-window-config>ul>li .content-block.textNavigation{width:100%;}
+.pop-window .pop-window-config>ul>li .content-block .layui-form-item{margin:0;}
+.pop-window .pop-window-config>ul>li .content-block .layui-form-label{width:60px;}
+.pop-window .pop-window-config>ul>li .content-block .layui-input-block{margin-left:60px;}
+.pop-window .pop-window-config>ul>li .content-block div{margin-top:10px;}
+.pop-window .pop-window-config>ul>li .content-block div:last-child{margin-top:0;}
+.pop-window .pop-window-config>ul>li:hover .del{display:block;}
+
+.pop-window p.hint{font-size: 12px;color: #999;margin: 10px;}
+
+.pop-window .error-msg {margin-top: 5px;color: #f44;display: none;}

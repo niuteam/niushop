@@ -1,0 +1,207 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-layer-page .layui-layer-content {padding: 20px 30px;}
+	.layui-layer-page td {word-break: break-all; word-wrap: break-word;}
+
+	.ns-card-brief:nth-child(1){
+		margin-top: 0;
+	}
+	.layui-card-body{
+		display: flex;
+		flex-wrap: wrap;
+		padding-bottom: 0 !important;
+		padding-left: 50px !important;
+		padding-right: 50px !important;
+	}
+	.layui-card-body .content{
+		width: 33.3%;
+		margin-bottom: 30px;
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: column;
+		justify-content: center;
+	}
+	.layui-card-body .money{
+		font-size: 20px;
+		color: #000;
+		font-weight: bold;
+		margin-top: 10px;
+		max-width: 250px;
+	}
+	.layui-card-body .subhead{
+		font-size: 12px;
+		margin-left: 3px;
+		cursor: pointer;
+	}
+</style>
+{/block}
+{block name="main"}
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<label class="layui-form-label">发送状态：</label>
+			<div class="layui-input-inline">
+				<select name="status">
+					<option value="all">全部</option>
+					<option value="1">待发送</option>
+					<option value="2">发送成功</option>
+					<option value="-1">发送失败</option>
+				</select>
+			</div>
+			<div class="layui-input-inline">
+				<input type="text" name="search_text" placeholder="请输入短信标题" autocomplete="off" class="layui-input">
+				<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="sms_list" lay-filter="sms_list"></table>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{# if(d.status == 0){ }}
+	<span>待发送</span>
+	{{# }else if(d.status == 1){ }}
+	<span>发送成功</span>
+	{{# }else{ }}
+	<span>发送失败</span>
+	{{# } }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+		<a class="layui-btn" lay-event="detail">详情</a>
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'laytpl'], function() {
+		var table,
+			form = layui.form,
+			laytpl = layui.laytpl;
+		form.render();
+
+		table = new Table({
+			elem: '#sms_list',
+			url: ns.url("shop/message/smsRecords"),
+			cols: [
+				[ {
+					field: 'keywords_name',
+					title: '标题',
+					width: '20%',
+					unresize: 'false'
+				},{
+					field: 'account',
+					title: '接收人账号',
+					width: '20%',
+					unresize: 'false'
+				}, {
+					field: 'create_time',
+					title: '创建时间',
+					width: '20%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.create_time);
+					}
+				},{
+					field: 'send_time',
+					title: '发送时间',
+					width: '20%',
+					unresize: 'false',
+					templet: function (data) {
+						return ns.time_to_date(data.send_time);
+					}
+				}, {
+					title: '发送状态',
+					width: '12%',
+					unresize: 'false',
+					templet: '#status'
+				}, {
+					title: '操作',
+					width: '8%',
+					unresize: 'false',
+					templet: '#operation',
+				}]
+			]
+		});
+		
+		table.tool(function(obj) {
+			if(obj.event == "detail"){
+				var detailHtml = $("#smsDetail").html();
+				laytpl(detailHtml).render(obj.data, function(html) {
+					layer.open({
+						type: 1,
+						title: '通知详情',
+						area: ['550px'],
+						content: html
+
+					});
+				})
+			}
+		});
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+</script>
+
+<script type="text/html" id="smsDetail">
+	<table class="layui-table">
+		<colgroup>
+			<col width="20%">
+			<col width="80%">
+		</colgroup>
+		<tbody>
+			<tr>
+				<td>接收账号</td>
+				<td colspan="3">{{d.account}}</td>
+			</tr>
+			<tr>
+				<td>通知名称</td>
+				<td colspan="3">{{d.keywords_name}}</td>
+			</tr>
+			<tr>
+				<td>创建时间</td>
+				<td colspan="3">{{ns.time_to_date(d.create_time)}}</td>
+			</tr>
+			<tr>
+				<td>发送时间</td>
+				<td colspan="3">{{ns.time_to_date(d.send_time)}}</td>
+			</tr>
+			<tr>
+				<td>状态</td>
+				<td>{{# if(d.status == 0){ }}发送中
+					{{# }else if(d.status == 1){ }}发送成功
+					{{# }else{ }}发送失败
+					{{# } }}
+				</td>
+			</tr>
+			<tr>
+				<td>通知内容</td>
+				<td colspan="3">{{d.content}}</td>
+			</tr>
+			<tr>
+				<td>返回结果</td>
+				<td colspan="3">{{d.result}}</td>
+			</tr>
+		</tbody>
+	</table>
+</script>
+{/block}

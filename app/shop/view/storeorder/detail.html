@@ -1,0 +1,335 @@
+{extend name="base" /}
+{block name="resources"/}
+<link rel="stylesheet" href="SHOP_CSS/order_detail.css"/>
+{/block}
+{block name="main"}
+<div style="padding: 1px;" class="order-detail">
+
+    <div class="layui-row layui-col-space1 order-detail-info" >
+        <div class="layui-col-md4 order-detail-left" >
+            <div class="layui-card">
+                <div class="layui-card-header nav-title">订单信息</div>
+                <div class="layui-card-body">
+                    <div class="layui-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">订单编号：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">{$order_detail['order_no']}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">订单类型：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">{$order_detail['order_type_name']}</div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">订单来源：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail.order_from_name}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">付款方式：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">{$order_detail.pay_type_name}</div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">买家：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux"><a class="ns-text-color" target="_blank" href='{:addon_url("shop/member/editmember?member_id=".$order_detail["member_id"])}'>{$order_detail.nickname}</a></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item order-detail-hr">
+
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">配送方式：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['delivery_type_name']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">收货人：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['name']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">联系电话：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['mobile']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">收货地址：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['full_address']}-{$order_detail['address']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item order-detail-hr">
+
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">营销活动：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['promotion_type_name']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">买家留言：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        {if $order_detail['buyer_message'] == ""}
+                                        <p>-</p>
+                                        {else/}
+                                        <p>{$order_detail['buyer_message']}</p>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item order-detail-hr">
+
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">配送门店：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$order_detail['delivery_store_name']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {php}
+                        $delivery_store_info = json_decode($order_detail['delivery_store_info'], true);
+                        {/php}
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">门店地址：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        <p>{$delivery_store_info['full_address']}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">营业时间：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        {$delivery_store_info.open_date}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">联系电话：</label>
+                            <div class="layui-input-block">
+                                <div class="layui-inline">
+                                    <div class="layui-form-mid layui-word-aux">
+                                        {$delivery_store_info.telphone}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md8 order-detail-operation">
+            <div class="layui-card">
+                <div class="layui-card-header">订单状态：{$order_detail.order_status_name}</div>
+                <div class="layui-card-body">
+                    <p class="order-detail-tips"></p>
+
+                    <button class="layui-btn ns-bg-color" onclick="orderRemark('{$order_detail.order_id}')" >备注</button>
+                    {php}
+                    $order_json_data = json_decode($order_detail['order_status_action'], true);
+                    $action = $order_json_data['action'];
+                    {/php}
+                    {foreach $action as $action_k => $action_item}
+                    <a class="layui-btn ns-bg-color" href="javascript:orderAction('{$action_item.action}', '{$order_detail.order_id}')">{$action_item.title}</a>
+                    {/foreach}
+                    {if $order_detail['order_status'] == 2}
+                    <a class="layui-btn ns-bg-color" href="javascript:storeOrderTakedelivery('{$order_detail.order_id}')">提货</a>
+                    {/if}
+                    <br>
+                    <i class="layui-icon  layui-icon-about"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-detail-dl">
+            <dl>
+                <dt>提醒：</dt>
+                <dd>交易成功后，平台将把货款结算至你的店铺账户余额，你可申请提现；</dd>
+                <dd>请及时关注你发出的包裹状态，确保能配送至买家手中；</dd>
+                <dd>如果买家表示未收到货或者货物有问题，请及时联系买家积极处理，友好协商；</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{if  $order_detail['is_invoice'] == 1}
+<div style="height: 15px;"></div>
+<div class="layui-row ns-form invoice-view">
+
+    <div class="layui-col-md6">
+        <h4 class="invoice-title">发票信息</h4>
+        <ul class="invoice-box">
+            <li class="invoice-item">
+                <label class="invoice-label">发票类型：</label>
+                <div class="invoice-content">{if $order_detail['invoice_type'] == 1}纸质{else/}电子{/if}{if $order_detail['is_tax_invoice'] == 1}专票{else/}普票{/if}</div>
+            </li>
+
+            <li class="invoice-item">
+                <label class="invoice-label">发票抬头：</label>
+                <div class="invoice-content">{$order_detail['invoice_title']}</div>
+            </li>
+            <li class="invoice-item">
+                <label class="invoice-label">发票抬头类型：</label>
+                <div class="invoice-content">{$order_detail['invoice_title_type'] == 1 ? '个人' : '企业'}</div>
+            </li>
+            {if $order_detail['invoice_title_type'] == 2}
+            <li class="invoice-item">
+                <label class="invoice-label">纳税人识别号：</label>
+                <div class="invoice-content">{$order_detail['taxpayer_number']}</div>
+            </li>
+            {/if}
+            <li class="invoice-item">
+                <label class="invoice-label">发票内容：</label>
+                <div class="invoice-content">{$order_detail['invoice_content']}</div>
+            </li>
+
+            {if $order_detail['invoice_type'] == 1}
+
+            <li class="invoice-item">
+                <label class="invoice-label">发票邮寄地址：</label>
+                <div class="invoice-content">{$order_detail['invoice_full_address']}</div>
+            </li>
+            {else/}
+            <li class="invoice-item">
+                <label class="invoice-label">发票接收邮件：</label>
+                <div class="invoice-content">{$order_detail['invoice_email']}</div>
+            </li>
+
+            {/if}
+        </ul>
+
+    </div>
+    <div class="layui-col-md6">
+        <h4 class="invoice-title">发票费用</h4>
+        <ul class="invoice-box">
+            <li class="invoice-item">
+                <label class="invoice-label">发票费用：</label>
+                <div class="invoice-content"><span class="invoice-money">￥{$order_detail.invoice_money}</span> </div>
+            </li>
+            <li class="invoice-item">
+                <label class="invoice-label">发票税率：</label>
+                <div class="invoice-content"><span class="invoice-money">{$order_detail.invoice_rate}%</span> </div>
+            </li>
+
+            <li class="invoice-item">
+                <label class="invoice-label">发票邮寄费用：</label>
+                <div class="invoice-content"><span class="invoice-money">￥{$order_detail.invoice_delivery_money}</span> </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{/if}
+
+<div style="height:30px;"></div>
+<div class="order-detail-table">
+    <table class="layui-table" lay-filter="parse-table-order-product" lay-skin="line">
+        <thead>
+        <tr>
+            <th lay-data="{field:'product_name', width:200}">商品</th>
+            <th lay-data="{field:'price'}">价格</th>
+            <th lay-data="{field:'sale_num'}">数量</th>
+            <th lay-data="{field:'total_money'}">小计（元）</th>
+            <th lay-data="{field:'refund_status'}">退款状态</th>
+            <th lay-data="{field:'shipping_status'}">状态</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $order_detail['order_goods'] as $list_k => $order_goods_item}
+        <tr>
+            <td>{$order_goods_item.sku_name}</td>
+            <td>{$order_goods_item.price}</td>
+            <td>{$order_goods_item.num}</td>
+            <td>{$order_goods_item.goods_money}</td>
+            <td>
+                {if $order_goods_item.refund_status != 0}
+                <a class="ns-text-color" href='{:addon_url("shop/orderrefund/detail?order_goods_id=".$order_goods_item["order_goods_id"])}'>{$order_goods_item.refund_status_name}</a>
+                {/if}
+            </td>
+            <td>
+                {$order_goods_item.delivery_status_name}
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
+
+    <div class="layui-row order-detail-total">
+        <div class="layui-col-md9">
+            &nbsp;
+        </div>
+        <div class="layui-col-md3 order-money-box" >
+            <div>商品总额：￥{$order_detail["goods_money"]}</div>
+            <div>店铺优惠券：￥{$order_detail["coupon_money"]}</div>
+            <div>店铺优惠：￥{$order_detail["promotion_money"]}</div>
+            <div>订单调价：￥{$order_detail["adjust_money"]}</div>
+            <div>配送费用：￥{$order_detail["delivery_money"]}</div>
+            <div>发票费用：￥{$order_detail["invoice_money"]}</div>
+            <div>发票邮寄费用：￥{$order_detail["invoice_delivery_money"]}</div>
+            <div>订单共{$order_detail["goods_num"]}件商品，总计：<span>￥{$order_detail["order_money"]}</span></div>
+        </div>
+    </div>
+</div>
+
+{include file="order/order_common_action" /}
+<!-- 修改订单收货地址 -->
+{include file="order/order_action" /}
+{/block}
+{block name="script"}
+{/block}

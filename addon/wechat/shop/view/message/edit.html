@@ -1,0 +1,114 @@
+{extend name="app/shop/view/base.html" /}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否开启：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="wechat_is_open" value="1" {if $wechat_is_open == 1}checked{/if} lay-skin="switch">
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>模板消息ID</label>
+		<div class="layui-input-block">
+			<input type="text" name="template_id" value="{if $info}{$info.template_id_short}{/if}" placeholder="模板消息ID" autocomplete="off" class="layui-input ns-len-long" readonly>
+		</div>
+	</div>
+	
+	<div class="layui-form-item layui-form-text">
+		<label class="layui-form-label"><span class="required">*</span>头部标题</label>
+		<div class="layui-input-inline">
+			<textarea id="headtext" name="headtext" placeholder="{{first.DATA}}" class="layui-textarea ns-len-long">{if $info}{$info.headtext}{/if}</textarea>
+		</div>
+		<span id="headtextcolor"></span>
+	</div>
+
+	<div class="layui-form-item layui-form-text">
+		<label class="layui-form-label"><span class="required"></span>模板内容</label>
+		<div class="layui-input-inline">
+			<textarea  placeholder="" class="layui-textarea ns-len-long" readonly>{if $info}{$info.content}{/if}</textarea>
+		</div>
+	</div>
+	
+	<div class="layui-form-item layui-form-text">
+		<label class="layui-form-label"><span class="required">*</span>尾部描述</label>
+		<div class="layui-input-inline">
+			<textarea id="bottomtext" name="bottomtext" placeholder="{{remark.DATA}}" class="layui-textarea ns-len-long">{if $info}{$info.bottomtext}{/if}</textarea>
+		</div>
+		<span id="bottomtextcolor"></span>
+	</div>
+	
+	<input type="hidden" name="keywords" value="{$keywords}" />
+	<input type="hidden" name="headtextcolor" value="{$info.headtextcolor}" />
+	<input type="hidden" name="bottomtextcolor" value="{$info.bottomtextcolor}" />
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'colorpicker'], function() {
+		var form = layui.form,
+			colorpicker1 = layui.colorpicker,
+			colorpicker2 = layui.colorpicker,
+			headtextcolor = '',
+			bottomtextcolor = '',
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		colorpicker1.render({
+		    elem: '#headtextcolor',  //绑定元素
+		    color: "{$info.headtextcolor}",
+			done: function(color) {
+				$('#headtext').css({"color": color});
+				$("input[name=headtextcolor]").val(color);
+			}
+		});
+		
+		colorpicker2.render({
+		    elem: '#bottomtextcolor',  //绑定元素
+		    color: "{$info.bottomtextcolor}",
+			done: function(color) {
+				$('#bottomtext').css({"color": color});
+				$("input[name=bottomtextcolor]").val(color);
+			}
+		});
+
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("wechat://shop/Message/edit"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/message/lists")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+	function back() {
+		location.href = ns.url("shop/message/lists");
+	}
+</script>
+{/block}

@@ -1,0 +1,92 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .ns-card-common:first-of-type{margin-top: 0;}
+    .layui-card-body{display: flex;padding-bottom: 0 !important;padding-right: 50px !important;padding-left: 50px !important;flex-wrap: wrap;}
+    .layui-card-body .content{width: 33.3%;display: flex;flex-direction: column;margin-bottom: 30px;justify-content: center;}
+    .layui-card-body .money{font-size: 20px;color: #666;font-weight: bold;margin-top: 10px;max-width: 250px;}
+    .layui-card-body .subhead{font-size: 12px;margin-left: 3px;cursor: pointer;}
+    .ns-single-filter-box {justify-content: left;line-height: 34px}
+    .ns-single-filter-box a{cursor:pointer;margin-left: 10px}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-detail-card ns-tips">
+    <div class="ns-detail-con">
+        <p class="ns-detail-line">
+            <span class="ns-goods-name">会员导入</span>
+            <span class="ns-text-color">{$info.data.status_name}</span>
+        </p>
+        <p class="ns-detail-line">导入时间：{:date('Y-m-d H:i:s', $info.data.create_time)}</p>
+    </div>
+</div>
+
+<!-- 列表 -->
+<table id="member_import_log_list" lay-filter="member_import_log_list"></table>
+<!-- 工具栏操作 -->
+<input id="record_id" type="hidden" value="{$id}" />
+{/block}
+
+{block name="script"}
+<script>
+    var table,upload,repeat_flag = false;
+    layui.use(['form', 'laydate','laytpl', 'upload'], function() {
+        var form = layui.form,
+            laydate = layui.laydate,
+            currentDate = new Date(),
+            laytpl = layui.laytpl,
+            minDate = "";
+            upload = layui.upload;
+            record_id = $("#record_id").val();
+        form.render();
+        /**
+         * 表格加载
+         */
+        table = new Table({
+            elem: '#member_import_log_list',
+            url: ns.url("shop/member/memberimportlist"),
+            where : {
+              "id" : record_id
+            },
+            cols: [
+                [{
+                    field: 'username',
+                    title: '用户名',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'mobile',
+                    title: '手机号',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'nickname',
+                    title: '昵称',
+                    width: '15%',
+                    unresize: 'false',
+                }, {
+                    field: 'wx_openid',
+                    title: '微信公众号openid',
+                    width: '20%',
+                    unresize: 'false',
+                }, {
+                    field: 'weapp_openid',
+                    title: '小程序openid',
+                    width: '20%',
+                    unresize: 'false',
+                }, {
+                    field: 'password',
+                    title: '密码',
+                    width: '8%',
+                    unresize: 'false',
+                }, {
+                    field: 'content',
+                    title: '内容',
+                    width: '21%',
+                    unresize: 'false',
+                }]
+            ]
+        });
+    });
+</script>
+{/block}

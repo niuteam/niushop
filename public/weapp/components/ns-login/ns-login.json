@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "bind-mobile": "/components/bind-mobile/bind-mobile",
+    "register-reward": "/components/register-reward/register-reward"
+  }
+}

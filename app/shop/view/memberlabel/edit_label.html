@@ -1,0 +1,94 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div  class="layui-form ns-form">
+	<div class="layui-form-item">   
+		<label class="layui-form-label"><span class="required">*</span>标签名称：</label>
+		<div class="layui-input-block">  
+			<input type="text" name="label_name" lay-verify="required" value="{$label_info.data.label_name}"  class="layui-input ns-len-long">
+		</div>   
+	</div>  
+
+	<div class="layui-form-item">  
+		<label class="layui-form-label">排序：</label>
+		<div class="layui-input-block">
+			<input type="number" name="sort" class="layui-input ns-len-short" value="{$label_info.data.sort}" lay-verify="num" >
+		</div>
+		<div class="ns-word-aux">排序值必须为整数</div>
+	</div>  
+
+	<div class="layui-form-item"> 
+		<label class="layui-form-label">备注：</label>
+		<div class="layui-input-block">
+			<textarea name="remark" autocomplete="off" placeholder="" class="layui-textarea  ns-len-long">{$label_info.data.remark}</textarea>
+		</div> 
+	</div> 
+
+	<!-- 表单操作 -->
+	<div class="ns-form-row">  
+		<button type="button" class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>   
+		<button  class="layui-btn layui-btn-primary" onclick="window.location.href='{:addon_url(\"shop/memberlabel/labelList\")}'">返回</button>
+	</div>
+	
+	<!-- 获取label_id -->
+	<input type="hidden" name="label_id" lay-verify="required" value="{$label_info.data.label_id}"  class="layui-input"> 
+ </div>  
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function(){
+		var form = layui.form;
+		var repeat_flag = false; //防重复
+		form.render();
+
+		form.on('submit(save)', function(data){
+
+			if(repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url:ns.url("shop/memberlabel/editLabel"),
+				data: data.field,
+				dataType:'JSON',
+				type:'POST',
+				success:function(res){
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/memberlabel/labelList")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+		form.verify({
+			num: function (value) {
+				if (value == '') {
+					return;
+				}
+				if (value%1 != 0) {
+					return '排序数值必须为整数';
+				}
+				if (value < 0) {
+					return '排序数值必须为大于0';
+				}
+			}
+		}); 
+	});
+</script>
+{/block}

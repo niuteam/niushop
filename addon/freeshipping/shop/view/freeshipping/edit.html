@@ -1,0 +1,173 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.add-distribution{cursor: pointer;}
+	.area-modal{
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		padding: 25px 0;
+	}
+	.area-modal .area-list{
+		width: 255px;
+		height: 375px;
+		align-items: center;
+		border: 1px solid #ccc;
+	}
+	.area-modal .title{
+		height: 35px;
+		line-height: 35px;
+		text-align: center;
+	}
+	.area-modal .add{
+		background-color: transparent;
+		border: 1px solid #ccc;
+		padding: 5px 10px;
+		cursor: pointer;
+	}
+	.area-modal .box{
+		overflow-y: auto;
+		padding: 10px 0;
+		height: 340px;
+		box-sizing: border-box;
+	}
+	.modal-operation{
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 50px;
+	}
+	.area-list .box{
+		height: 314px;
+		margin: 10px 0;
+		overflow-y:auto;
+		overflow-x:hidden;
+	}
+	.area-list .box ul li{
+		line-height: 30px;
+		cursor: pointer;
+		background-color:#fff;
+	}
+	.area-list .box ul li .title-div{
+		position:relative;
+		padding-left:20px;
+	}
+	.area-list .box ul li[data-level='2'] .title-div{
+		margin-left:10px;
+	}
+	.area-list .box ul li[data-level='3'] .title-div{
+		margin-left:20px;
+	}
+	.area-list .box ul li[data-level='4'] .title-div{
+		margin-left:30px;
+	}
+	.area-list.all-area .box ul li.selected{
+		background: #d7d7d7;
+	}
+	.area-list .area-btn,.area-list .area-btn-null,.area-list .area-delete{
+		position:absolute;
+		top:9px;
+		display:block;
+		width: 15px;
+		height: 15px;
+		border-radius: 50%;
+		background-color: #d7d7d7;
+		color: #fff;
+		line-height: 15px;
+		text-align: center;
+		cursor: pointer;
+	}
+	.area-list .area-btn{
+		left:3px;
+	}
+	.area-list .area-btn-null{
+		background-color:transparent;
+		left:3px;
+	}
+	.area-list .area-delete{
+		right:6px;
+	}
+	.area-list.all-area .area-delete{
+		display:none;
+	}
+	.area-list.all-area .area-btn.selected{
+		background-color: #fff;
+		color: #d7d7d7;
+	}
+	.right-opt {
+		float: right;
+	}
+	.right-opt span {
+		cursor: pointer;
+	}
+	.ns-bg-color-gray {
+		background-color: #E5E5E5!important;
+	}
+	.ns-form {margin-top: 0;}
+	
+	.ns-area-table {width: 800px;}
+	.layui-table .ns-area-selected {border-right: 0;}
+	.layui-table .ns-area-btn {border-left: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form" >
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>包邮金额：</label>
+		<div class="layui-input-block">
+			<input value="{$info['price']}" name="price" type="number" min="0" placeholder="请输入金额" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>指定地区：</label>
+		<div class="layui-input-block ns-area-table">
+			<table id="distributionArea" class="layui-table">
+				<colgroup>
+					<col width="92%" />
+					<col width="8%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th class="ns-area-selected">指定地区</th>
+						<th class="ns-area-btn"></th>
+					</tr>
+				</thead>
+				<tbody>
+
+				<tr data-selected="1">
+					<td class="ns-area-selected">
+						<p class="area-show">
+							{$info.area_names}
+						</p>
+					</td>
+					<td class="ns-area-btn">
+						<span class="right-opt">
+							<span class="opt-update ns-text-color" data-selected="1">修改</span>
+						</span>
+					</td>
+					<input type="hidden" value="{$info.area_ids}" data-selected="1" class="area_ids" data-name="{$info.area_names}">
+
+				</tr>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick=" window.history.go(-1);">返回</button>
+	</div>
+</div>
+
+<input type="hidden" value="{$info['freeshipping_id']}" id="freeshipping_id"/><!-- 模板id 添加为0 -->
+<input type="hidden" value="{$area_level}" id="area_level"/><!-- 配送地区等级 -->
+<input type="hidden" value="0" id="opt_total"/><!-- 模板项的总数 在修改的时候作为操作序列的起点 -->
+<input type="hidden" value="{$info['surplus_area_ids']}" id="surplus_area_ids"/>
+
+{/block}
+
+{block name="script"}
+<script type='text/javascript' src='SHOP_JS/freeshipping_template.js'></script>
+{/block}

@@ -1,0 +1,114 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>用户名：</label>
+		<div class="layui-input-block">
+			<input name="username" type="text" lay-verify="required" placeholder="请输入登录用户名" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);" class="layui-input ns-len-long">
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>密码：</label>
+		<div class="layui-input-block">
+			<input name="password" type="password" lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input ns-len-long" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>再次输入密码：</label>
+		<div class="layui-input-block">
+			<input name="repassword" type="password" lay-verify="required|repassword" placeholder="请输入密码" autocomplete="off" class="layui-input ns-len-long" readonly onfocus="this.removeAttribute('readonly');" onblur="this.setAttribute('readonly',true);">
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>用户组：</label>
+		<div class="layui-input-block ns-len-mid">
+			<select name="group_id" lay-verify="groupid">
+				<option value="">选择用户组</option>
+				{foreach $group_list as $group_list_k => $group_list_v}
+					<option value="{$group_list_v.group_id}">{$group_list_v.group_name}</option>
+				{/foreach}
+			</select>
+		</div>
+	</div>
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false;//防重复标识
+		form.render();
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+	        if (repeat_flag) return;
+	        repeat_flag = true;
+			
+			$.ajax({
+				dataType: 'JSON',
+				type: 'POST',
+				url: ns.url("shop/user/addUser"),
+				data: data.field,
+				success: function(res){
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('添加用户已成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function(){
+								location.href = ns.url("shop/user/user")
+							},
+							btn2: function() {
+								location.href = ns.url("shop/user/addUser")
+							}
+						})
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	
+		/**
+		 * 表单验证
+		 */
+	    form.verify({
+	        repassword: function (value) {
+	            if (value.length == 0) {
+	                return '请输入密码!';
+	            }
+	            var pw = $("input[name='password']").val();
+	            if(value != pw){
+	                return '两次密码输入不一致!';
+				}
+	        },
+	        groupid: function (value) {
+	            if(value == 0) {
+	                return '请选择用户组!';
+	            }
+			}
+	
+	    });
+	});
+	
+	function back() {
+		location.href = ns.url("shop/user/user");
+	}
+</script>
+{/block}

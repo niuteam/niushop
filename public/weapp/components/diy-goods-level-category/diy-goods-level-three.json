@@ -1,0 +1,11 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "ns-loading": "/components/ns-loading/ns-loading",
+    "ns-show-toast": "/components/ns-show-toast/ns-show-toast",
+    "ns-login": "/components/ns-login/ns-login",
+    "ns-goods-sku-new": "/components/ns-goods-sku/ns-goods-sku-new",
+    "ns-search": "/components/ns-search/ns-search"
+  }
+}

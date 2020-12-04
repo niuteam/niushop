@@ -1,0 +1,22 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form {margin-top: 0;}
+	.ns-guide-title, .ns-guide-time {text-align: center;}
+	.ns-guide-title {font-size: 25px; font-weight: 600; height: 50px; line-height: 50px;}
+	.ns-guide-time {line-height: 24px;}
+	.ns-guide-time {color: #999999;}
+	.guide_content {padding: 10px 80px 0; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<p class="ns-guide-title">{$info.title}</p>
+	<p class="ns-guide-time"> {$info.create_time|date='Y-m-d H:i:s'}</p>
+	<div class="guide_content">
+        {:html_entity_decode($info.content)}
+	</div>
+</div>
+{/block}
+{block name="script"}
+{/block}

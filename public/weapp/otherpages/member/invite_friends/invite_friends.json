@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "邀请好友",
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "ns-login": "/components/ns-login/ns-login"
+  }
+}

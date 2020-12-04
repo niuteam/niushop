@@ -1,0 +1,148 @@
+{extend name="base"/}
+{block name="resources"}
+<style type="text/css">
+.no-auth{ padding: 50px 0;text-align: center; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">版权设置</span>
+		</div>
+		<div class="layui-card-body">
+			{if $is_auth}
+			<div class="layui-form-item">
+				<label class="layui-form-label">版权logo：</label>
+				<div class="layui-input-block">
+					<div class="upload-img-block icon">
+						<div class="upload-img-box {if condition="!empty($copyright_config.logo)"} hover {/if}" >
+							<div class="ns-upload-default" id="webLogoUpload">
+								{if condition="!empty($copyright_config.logo)"}
+									<div id="preview_webLogoUpload" class="preview_img">
+										<img layer-src src="{:img($copyright_config.logo)}" class="img_prev"/>
+									</div>
+								{else/}
+									<div class="upload">
+										<img src="SHOP_IMG/upload_img.png" />
+										<p>点击上传</p>
+									</div>
+								{/if}
+							</div>
+							<div class="operation"  >
+								<div >
+									<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+									<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+								</div>
+								
+								<div class="replace_img js-replace">点击替换</div>
+							</div>
+							<input type="hidden" name="logo" value="{$copyright_config.logo ?? ''}" />
+						</div>
+						<!-- <p id="webLogoUpload" class="{if condition="$copyright_config.logo"} replace {else/} no-replace{/if}">替换</p>
+						<i class="del {if condition="!empty($copyright_config.logo)"}show{/if}">x</i> -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">公司名称：</label>
+				<div class="layui-input-block">
+					<input type="text" name="company_name" value="{$copyright_config.company_name ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">版权链接：</label>
+				<div class="layui-input-block">
+					<input type="text" name="copyright_link" value="{$copyright_config.copyright_link ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">版权信息：</label>
+				<div class="layui-input-block">
+					<textarea name="copyright_desc" class="layui-textarea ns-len-long">{$copyright_config.copyright_desc ?? ''}</textarea>
+				</div>
+			</div>
+			{else/}
+				<div class="no-auth">授权之后才可修改版权信息，<a href="https://www.niushop.com" class="ns-text-color" target="_blank">去授权</a></div>
+			{/if}
+		</div>
+	</div>
+	
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">备案设置</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">网站ICP备案号：</label>
+				<div class="layui-input-block">
+					<input type="text" name="icp"  value="{$copyright_config.icp}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">网站公安备案：</label>
+				<div class="layui-input-block">
+					<input type="text" name="gov_record"  value="{$copyright_config.gov_record}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">网站公安链接：</label>
+				<div class="layui-input-block">
+					<input type="text" name="gov_url"  value="{$copyright_config.gov_url}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">市场监督管理局链接：</label>
+				<div class="layui-input-block">
+					<input type="text" name="market_supervision_url"  value="{$copyright_config.market_supervision_url ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="ns-single-filter-box">
+		<div class="ns-form-row">
+			<button type="button" class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复
+		form.render();
+
+		var upload = new Upload({
+			elem: '#webLogoUpload'
+		});
+
+		//保存配置
+		form.on('submit(save)', function(data) {
+			if(repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/config/copyright"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			});
+		});
+	});
+	
+</script>
+{/block}

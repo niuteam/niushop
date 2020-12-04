@@ -1,0 +1,239 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    *{margin: 0;padding: 0;}
+    li{list-style: none;}
+    .template-list{
+        display: flex;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+    .template-list .template-item{
+        overflow: hidden;
+        position: relative;
+        padding: 12px;
+        margin-left: 32px;
+        margin-bottom: 32px;
+        width: 270px;
+        height: 440px;
+        border: 1px solid #e9e9e9;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .template-list .template-item .item-img{
+        overflow: hidden;
+        width: 244px;
+        height: 355px;
+    }
+    .template-list .template-item .item-img img{
+        max-width: 100%;
+    }
+    .template-list .template-item .item-hide{
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,.6);
+        text-align: center;
+    }
+    .template-list .template-item .item-name{
+        display: block;
+        padding-top: 7px;
+        line-height: 22px;
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .template-list .item-hide button{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        border: 1px solid #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 33px;
+        width: 100px;
+        color: #fff;
+        background: none;
+        border-radius: 4px;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+    }
+    .template-list .template-item:hover .item-hide{
+        display: block;
+    }
+
+    .template-box{
+        position: relative;
+        height: 100%;
+    }
+    .template-box .template-content{
+        display: flex;
+        justify-content: space-between;
+        width: 530px;
+        margin: auto;
+    }
+    .template-box .template-right{
+        position: relative;
+        height: 500px;
+        width: 180px;
+    }
+    .template-box .template-right .right-list li {
+        width: 82px;
+        padding: 8px 0px;
+        text-align: center;
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .template-box .template-right .right-list li.active{
+        color: #fff;
+    }
+    .template-box .template-right .right-code{
+        position: absolute;
+        bottom: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .template-box .template-right .right-code .img{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 150px;
+        height: 150px;
+    }
+    .template-box .template-right .right-code .img img{
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .template-box .template-right .right-code span{
+        display: block;
+        margin-top: 20px;
+        line-height: 12px;
+        font-size: 12px;
+        text-align: center;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    .template-box .template-img{
+        padding: 37px 13px 13px;
+        width: 250px;
+        height: 500px;
+        background: url('HOME_IMG/iphone_shell.png') no-repeat center / cover;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    .template-box .template-img img{
+        max-width: 100%;
+    }
+    .template-box .template-operation{
+        position: absolute;
+        bottom: -12px;
+        height: 50px;
+        text-align: center;
+        line-height: 50px;
+        border-top: 1px solid #e9e9e9;
+        right: 0;
+        left: 0;
+        cursor: pointer;
+    }
+</style>
+{/block}
+{block name="main"}
+<ul class="template-list">
+    {foreach $template as $template_val}
+    <li class="template-item">
+        <div class="item-img">
+            <img src="{:img($template_val.templateValue.homePage.global.previewImg)}" alt="">
+        </div>
+        <span class="item-name">{$template_val.templateInfo.name}</span>
+        <div class="item-hide">
+            <button class="finsh">装修</button>
+        </div>
+        <input type="hidden" name="templeCotent" value='{:json_encode($template_val.templateValue)}'>
+    </li>
+    {/foreach}
+</ul>
+{/block}
+{block name="script"}
+<script type="text/html" id="templateShow">
+    <div class="template-box">
+        <div class="template-content">
+            <div class="template-img">
+                <img src={{ns.img(d.global.previewImg)}} alt="">
+            </div>
+            <div class="template-right">
+                <ul class="right-list">
+                    <li class="ns-bg-color active">首页</li>
+                    <li>个人中心</li>
+                    <li>商品详情</li>
+                </ul>
+                <div class="right-code">
+                    <div class="img">
+                        <img src="http://localhost/niushop_b2c_saas/upload/qrcode/diy/diy_qrcode_DIYVIEW_INDEX_1_h5.png" alt="">
+                    </div>
+                    <span>微信扫一扫，查看手机端效果</span>
+                </div>
+            </div>
+        </div>
+        <div class="template-operation ns-text-color">操作</div>
+        <input type="hidden" name="showTitle" value={{JSON.stringify(d.global.title)}}>
+        <input type="hidden" name="showValue" value={{JSON.stringify(d)}}>
+    </div>
+</script>
+<script>
+    var name = "{$template_val.templateInfo.name}";
+    $("body").on('click','.template-item .finsh',function () {
+        var data = JSON.parse($(this).parents('.template-item').find('input[name="templeCotent"]').val());
+
+        layui.use('laytpl', function(){
+            var laytpl = layui.laytpl;
+           laytpl($("#templateShow").html()).render(data.homePage,function (html) {
+               layer.open({
+                   type:1,
+                   title:name,
+                   area:['800px','653px'],
+                   content:html,
+               })
+           })
+        });
+
+    });
+
+    $("body").on('click','.template-operation',function () {
+        var value = $(this).parents(".template-box").find("input[name='showValue']").val();
+        var title = $(this).parents(".template-box").find("input[name='showTitle']").val();
+        $.ajax({
+            type: 'post',
+            url: ns.url("shop/diy/edit"),
+            data:{
+                name: '{$data.name}',
+                title: title,
+                value: value
+            },
+            dataType: 'JSON',
+            success: function(res) {
+                console.log(res)
+                if (res.code >= 0){
+                    location.href = ns.url("shop/diy/index");
+                }
+            }
+        });
+    });
+
+    $("body").on('click','.template-box .template-right .right-list li',function () {
+        $(this).addClass("ns-bg-color active").siblings().removeClass("ns-bg-color active");
+    })
+	document.getElementById('iframe').contentWindow.location.reload(true);	
+</script>
+
+{/block}

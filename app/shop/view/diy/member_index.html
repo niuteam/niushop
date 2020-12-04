@@ -1,0 +1,355 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="STATIC_EXT/color_picker/css/colorpicker.css"/>
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/member_icon/iconfont.css"/>
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/member_index.css"/>
+<link rel="stylesheet" href="STATIC_EXT/diyview/css/diyview.css"/>
+<style>
+	.ns-body-content {
+		padding-left: 0 !important;
+	}
+</style>
+{/block}
+{block name="main"}
+<div id="diyView">
+
+    <div class="preview-wrap">
+
+        <div class="preview-restore-wrap">
+	        <div class="dv-wrap">
+	            <div class='diy-view-wrap layui-form'>
+
+	                <div class="preview-head">
+	                    <span>会员中心</span>
+	                </div>
+
+	                <div class="preview-block">
+
+	                    <!-- 会员信息 -->
+	                    <div @click="currentIndex=0" class="draggable-element" :class="{selected: currentIndex == 0}">
+	                        <div class="member-info">
+	                            <div class="preview-draggable" :style="{backgroundColor:data.bgColor,backgroundImage: data.bgImg ?  'url(' + changeImgUrl(data.bgImg) + ')' : ''}">
+	                                <div class="info">
+	                                    <div class="info-img">
+	                                        <img src="STATIC_EXT/diyview/img/member_index/member_head.png" alt="">
+	                                    </div>
+	                                    <div class="info-content">
+	                                        <span class="info-name" :style="{color:data.textColor}">会员昵称</span>
+	                                        <span class="info-grad">会员等级</span>
+	                                    </div>
+	                                    <div class="info-set">
+	                                        <i class="iconfont icon-shezhi" :style="{color:data.textColor}"></i>
+	                                    </div>
+	                                </div>
+	                                <div class="wallet" :style="{color:data.textColor}">
+	                                    <div class="wallet-item wallet-balance">
+	                                        <span>0.00</span>
+	                                        <span>余额</span>
+	                                    </div>
+	                                    <span class="wallet-item-border"></span>
+	                                    <div class="wallet-item wallet-integral">
+	                                        <span>0</span>
+	                                        <span>积分</span>
+	                                    </div>
+	                                    <span class="wallet-item-border"></span>
+	                                    <div class="wallet-item wallet-discount-coupon">
+	                                        <span>0</span>
+	                                        <span>优惠券</span>
+	                                    </div>
+	                                </div>
+	                            </div>
+
+	                            <div class="edit-attribute" v-show="currentIndex == 0">
+	                                <div class="attr-wrap">
+	                                    <div class="restore-wrap">
+	                                        <h2 class="attr-title">会员信息</h2>
+
+		                                    <div class="layui-form-item">
+			                                    <label class="layui-form-label sm">页面风格</label>
+			                                    <div class="layui-input-block">
+				                                    <template v-for="(item,index) in topStyleList">
+					                                    <div @click="data.topStyle=item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (data.topStyle==item.value) }">
+						                                    <i class="layui-anim layui-icon">&#xe63f;</i>
+						                                    <div>{{item.text}}</div>
+					                                    </div>
+				                                    </template>
+			                                    </div>
+												<div class="ns-word-aux ns-diy-word-aux">系统风格跟随商城风格进行整体变化</div>
+		                                    </div>
+		                                    <template v-if="data.topStyle == topStyleList[1].value">
+												<div class="diy-text-color">
+													<color v-bind:data="{ field: 'textColor', label : '文字颜色', value:data.textColor }"></color>
+												</div>
+
+		                                        <div class="layui-form-item">
+		                                            <label class="layui-form-label sm">背景颜色</label>
+		                                            <div class="layui-input-block color-list">
+		                                                <div class="colorSelector" v-for="(item,index) in bgColorList" :key="index" :class="{'selected':data.bgColor==item}">
+		                                                    <div :style="{background: item}" @click="data.bgColor=item"></div>
+		                                                </div>
+		                                                <div class="diy-color-wrap">
+		                                                    <color v-bind:data="{ field : 'bgColor', label : '', value:data.bgColor }" :class="{'selected':bgColorList.indexOf(data.bgColor)==-1}"></color>
+		                                                </div>
+		                                            </div>
+		                                        </div>
+
+		                                        <div class="layui-form-item">
+		                                            <label class="layui-form-label sm">背景图片</label>
+		                                            <div class="layui-input-block ns-img-upload">
+		                                                <img-sec-upload :data="{data:data,field:'bgImg'}"></img-sec-upload>
+		                                            </div>
+		                                            <div class="ns-word-aux ns-diy-word-aux">建议使用半透明图片，尺寸：750px * 332px</div>
+		                                        </div>
+		                                    </template>
+
+	                                    </div>
+	                                </div>
+	                            </div>
+
+	                        </div>
+	                    </div>
+
+	                    <!-- 订单信息 -->
+	                    <div class="draggable-element disabled">
+	                        <div class="order-info">
+	                            <div class="preview-draggable">
+	                                <div class="order-info-title">
+	                                    <span class="all-order">全部订单</span>
+	                                    <span class="check-order">查看全部订单<i class="iconfont icon-right"></i></span>
+	                                </div>
+	                                <ul class="order-info-content">
+	                                    <li class="content-item">
+	                                        <div class="content-item-icon">
+	                                            <img src="{:img('upload/uniapp/member/index/order/default_order_1.png')}" alt="">
+	                                        </div>
+	                                        <span>待付款</span>
+	                                    </li>
+	                                    <li class="content-item">
+	                                        <div class="content-item-icon">
+	                                            <img src="{:img('upload/uniapp/member/index/order/default_order_2.png')}" alt="">
+	                                        </div>
+	                                        <span>待发货</span>
+	                                    </li>
+	                                    <li class="content-item">
+	                                        <div class="content-item-icon">
+	                                            <img src="{:img('upload/uniapp/member/index/order/default_order_3.png')}" alt="">
+	                                        </div>
+	                                        <span>等收货</span>
+	                                    </li>
+	                                    <li class="content-item">
+	                                        <div class="content-item-icon">
+	                                            <img src="{:img('upload/uniapp/member/index/order/default_order_4.png')}" alt="">
+	                                        </div>
+	                                        <span>待评价</span>
+	                                    </li>
+	                                    <li class="content-item">
+	                                        <div class="content-item-icon">
+	                                            <img src="{:img('upload/uniapp/member/index/order/default_order_5.png')}" alt="">
+	                                        </div>
+	                                        <span>退款</span>
+	                                    </li>
+	                                </ul>
+	                            </div>
+	                        </div>
+	                    </div>
+
+	                    <!-- 会员等级 -->
+						<div class="draggable-element" @click="currentIndex=1" :class="{selected: currentIndex == 1}">
+							<div  class="draggable-element disabled">
+								<div class="member-grade">
+									<div class="preview-draggable">
+										<div class="grade-icon">
+											<i></i>
+											<span>白银会员</span>
+										</div>
+										<div class="member-equities">
+											<span>会员等级更多权益</span>
+											<i></i>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="edit-attribute" v-show="currentIndex == 1">
+								<div class="attr-wrap">
+									<div class="restore-wrap">
+										<h2 class="attr-title">会员等级</h2>
+										<div class="layui-form-item">
+											<label class="layui-form-label sm">显示状态</label>
+											<div class="layui-input-block">
+												<div @click="data.level=1" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : data.level==1 }">
+													<i class="layui-anim layui-icon">&#xe63f;</i>
+													<div>显示</div>
+												</div>
+												<div @click="data.level=0" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : data.level==0 }">
+													<i class="layui-anim layui-icon">&#xe63f;</i>
+													<div>隐藏</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+	                    <!-- 常用工具 -->
+	                    <div @click="currentIndex=3" class="draggable-element" :class="{selected: currentIndex == 3}">
+	                        <div class="common-tools">
+	                            <div class="preview-draggable">
+	                                <div class="tools-title">
+	                                    <span>常用工具</span>
+	                                </div>
+	                                <ul class="tools-list" :class="[data.menuStyle, parseInt(data.insertGap) ? 'insert-gap' : '']">
+<!--		                                data.menuList-->
+	                                    <li class="tools-item" v-for="item in handleMenuList" v-if="item.isShow == 1">
+	                                        <div class="tools-item-icon">
+	                                            <img :src="changeImgUrl(item.img)" alt="">
+	                                        </div>
+	                                        <span>{{item.text}}</span>
+		                                    <i class="iconfont icon-right" v-if="data.menuStyle=='list'"></i>
+	                                    </li>
+	                                </ul>
+	                            </div>
+
+	                            <div class="edit-attribute" style="display: none" v-show="currentIndex == 3">
+	                                <div class="attr-wrap">
+	                                    <div class="restore-wrap">
+	                                        <h2 class="attr-title">常用工具</h2>
+
+	                                        <div class="layui-form-item">
+	                                            <label class="layui-form-label sm">样式</label>
+	                                            <div class="layui-input-block">
+	                                                <template v-for="(item,index) in menuStyleList">
+	                                                    <div @click="data.menuStyle=item.value" :class="{ 'layui-unselect layui-form-radio' : true,'layui-form-radioed' : (data.menuStyle==item.value) }">
+	                                                        <i class="layui-anim layui-icon">&#xe63f;</i>
+	                                                        <div>{{item.text}}</div>
+	                                                    </div>
+	                                                </template>
+	                                            </div>
+	                                        </div>
+
+	                                        <div class="layui-form-item" v-show="data.menuStyle == menuStyleList[1].value">
+	                                            <label class="layui-form-label sm">插入间隔</label>
+	                                            <div class="layui-input-block">
+	                                                <div class="layui-unselect layui-form-switch" @click="data.insertGap=data.insertGap == 1 ? 0 : 1" :class="{ 'layui-form-onswitch' : (data.insertGap == 1) }">
+	                                                    <em></em>
+	                                                    <i></i>
+	                                                </div>
+	                                            </div>
+	                                        </div>
+
+		                                    <div class="menu-list">
+			                                    <ul>
+				                                    <li v-for="(item,index) in data.menuList" :data-index="index" :data-sort="index">
+					                                    <div class="layui-unselect layui-form-checkbox" lay-skin="primary" :class="{ 'layui-form-checked' : (item.isShow == 1) }" @click="item.isShow= item.isShow == 1 ? 0 : 1">
+						                                    <i class="layui-icon layui-icon-ok"></i>
+					                                    </div>
+	                                                    <div class="info-wrap" >
+	                                                        <span>{{item.text}}</span>
+		                                                    <span v-if="item.remark" class="tips">（{{item.remark}}）</span>
+	                                                    </div>
+					                                    <i class="iconfont icon-delete" title="删除" @click="deleteMenu(index)" v-if="item.isSystem == 0"></i>
+					                                    <i class="iconfont icon-bianji" title="编辑" @click="editMenu(index)"></i>
+				                                    </li>
+			                                    </ul>
+			                                    <button class="layui-btn layui-btn-primary sm" @click="addMenu()">添加菜单</button>
+		                                    </div>
+
+	                                    </div>
+	                                </div>
+	                            </div>
+
+	                        </div>
+	                    </div>
+
+	                </div>
+
+	            </div>
+	        </div>
+        </div>
+    </div>
+
+    <div class="custom-save">
+        <button class="layui-btn ns-bg-color" @click="save">保存</button>
+    </div>
+
+</div>
+{if condition="!empty($info)"}
+<input type="hidden" id="info" value='{$info}' />
+{/if}
+<script type="text/html" id="editMenuHtml">
+	<div class="layui-form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">菜单名称：</label>
+			<div class="layui-input-block">
+				<input type="text" name="menu_text" value="{{d.text ? d.text : ''}}" lay-verify="required" placeholder="请输入菜单名称" maxlength="10" class="layui-input ns-len-short">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">菜单图标：</label>
+			<div class="layui-input-block img-upload">
+				<div class="upload-img-block">
+					<div class="upload-img-box" id="menuImgUpload">
+						{{# if(d.img){ }}
+						<img src="{{ns.img(d.img)}}" />
+						{{# }else{ }}
+						<div class="ns-upload-default">
+							<img src="SHOP_IMG/upload_img.png" />
+						</div>
+						{{# } }}
+					</div>
+					<input type="hidden" name="menu_img" value="{{d.img ? d.img : ''}}"/>
+					{{# if(d.img){ }}
+					<i class="del show">x</i>
+					{{# }else{ }}
+					<i class="del">x</i>
+					{{# } }}
+				</div>
+			</div>
+
+			<div class="ns-word-aux sm">
+				<p>建议尺寸100px*100px</p>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">跳转链接</label>
+			<div class="layui-input-block">
+				{{# if(d.link && d.link.title){ }}
+				<span class="js-select-link-text">{{d.link.title}}</span>
+				{{# }else{ }}
+				<span class="js-select-link-text" style="display: none;"></span>
+				{{# } }}
+				<button class="layui-btn layui-btn-primary sm" onclick="selectLink({{d.i}})">选择</button>
+			</div>
+		</div>
+
+	</div>
+
+</script>
+{/block}
+{block name="script"}
+<script>
+    var post = '{$app_module}';
+    var height = $(window).height();// 自适应全屏，调整高度
+    var commonHeight = height - 214;
+    $(".preview-wrap .preview-restore-wrap .dv-wrap").css("height", (commonHeight) + "px");
+    $(".edit-attribute .attr-wrap").css("height", (commonHeight) + "px");
+    $(".preview-block").css("min-height", (commonHeight - 120) + "px");
+
+    var form,laytpl;
+    layui.use(['form', 'laytpl'], function() {
+        form = layui.form;
+        laytpl = layui.laytpl;
+    });
+</script>
+<script src="STATIC_JS/vue.js"></script>
+<script src="STATIC_EXT/color_picker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/colorPicker/js/colorpicker.js"></script>
+<script src="STATIC_EXT/jquerycolorpicker/js/paigusu.min.js"></script>
+<script src="STATIC_EXT/diyview/js/ddsort.js"></script>
+<script src="STATIC_EXT/diyview/js/components.js"></script>
+<script src="STATIC_EXT/diyview/js/member_index.js"></script>
+{/block}

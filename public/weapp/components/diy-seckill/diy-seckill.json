@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-empty": "/components/ns-empty/ns-empty"
+  }
+}

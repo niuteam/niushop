@@ -1,0 +1,215 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.coupon-list {
+		padding: 0 20px;
+	}
+</style>
+{/block}
+{block name="body"}
+<div class="coupon-list">
+	<div class="ns-single-filter-box">
+		<div class="layui-form">
+			<div class="layui-input-inline">
+				<input type="text" name="coupon_name" placeholder="请输入优惠券名称" class="layui-input">
+				<button type="button" class="layui-btn layui-btn-primary" lay-submit lay-filter="search">
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 列表 -->
+	<table id="coupon_list" lay-filter="coupon_list"></table>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="checkbox">
+	{{# if($.inArray(d.coupon_type_id.toString(), selected_id_arr) != -1){ }}
+	<input type="checkbox" data-coupon-id="{{d.coupon_type_id}}" name="coupon_checkbox" lay-skin="primary" lay-filter="coupon_checkbox" checked>
+	{{# }else{ }}
+	<input type="checkbox" data-coupon-id="{{d.coupon_type_id}}" name="coupon_checkbox" lay-skin="primary" lay-filter="coupon_checkbox">
+	{{# } }}
+	<input type="hidden" data-coupon-id="{{d.coupon_type_id}}" name="coupon_json" value='{{ JSON.stringify(d) }}' />
+</script>
+
+<script>
+	var table, form, laytpl,
+		select_id = "{$select_id}", //选中商品id
+		selected_id_arr = select_id.length ? select_id.split(',') : [],
+		select_list = []; //选中商品所有数据
+		
+		goodsIdArr = [],
+		goodsIdArr = selected_id_arr;
+	
+	$(function () {
+		layui.use(['form', 'laytpl'], function () {
+			form = layui.form;
+			laytpl = layui.laytpl;
+
+			table = new Table({
+				elem: '#coupon_list',
+				url: ns.url("coupon://shop/coupon/couponSelect"),
+				cols: [
+					[
+						{
+							unresize: 'false',
+							width: '10%',
+							templet: '#checkbox'
+						}, {
+							field: 'coupon_name',
+							title: '优惠券名称',
+							unresize: 'false',
+							width: '20%'
+						}, {
+						    field: 'reward',
+						    title: '优惠券类型',
+						    unresize: 'false',
+						    width: '20%',
+						    templet: function(data) {
+						        if(data.type == 'reward'){
+						            return '满减';
+								}else{
+						            return '折扣';
+						        }
+						    }
+						}, {
+						    title: '<span style="padding-right: 15px;">优惠金额/折扣</span>',
+						    unresize: 'false',
+						    width: '20%',
+							align: 'right',
+							templet: function(data) {
+						        if(data.type == 'reward'){
+						            return '<span style="padding-right: 15px;">￥'+ data.money +'</span>';
+								}else{
+						            return '<span style="padding-right: 15px;">'+ data.discount +'折</span>';
+								}
+							}
+						}, {
+						    unresize: 'false',
+						    width: '10%'
+						}, {
+						    field: 'count',
+						    title: '发放数量',
+						    unresize: 'false',
+						    width: '20%'
+						}
+					]
+				],
+				callback : function () {
+					// 更新商品复选框状态
+					for (var i=0;i<goodsIdArr.length;i++) {
+						var selected_coupons = $("input[name='coupon_checkbox'][data-coupon-id='" + goodsIdArr[i] + "']");
+						
+						if (selected_coupons.length) {
+							$("input[name='coupon_checkbox'][data-coupon-id='" + goodsIdArr[i] + "']").prop("checked", true);
+						}
+					}
+					
+					form.render();
+					initData();
+				}
+
+			});
+
+			/**
+			 * 监听搜索
+			 */
+			form.on('submit(search)', function (data) {
+				table.reload({
+					page: {
+						curr: 1
+					},
+					where: data.field
+				});
+			});
+
+			// 勾选商品
+			form.on('checkbox(coupon_checkbox)', function(data) {
+				var coupon_id = $(data.elem).attr("data-coupon-id"), json = {};
+				form.render();
+				
+				var couponLen = $("input[name='coupon_checkbox'][data-coupon-id="+ coupon_id +"]:checked").length;
+				if (couponLen){
+					json = JSON.parse($("input[name='coupon_json'][data-coupon-id="+ coupon_id +"]").val());
+					delete json.LAY_INDEX;
+					delete json.LAY_TABLE_INDEX;
+					delete json.create_time;
+					select_list.push(json);
+					goodsIdArr.push(coupon_id);
+				} else{
+					select_list.remove(coupon_id);
+					goodsIdArr.remove(coupon_id);
+				}
+			});
+
+
+
+			//初始化数据
+			function initData(){
+				var couponLen = $("input[name='coupon_checkbox'][data-coupon-id]:checked").length;
+				
+				for (var i = 0; i < couponLen; i++){
+					var couponId = $("input[name='coupon_checkbox'][data-coupon-id]:checked").eq(i).attr("data-coupon-id");
+					var ident = false;
+					for (var k = 0; k < select_list.length; k++){
+						if(select_list[k].coupon_type_id == couponId){
+							ident = true;
+							break;
+						}
+					}
+
+					if (ident) return;
+					json = JSON.parse($("input[name='coupon_json'][data-coupon-id="+ couponId +"]").val());
+					delete json.LAY_INDEX;
+					delete json.LAY_TABLE_INDEX;
+					delete json.create_time;
+					
+					select_list.push(json);
+				}
+			}
+		});
+	});
+
+
+	function selectGoods(callback) {
+		var res = select_list;
+		callback(res);
+	}
+
+	Array.prototype.indexOf = function(val) {
+		for (var i = 0; i < this.length; i++) {
+			if (this[i].coupon_type_id){
+				if (this[i].coupon_type_id == parseInt(val)) return i;
+			} else {
+				if (this[i] == val) return i;
+			}
+		}
+		return -1;
+	};
+
+	Array.prototype.remove = function(val) {
+		var index = this.indexOf(val);
+		if (index > -1) {
+			this.splice(index, 1);
+		}
+	};
+
+	select_list.__proto__ = Array.prototype;
+
+
+	function removeDuplicates(arr){
+		if (!Array.isArray(arr)) {
+			console.log('type error!')
+			return
+		}
+		var array = [];
+		for (var i = 0; i < arr.length; i++) {
+			if (array.indexOf(arr[i]) === -1) {
+				array.push(arr[i])
+			}
+		}
+		return array;
+	};
+</script>
+{/block}

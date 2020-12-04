@@ -1,0 +1,111 @@
+
+.user_info{
+	position: relative;
+	/*     margin-left: 80px;
+        margin-right: 215px; */
+}
+.message_info{
+	margin-left:80px;
+	margin-right:80px;
+	width:auto;
+}
+.user_info .avatar{
+	position: absolute;
+	top: 0;
+	left:16px;
+}
+.user_info img{
+	width: 48px;
+	height: 48px;
+
+}
+
+.layui-table .layui-table-cell{
+	padding:1px;
+}
+.layui-table thead tr{
+	display:none;
+}
+.message_content{
+
+	padding-top: 2px;
+	padding-bottom: 2px;
+	color: #8d8d8d;
+	word-wrap: break-word;
+	word-break: break-all;
+	white-space:normal;
+}
+.layui-icon-reply-fill:hover{
+	color:#393D49 !important;
+}
+.headimg{
+	width:80px;
+}
+.message_list{
+	font-size:14px;
+	min-height: 46px;
+/* 	border: 1px solid #e7e7eb; 
+	padding: 15px;*/
+}
+.message_time{
+	margin-top: 0;
+	color: #8d8d8d;
+}
+.layui-table tbody tr:hover,.layui-table-click{
+	background-color:#FFF;
+}
+.layui-table tbody tr{
+	border:none;
+}
+.reply-box{
+	display:none;
+	border-top:1px solid #e7e7eb;
+	padding-top:15px;
+	padding-left:80px;
+	padding-right:80px;
+}
+.reply-box textarea{
+
+}
+.layui-table-header{
+	border:none;
+}
+.reply-button{
+	padding-top:15px;
+}
+.reply-button button{
+	min-width:100px;
+}
+.userinfo-box-headimg{
+	float: left;
+	width: 230px;
+	height: 230px;
+	margin-right: 20px;
+}
+.userinfo-box-user-info{
+	overflow: hidden;
+	height: 230px;
+	position: relative;
+}
+.userinfo-box-user-info-title{
+	width:20px;
+	margin-right:10px;
+	color: #8d8d8d;
+}
+.userinfo-box-user-info-content{
+	font-weight:normal;
+}
+.layui-layer-tips{
+	width:auto !important;
+}
+.userinfo-box-user-info .layui-card-body{
+	color: #333;
+	height: 32px;
+	line-height: 32px;
+}
+.userinfo-box-user-info-header-title{
+	margin-right:200px;
+}
+.layui-tab-title{
+	margin-bottom:15px;
+}

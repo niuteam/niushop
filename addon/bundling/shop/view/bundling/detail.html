@@ -1,0 +1,63 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-table[lay-skin=line] {border-width: 0;}
+	.layui-table {margin: 15px 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="ns-detail-card ns-tips">
+	<div class="ns-detail-con">
+		<p class="ns-detail-line">
+			<span class="ns-goods-name">{$info.data.bl_name}</span>
+			<span class="ns-text-color">（{$info.data.status == 1 ? '开启' : '关闭'}）</span>
+		</p>
+		<p class="ns-detail-line">
+			<span>套餐价格：￥{$info.data.bl_price}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<span>原价：￥{$info.data.goods_money}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<span>节省价：￥{$info.data.goods_money - $info.data.bl_price}</span>
+		</p>
+		<p class="ns-detail-line">运费承担：{$info.data.shipping_fee_type == 1 ? '卖家承担运费' : '买家承担运费（快递）'}</p>
+	</div>
+</div>
+
+<table class="layui-table" id="goods" lay-skin="line" lay-size="lg">
+	<colgroup>
+		<col width="60%">
+		<col width="20%">
+		<col width="20%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th>商品名称</th>
+			<th style="text-align: right;">价格</th>
+			<th style="text-align: right;">优惠价</th>
+		</tr>
+	</thead>
+	<tbody>
+		{foreach name=$info.data.bundling_goods as $k => $v}
+			<tr data-sku_id="{$v.sku_id}">
+				<td>
+					<div class="ns-table-title">
+					    <div class="ns-title-pic">
+							{if condition="$v.sku_image"}
+							<img layer-src src="{:img($v.sku_image,'small')}">
+							{else/}
+							<img layer-src src="" alt="">
+							{/if}
+					    </div>
+					    <div class="ns-title-content">
+					        <p class="ns-multi-line-hiding">{$v.sku_name}</p>
+					    </div>
+					</div>
+					
+				</td>
+				<td class="price-one" align="right">￥{$v.price}</td>
+				<td align="right">￥{$v.promotion_price}</td>
+			</tr>
+		{/foreach}
+	</tbody>
+</table>
+{/block}
+{block name="script"}
+{/block}

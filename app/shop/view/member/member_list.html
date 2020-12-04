@@ -1,0 +1,1003 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-reason-box{display: none;width: 350px;box-sizing: border-box;padding: 20px;border: 1px solid #aaa;border-radius: 5px;background-color: #FFF;position: absolute;top: 50px;z-index: 999;color: #666;line-height: 30px;left: 0px;font-weight: normal;}
+	.ns-reason-box:before, .ns-reason-box:after{content: "";border: solid transparent;height: 0;position: absolute;width: 0;}
+	.ns-reason-box:before{border-width: 12px;border-bottom-color: #aaa;top: -12px;left: 43px;border-top: none;}
+	.ns-reason-growth:before{left: 56px;}
+	.ns-reason-box:after{border-width: 10px;border-bottom-color: #FFF;top: -20px;left: 45px;}
+	.ns-reason-growth:after{left: 58px;}
+	.ns-reason-box p{white-space: normal;line-height: 1.5;}
+	.layui-table-header{overflow: inherit;}
+	.layui-table-header .layui-table-cell{overflow: inherit;}
+	.ns-prompt-block.balance, .ns-prompt-block.growth {justify-content: flex-end;}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {margin-top: 0;}
+	.blacklist{background: #333;color: #fff;line-height: 1;padding: 3px 6px;border-radius: 3px;font-size: 12px;}
+</style>
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/member.css" />
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips" >
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>商城可以针对会员进行添加，编辑，锁定，调整账户等操作。</li>
+			<li>账户类型有用户名、手机、邮箱三种类型，筛选时可以选择其中一种类型并输入对应的内容进行筛选。</li>
+			<li>点击收起按钮可以将搜索面板隐收起，变成高级搜索按钮。</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 添加会员 -->
+<div class="ns-single-filter-box">
+	<button type="button" class="layui-btn ns-bg-color" onclick="window.location.href='{:addon_url("shop/member/addMember")}'">添加会员</button>
+</div>
+
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">账号</label>
+					<div class="layui-input-inline">
+						<select name="search_text_type">
+							<option value="username">用户名</option>
+							<option value="nickname">昵称</option>
+							<option value="mobile">手机号</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="用户名/昵称/手机号" autocomplete="off" class="layui-input ">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">成交次数</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_order_complete_num" id="start_order_complete_num" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="end_order_complete_num" id="end_order_complete_num" autocomplete="off">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">消费金额</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_order_complete_money" id="start_order_complete_money" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="end_order_complete_money" id="end_order_complete_money" autocomplete="off">
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">注册时间</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="reg_start_date" id="reg_start_date" placeholder="请输入开始时间" autocomplete="off" readonly>
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间" autocomplete="off" readonly>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">上次访问时间</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="last_login_time_start" id="last_login_time_start" placeholder="请输入开始时间" autocomplete="off" readonly>
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="last_login_time_end" id="last_login_time_end" placeholder="请输入结束时间" autocomplete="off" readonly>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">积分</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_point" id="start_point" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_point" id="end_point" autocomplete="off">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">余额</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_balance" id="start_balance" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="end_balance" id="end_balance" autocomplete="off">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">成长值</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_growth" id="start_growth" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" name="end_growth" id="end_growth" autocomplete="off">
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">会员等级</label>
+					<div class="layui-input-inline">
+						<select name="level_id">
+							<option value="">请选择</option>
+							{foreach $member_level_list as $member_level_list_k=> $member_level_list_v}
+							<option value="{$member_level_list_v.level_id}">{$member_level_list_v.level_name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">会员标签</label>
+					<div class="layui-input-inline">
+						<select name="label_id">
+							<option value="">请选择</option>
+							{foreach $member_label_list as $member_label_list_k=> $member_label_list_v}
+							<option value="{$member_label_list_v.label_id}">{$member_label_list_v.label_name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">来源渠道：</label>
+					<div class="layui-input-inline">
+						<select name="login_type">
+							<option value="">全部</option>
+							{foreach $order_from_list as $order_from_k => $order_from_v}
+							<option value="{$order_from_k}">{$order_from_v['name']}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">黑名单</label>
+					<div class="layui-input-inline">
+						<select name="status">
+							<option value="">请选择</option>
+							<option value="0">是</option>
+							<option value="1">否</option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">会员群体</label>
+					<div class="layui-input-inline">
+						<select name="cluster_id">
+							<option value="">请选择</option>
+							{foreach $member_cluster_list as $member_cluster_list_k=> $member_cluster_list_v}
+							<option value="{$member_cluster_list_v.cluster_id}" {if $member_cluster_list_v.cluster_id == $cluster_id}selected{/if}>{$member_cluster_list_v.cluster_name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="export">批量导出</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="member_list" lay-filter="member_list"></table>
+
+<!-- 用户信息 -->
+<script type="text/html" id="userdetail">
+	<div class='ns-table-title'>
+		<div class='ns-title-pic'>
+            <img layer-src src="{{ns.img(d.headimg)}}" onerror="this.src = 'SHOP_IMG/default_headimg.png' ">
+		</div>
+		<div class='ns-title-content'>
+			<p class="layui-elip">{{d.nickname}}</p>
+			{{# if (d.status == 0){ }}
+			<div>
+				<span class="blacklist">黑名单</span>
+			</div>
+			{{# } }}
+		</div>
+	</div>
+</script>
+
+<!-- 会员标签 -->
+<script id="member_label" type="text/html">
+	{{# if (d.member_label_name != null) { }}
+		{{# var arr = d.member_label_name.split(",") }}
+		<div id="member_label_dl">
+		{{# for (var index in arr) { }}
+			{{#  if (arr[index]){  }}
+			{{'<span>' + arr[index] + '</span>'}}
+			{{#  }  }}
+		{{# } }}
+		</div>
+	{{# } }}
+</script>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 1 ? '正常' : '锁定' }}
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="info">详情</a>
+		<a class="layui-btn" lay-event="more">更多</a>
+		<div class="more-operation">
+			{if $is_exit_fenxiao == 1}
+			<a class="operation" lay-event="change">上级分销商变更</a>
+			{/if}
+			<a class="operation" lay-event="set_label">设置标签</a>
+			<a class="operation" lay-event="reset_pass">重置密码</a>
+			<a class="operation" lay-event="recive_coupon">发放优惠券</a>
+			<a class="operation" lay-event="adjust_balance">调整余额</a>
+			<a class="operation" lay-event="adjust_integral">调整积分</a>
+			<a class="operation" lay-event="blacklist">黑名单</a>
+		</div>
+	</div>
+</script>
+
+<!-- 积分弹框html -->
+<script type="text/html" id="point">
+	<div class="layui-form integral-bounced">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前积分：</label>
+			<div class="layui-input-block ns-account-value">{{ parseInt(d.point) }}</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block amount">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前积分数相加不能小于0</span>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="savePoint">确定</button>
+		</div>
+
+		<input type="hidden" name="member_id" value="{{d.member_id}}" />
+		<input type="hidden" name="point" value="{{ d.point }}" />
+	</div>
+</script>
+
+<!-- 余额弹框html -->
+<script type="text/html" id="balance">
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前余额（不可提现）：</label>
+			<div class="layui-input-block ns-account-value">{{ d.balance }}</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">调整数额：</label>
+			<div class="layui-input-block">
+				<input type="number" value="0" placeholder="请输入调整数额" name="adjust_num" lay-verify="num" class="layui-input ns-len-short">
+			</div>
+			<span class="ns-word-aux">调整数额与当前不可提现余额相加不能小于0</span>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">备注：</label>
+			<div class="layui-input-block ns-len-long">
+				<textarea class="layui-textarea" name="remark" placeholder="请输入备注"></textarea>
+			</div>
+		</div>
+
+		<div class="ns-form-row">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="saveBalance">确定</button>
+		</div>
+
+		<input type="hidden" name="member_id" value="{{d.member_id}}" />
+		<input type="hidden" name="balance" value="{{ d.balance }}" />
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script type='text/javascript' src='SHOP_JS/member_list.js'></script>
+<script type="text/javascript">
+	var table, form, laytpl, laydate,
+		repeat_flag = false,
+		currentDate = new Date(),
+		minDate = "",
+		layer_pass,
+		upload,
+		layer_label;
+
+	layui.use(['form', 'laytpl', 'laydate', 'upload'], function() {
+		form = layui.form;
+		laytpl = layui.laytpl;
+		laydate = layui.laydate;
+		upload = layui.upload;
+		currentDate.setDate(currentDate.getDate() - 7);
+		form.render();
+
+		//注册开始时间
+		laydate.render({
+			elem: '#reg_start_date',
+			type: 'datetime'
+		});
+
+		//注册结束时间
+		laydate.render({
+			elem: '#reg_end_date',
+			type: 'datetime'
+		});
+
+        //上次访问开始时间
+        laydate.render({
+            elem: '#last_login_time_start',
+            type: 'datetime'
+        });
+
+        //上次访问结束时间
+        laydate.render({
+            elem: '#last_login_time_end',
+            type: 'datetime'
+        });
+
+		//允许上传的文件后缀
+		upload.render({
+			elem: '#member_file'
+			,url: ns.url("shop/member/file"),
+			accept: 'file',
+			exts: 'xlsx',
+			done: function(res){
+				if (res.code >= 0) {
+
+					$.ajax({
+						url: ns.url("shop/member/import"),
+						data: {
+							filename: res.data.name,
+							path:res.data.path
+						},
+						dataType: 'JSON',
+						type: 'POST',
+						success: function (res) {
+							layer.msg(res.message);
+							repeat_flag = false;
+							if (res.code == 0) table.reload();
+						}
+					});
+				}else{
+					layer.msg(res.message);
+				}
+			}
+		});
+		/**
+		 * 重新渲染结束时间
+		 * */
+		function reRender() {
+			$("#reg_end_date").remove();
+			$(".end-time").html('<input type="text" class="layui-input" name="reg_end_date" id="reg_end_date" placeholder="请输入结束时间">');
+			laydate.render({
+				elem: '#reg_end_date',
+				min: minDate
+			});
+		}
+
+        //积分
+        /* $("body").on("mousemove",".ns-point",function() {
+            $("body").find(".ns-point-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".ns-point",function() {
+            $("body").find(".ns-point-box").hide().stop(false, true);
+        }); */
+
+        //余额
+        /* $("body").on("mousemove",".ns-balance",function() {
+            $("body").find(".ns-balance-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".ns-balance",function() {
+            $("body").find(".ns-balance-box").hide().stop(false, true);
+        }); */
+
+        //成长值
+        /* $("body").on("mousemove",".ns-growth",function() {
+            $("body").find(".ns-growth-box").show().stop(false, true);
+        });
+        $("body").on("mouseout",".ns-growth",function() {
+            $("body").find(".ns-growth-box").hide().stop(false, true);
+        }); */
+
+		/**
+		 * 加载表格
+		 */
+		table = new Table({
+			elem: '#member_list',
+			url: ns.url("shop/member/memberList"),
+			where:{"cluster_id" : "{$cluster_id}"},
+			cols: [
+				[
+					{
+						width: "3%",
+						type: 'checkbox',
+						unresize: 'false'
+					}, {
+						field: 'userdetail',
+						title: '账户',
+						width: '15%',
+						unresize: 'false',
+						templet: '#userdetail'
+					}, {
+						field: 'member_level_name',
+						title: '会员等级',
+						width: '8%',
+						unresize: 'false'
+					}, {
+						field: 'parent_fenxiao_name',
+						title: '上级分销商',
+						width: '10%',
+						unresize: 'false',
+						hide: {$is_exit_fenxiao} ? false : true
+					}, {
+						field: 'point',
+						title: '{if !empty($point)}' +
+								'<div class="ns-prompt-block">' +
+									'积分' +
+									'<div class="ns-prompt">' +
+										'<i class="iconfont iconwenhao1 required ns-point"></i>'+
+										'<div class="ns-point-box ns-reason-box ns-prompt-box" >' +
+											'<div class="ns-prompt-con">' +
+												'{foreach $point as $k=>$v}' +
+												'<p>{$k+1}、{$v}</p>' +
+												'{/foreach}' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+								'</div>' +
+								'{else /} ' +
+								'积分' +
+								'{/if}',
+						width: '8%',
+						unresize: 'false',
+						align: 'left',
+						templet: function (data) {
+							return parseInt(data.point);
+						}
+					}, {
+						field: 'balance',
+						title: '{if !empty($balance)}'+
+								'<div class="ns-prompt-block balance">'+
+									'余额'+
+									'<div class="ns-prompt">' +
+										'<i class="iconfont iconwenhao1 required ns-balance"></i>' +
+										'<div class="ns-balance-box ns-reason-box ns-prompt-box">' +
+											'<div class="ns-prompt-con">' +
+												'{foreach $balance as $k=>$v}' +
+												'<p>{$k+1}、{$v}</p>' +
+												'{/foreach}' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+								'</div>' +
+								'{else /} ' +
+								'余额' +
+								'{/if}',
+						width: '8%',
+						unresize: 'false',
+						align: 'right',
+						templet: function(data) {
+							var balance = parseFloat(data.balance) + parseFloat(data.balance_money);
+							return '<span style="color: red;" title="'+ balance.toFixed(2) +'">￥' + balance.toFixed(2) + '</span>';
+						}
+					}, {
+						field: 'growth',
+						title: '{if !empty($growth)}'+
+								'<div class="ns-prompt-block growth">'+
+									'成长值'+
+									'<div class="ns-prompt">' +
+										'<i class="iconfont iconwenhao1 required ns-growth"></i>' +
+										'<div class="ns-growth-box ns-reason-box ns-reason-growth ns-prompt-box">' +
+											'<div class="ns-prompt-con">' +
+												'{foreach $growth as $k=>$v}' +
+												'<p>{$k+1}、{$v}</p>' +
+												'{/foreach}' +
+											'</div>' +
+										'</div>' +
+									'</div>' +
+								'</div>' +
+								'{else /} ' +
+								'成长值' +
+								'{/if}',
+						width: '10%',
+						unresize: 'false',
+						align: 'right'
+					}, {
+						field: 'member_label',
+						title: '标签',
+						width: '15%',
+						unresize: 'false',
+						templet: '#member_label'
+					}, {
+						field: 'reg-login',
+						title: '最后登录时间',
+						width: '12%',
+						unresize: 'false',
+						templet: function (data) {
+							return ns.time_to_date(data.last_login_time);
+						}
+					}, {
+						title: '操作',
+						width: '10%',
+						unresize: 'false',
+						toolbar: '#operation'
+					}
+				]
+			],
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		 table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'info': //编辑
+					location.href = ns.url("shop/member/editMember?member_id=" + data.member_id);
+					break;
+				case 'reset_pass': //重置密码
+					resetPassword(data);
+					break;
+				case 'adjust_balance': //调整余额
+					adjustBalance(data);
+					break;
+				case 'adjust_integral': //调整积分
+					adjustIntegral(data);
+					break;
+				case 'set_label': //设置标签
+					settingLabels(data.member_id);
+					break;
+				case 'more': //更多
+					$('.more-operation').css('display', 'none');
+					$(obj.tr).find('.more-operation').css('display', 'block');
+					break;
+                case 'change':
+                    var url = ns.url("fenxiao://shop/fenxiao/change", {member_id: data.member_id});
+                    //iframe层-父子操作
+                    var layerIndex = layer.open({
+                        title: "变更上级分销商",
+                        type: 2,
+                        area: ['1200px', '800px'],
+                        // btn: '保存',
+                        content: url,
+                        end: function () {
+                            location.reload();
+                        }
+                    });
+					break;
+				case 'recive_coupon': //发放优惠券
+					selectCoupon(data);
+                    break;
+                case 'blacklist': // 黑名单
+                	addBlacklist(data.member_id);
+                	break;
+			}
+		});
+
+		$(document).click(function(event) {
+			if ($(event.target).attr('lay-event') != 'more' && $('.more-operation').not(':hidden').length) {
+				$('.more-operation').css('display', 'none');
+			}
+		});
+
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function(obj) {
+			console.log("批量操作",obj);
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].member_id);
+					delMember(id_array.toString());
+					break;
+				case "setlabel":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].member_id);
+					settingLabels(id_array.toString());
+					break;
+			}
+		});
+
+		/**
+		 * 批量操作
+		 */
+		table.toolbar(function(obj) {
+
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].member_id);
+					delMember(id_array.toString());
+					break;
+				case "setlabel":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].member_id);
+					settingLabels(id_array.toString());
+					break;
+			}
+		});
+
+
+		/**
+		 * 重置密码
+		 */
+		function resetPassword(data) {
+			laytpl($("#pass_change").html()).render(data, function(html) {
+				layer_pass = layer.open({
+					title: '重置密码',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['550px'],
+					content: html,
+				});
+			});
+		}
+		// 调整余额
+		function adjustBalance(e){
+			laytpl($("#balance").html()).render(e, function(html) {
+				layer.open({
+					title: '调整余额（不可提现）',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['800px'],
+					content: html
+				});
+			});
+		}
+
+		//调整积分
+		function adjustIntegral(e){
+			laytpl($("#point").html()).render(e, function(html) {
+				layer.open({
+					title: '调整积分',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['800px'],
+					content: html
+				});
+			});
+		}
+		var repeat_flag_point = false;
+		form.on('submit(savePoint)', function(data) {
+			if (repeat_flag_point) return false;
+			repeat_flag_point = true;
+			var point = data.field.point;
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag_point = false;
+				return ;
+			}
+			if (point*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('积分不可以为负数');
+				repeat_flag_point = false;
+				return ;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustPoint"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag_point = false;
+
+					if (res.code == 0) {
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+
+		var repeat_flag_balance = false;
+		form.on('submit(saveBalance)', function(data) {
+			if (repeat_flag_balance) return false;
+			repeat_flag_balance = true;
+
+			var balance = data.field.balance;
+			if (data.field.adjust_num == 0) {
+				layer.msg('调整数值不能为0');
+				repeat_flag_balance = false;
+				return ;
+			}
+			if (balance*1 + data.field.adjust_num*1 < 0) {
+				layer.msg('当前余额（不可提现）不可以为负数');
+				repeat_flag_balance = false;
+				return ;
+			}
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/adjustBalance"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag_balance = false;
+
+					if (res.code == 0) {
+						layer.closeAll('page');
+						table.reload();
+					}
+				}
+			});
+		});
+
+
+
+		form.on('submit(repass)', function(data) {
+
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/modifyPassword"),
+				data: data.field,
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.closeAll('page');
+					}
+				}
+			});
+		});
+
+		/**
+		 * 设置标签
+		 */
+		function settingLabels(data) {
+
+			laytpl($("#label_change").html()).render(data, function(html) {
+				layer_label = layer.open({
+					title: '设置标签',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['450px'],
+					content: html,
+				});
+			});
+
+			form.render();
+		}
+
+		form.on('submit(setlabel)', function(obj) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			var field = obj.field;
+			var arr_id = [];
+
+			for (var prop in field) {
+				if (prop == 'member_ids') {
+					continue;
+				}
+				arr_id.push(field[prop]);
+			}
+
+			$.ajax({
+				type: "POST",
+				url: ns.url("shop/member/modifyLabel"),
+				data: {
+					'member_ids': field.member_ids,
+					'label_ids': arr_id.toString()
+				},
+				dataType: 'JSON',
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						table.reload();
+						layer.closeAll('page');
+					}
+				}
+			});
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+        /**
+         *  导出
+         */
+        form.on('submit(export)', function(data) {
+            location.href = ns.url("shop/member/exportMember",data.field);
+            return false;
+        });
+
+		$(".search-form").click(function() {
+			$(".layui-form-search").show();
+			$(this).hide();
+		});
+
+		$(".form-hide-btn").click(function() {
+			$(".layui-form-search").hide();
+			$(".search-form").show();
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			repass: function(value) {
+				if (value != $(".new_pass").val()) {
+					return "输入错误,两次密码不一致!";
+				}
+			}
+		});
+
+
+		/**
+		 * 发放优惠券
+		 */
+		function selectCoupon(data) {
+			laytpl($("#recive_coupon").html()).render(data, function(html) {
+				layer_coupon = layer.open({
+					title: '选择优惠券',
+					skin: 'layer-tips-class',
+					type: 1,
+					area: ['700px', '542px'],
+					content: html,
+				});
+				renderCoupon("", data.member_id);
+			});
+		}
+
+		function addBlacklist(member_ids) {
+			layer.confirm('加入黑名单后用户将强制退出无法登录，您确认要将用户加入黑名单吗？', function() {
+				$.ajax({
+					url: ns.url("shop/member/modifyStatus"),
+					data: {member_ids},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+			});
+		}
+	});
+
+	function closePass() {
+		layer.close(layer_pass);
+	}
+
+	function closeLabel() {
+		layer.close(layer_label);
+	}
+
+	function downloadMemberFile(){
+		location.href = ns.url("shop/member/downloadMemberFile");
+		return false;
+	}
+</script>
+
+<!-- 发放优惠券弹框 -->
+<script type="text/html" id="recive_coupon">
+	<div class="recive-coupon">
+		<div class="coupon-modal">
+			<div class="coupon-list all-coupon">
+				<div class="title ns-bg-color-gray">可选优惠券</div>
+				<div class="box"></div>
+			</div>
+			<button class="add">添加</button>
+			<div class="coupon-list selected-coupon">
+				<div class="title ns-bg-color-gray">已选优惠券</div>
+				<div class="box"></div>
+			</div>
+		</div>
+		<div class="modal-operation">
+			<button class="layui-btn ns-bg-color save-btn">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 重置密码弹框html -->
+<script type="text/html" id="pass_change">
+	<div class="layui-form" id="reset_pass" lay-filter="form">
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="required" class="layui-input ns-len-mid new_pass" maxlength="18">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label mid"><span class="required">*</span>确认新密码：</label>
+			<div class="layui-input-block">
+				<input type="password" name="password" lay-verify="repass|required" class="layui-input ns-len-mid" maxlength="18">
+			</div>
+			<div class="ns-word-aux mid">请再一次输入密码，两次输入密码须一致</div>
+		</div>
+
+		<div class="ns-form-row mid">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="repass">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closePass()">返回</button>
+		</div>
+
+		<input class="reset-pass-id" type="hidden" name="member_ids" value="{{d.member_id}}"/>
+	</div>
+</script>
+
+<!-- 设置标签弹框html -->
+<script type="text/html" id="label_change">
+	<div class="layui-form member-form" id="reset_label" lay-filter="form">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">标签：</label>
+			<div class="layui-input-block">
+				{foreach $member_label_list as $member_label_list_k => $member_label_list_v}
+				<input type="checkbox" name="label_id{$member_label_list_v.label_id}" value="{$member_label_list_v.label_id}" title="{$member_label_list_v.label_name}" lay-skin="primary">
+				{/foreach}
+			</div>
+		</div>
+
+		<div class="ns-form-row sm">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="setlabel">确定</button>
+			<button class="layui-btn layui-btn-primary" onclick="closeLabel()">返回</button>
+		</div>
+
+		<input class="reset-label-id" type="hidden" name="member_ids" value="{{d}}" />
+	</div>
+</script>
+
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="setlabel">设置标签</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="setlabel">设置标签</button>
+</script>
+{/block}

@@ -1,0 +1,352 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-layer-page .layui-layer-content { padding: 20px 30px; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>点击添加优惠券按钮可以添加优惠券，点击详情按钮可以查看优惠券详情</li>
+			<li>进行中的优惠券需先关闭才可进行删除操作</li>
+			<li>点击删除按钮会删除会员领取的优惠券，请谨慎操作</li>
+			<li>时间超过优惠券设置的结束时间或有效期限时，优惠券自动关闭</li>
+			<li>手动关闭优惠券后，用户将不能领取该优惠券，但是已经领取的优惠券（未到期）仍然可以使用</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 按钮容器 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加优惠券</button>
+</div>
+
+<!-- 筛选面板 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">优惠券名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="coupon_name" placeholder="请输入优惠券名称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">优惠券类型：</label>
+					<div class="layui-input-inline">
+						<select name="type">
+							<option value="">全部</option>
+							<option value="reward">满减</option>
+							<option value="discount">折扣</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">有效期限：</label>
+					<div class="layui-input-inline">
+						<select name="validity_type" lay-filter="validity_type">
+							<option value="">全部</option>
+							<option value="1">固定时间</option>
+							<option value="2">相对时间</option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-inline relative-time layui-hide">
+				    <div class="layui-input-inline ns-split">从发券</div>
+					<div class="layui-input-inline">
+						<input type="number" class="layui-input ns-len-short" lay-verify="int" id="start_day" placeholder="开始天数" autocomplete="off">
+					</div>
+					<div class="layui-input-inline ns-split">至</div>
+					<div class="layui-input-inline end-time">
+						<input type="number" class="layui-input ns-len-short" lay-verify="int" id="end_day" placeholder="结束天数" autocomplete="off">
+					</div>
+				</div>
+				<div class="layui-inline fixed-time layui-hide">
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" id="start_date" placeholder="开始时间" autocomplete="off" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+					<div class="layui-input-inline ns-split">&nbsp;&nbsp;-&nbsp;&nbsp;</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" class="layui-input" id="end_date" placeholder="结束时间" autocomplete="off" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+				</div>
+				<input type="hidden" class="layui-input" name="start_time">
+				<input type="hidden" class="layui-input" name="end_time">
+			</div>
+			
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab"  lay-filter="coupon_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		<li lay-id="1">进行中</li>
+		<li lay-id="-1">已关闭</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="coupon_list" lay-filter="coupon_list"></table>
+	</div>
+</div>
+
+<script type="text/html" id="validity">
+	{{#  if(d.validity_type == 0){  }}
+	失效期：{{ ns.time_to_date(d.end_time) }}
+	{{#  }else{  }}
+	领取后，{{ d.fixed_term }}天有效
+	{{#  }  }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+		<a class="layui-btn" lay-event="receive">领取记录</a>
+		<!-- 进行中 -->
+		{{#  if(d.status == 1){ }}
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="close">关闭</a>
+		{{#  } }}
+		<!-- 已结束 -->
+		{{#  if(d.status == 2){ }}
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{#  } }}
+		<!-- 已关闭 -->
+		{{#  if(d.status == -1){ }}
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+		{{#  } }}
+	</div>
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'laytpl','laydate', 'element'], function() {
+		var table,
+			form = layui.form,
+			laytpl = layui.laytpl,
+			element = layui.element,
+			laydate = layui.laydate,
+			validityType = 0,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(coupon_tab)', function(){
+			table.reload({
+                page: {curr: 1},
+                where: {'status': this.getAttribute('lay-id')},
+            })
+		});
+
+        table = new Table({
+            elem: '#coupon_list',
+            url: ns.url("coupon://shop/coupon/lists"),
+            cols: [
+                [{
+                    field: 'coupon_name',
+                    title: '优惠券名称',
+                    unresize: 'false',
+                    width: '15%'
+                },{
+                    field: 'reward',
+                    title: '优惠券类型',
+                    unresize: 'false',
+                    width: '8%',
+                    templet: function(data) {
+                        if(data.type == 'reward'){
+                            return '满减';
+						}else{
+                            return '折扣';
+                        }
+
+                    }
+                }, {
+                    title: '<span style="padding-right: 15px;">优惠金额/折扣</span>',
+                    unresize: 'false',
+                    width: '15%',
+					align: 'right',
+					templet: function(data) {
+                        if(data.type == 'reward'){
+                            return '<span style="padding-right: 15px;">￥'+ data.money +'</span>';
+						}else{
+                            return '<span style="padding-right: 15px;">'+ data.discount +'折</span>';
+						}
+
+					}
+
+                }, {
+                    field: 'count',
+                    title: '发放数量',
+                    unresize: 'false',
+                    width: '10%'
+                }, {
+                    title: '领取上限',
+                    unresize: 'false',
+                    width: '10%',
+					templet: function(data){
+						return data.max_fetch == 0 ? '无领取限制' : data.max_fetch + '张/人';
+					}
+                }, {
+                    title: '有效期限',
+                    unresize: 'false',
+                    templet: '#validity',
+                    width: '15%'
+                }, {
+                    field: 'status_name',
+                    title: '状态',
+                    unresize: 'false',
+                    width: '8%'
+                }, {
+                    title: '操作',
+                    toolbar: '#operation',
+                    unresize: 'false',
+                    width: '17%'
+                }]
+            ],
+        });
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("coupon://shop/coupon/edit", {"site_id": data.site_id, "coupon_type_id": data.coupon_type_id});
+					break;
+				case 'del': //删除
+					layer.confirm('确定要删除该优惠券吗?', function() {
+						if (repeat_flag) return false;
+						repeat_flag = true;
+						
+						$.ajax({
+							url: ns.url("coupon://shop/coupon/delete"),
+							data: data,
+							dataType: 'JSON',
+							type: 'POST',
+							success: function(res) {
+								layer.msg(res.message);
+								repeat_flag = false;
+
+								if (res.code == 0) {
+									table.reload();
+								}
+							}
+						});
+					}, function() {
+						layer.close();
+						repeat_flag = false;
+					});
+					break;
+				case 'close': //关闭
+					layer.confirm('确定要关闭吗?', function() {
+						if (repeat_flag) return false;
+						repeat_flag = true;
+						
+						$.ajax({
+							url: ns.url("coupon://shop/coupon/close", {"coupon_type_id": data.coupon_type_id}),
+							data: data,
+							dataType: 'JSON',
+							type: 'POST',
+							success: function(res) {
+								layer.msg(res.message);
+								repeat_flag = false;
+
+								if (res.code == 0) {
+									table.reload();
+								}
+							}
+						});
+					}, function() {
+						layer.close();
+						repeat_flag = false;
+					});
+					break;
+				case 'detail': //详情
+
+                    location.href = ns.url("coupon://shop/coupon/detail", {"coupon_type_id": data.coupon_type_id});
+					break;
+                case 'receive': //领取记录
+                    location.href = ns.url("coupon://shop/coupon/receive", {"coupon_type_id": data.coupon_type_id});
+			}
+		});
+
+		// 搜索
+		form.on('submit(search)', function(data) {
+			if(validityType == 2){
+				data.field.start_time = $("#start_day").val();
+				data.field.end_time = $("#end_day").val();
+			}
+			
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+		
+		form.on('select(validity_type)', function(data){
+			switch (data.value) {
+				case '':
+					$(".relative-time").addClass("layui-hide");
+					$(".fixed-time").addClass("layui-hide");
+					break;
+				case '1':
+					laydate.render({
+						elem: '#start_date', //指定元素
+						type: 'datetime',
+						done: function(value, date, endDate){
+							$("input[name='start_time']").val(ns.date_to_time(value));
+						}
+					});
+					laydate.render({
+						elem: '#end_date', //指定元素
+						type: 'datetime',
+						done: function(value, date, endDate){
+							$("input[name='end_time']").val(ns.date_to_time(value));
+						}
+					});
+					$(".relative-time").addClass("layui-hide");
+					$(".fixed-time").removeClass("layui-hide");
+					break;
+				case '2':
+					validityType = 2;
+					$(".relative-time").removeClass("layui-hide");
+					$(".fixed-time").addClass("layui-hide");
+					break;
+			}
+		});
+		
+		form.verify({
+			int: function(value) {
+				if (value < 0) {
+					return '发券天数不能小于0！';
+				}
+			}
+		})
+	});
+	
+	function add() {
+		location.href = ns.url("coupon://shop/coupon/add");
+	}
+</script>
+{/block}

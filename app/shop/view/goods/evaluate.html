@@ -1,0 +1,324 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" type="text/css" href="SHOP_CSS/evaluate.css" />
+<style>
+	.layui-table {
+		margin: 15px 0;
+	}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>会员购买商品之后可以针对购买的商品进行评价或者追评</li>
+			<li>商品评价之后会在前台的商品详情中进行显示</li>
+			<li>商家可以针对会员的商品评价进行回复</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">选择：</label>
+					<div class="layui-input-inline">
+						<select name="search_type">
+							<option value="">请选择搜索类型</option>
+							<option value="sku_name">商品名称</option>
+							<option value="member_name">评价人名称</option>
+						</select>
+					</div>
+					<div class="layui-input-inline">
+						<input type="text" name="search_text" placeholder="商品名称/评价人名称" class="layui-input ns-len-mid" autocomplete="off">
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">评论时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="start_time" id="start_time" placeholder="开始时间" class="layui-input" autocomplete="off" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline end-time">
+						<input type="text" name="end_time" id="end_time" placeholder="结束时间" class="layui-input" autocomplete="off" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">评价类型：</label>
+					<div class="layui-input-inline">
+						<select name="explain_type">
+							<option value="">请选择评分类型</option>
+							<option value="1">好评</option>
+							<option value="2">中评</option>
+							<option value="3">差评</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" name="goods_id" value="{$goods_id}">
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="ns-table-bottom layui-table-bottom-tool-temp layui-form" style="float: left;border: none; padding-left: 15px;">
+	<input type="checkbox" name="check_all" lay-skin="primary" lay-filter="check_all">
+	<button class="layui-btn layui-btn-primary js-audit-pass" data-is-audit="1">批量通过</button>
+	<button class="layui-btn layui-btn-primary js-audit-refuse" data-is-audit="-1">批量拒绝</button>
+</div>
+<table class="layui-table ns-evaluate-table layui-form" lay-skin="line" lay-size="lg">
+	<colgroup>
+		<col width="45%">
+		<col width="30%">
+		<col width="10%">
+		<col width="15%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th><input type="checkbox" name="check_all" lay-skin="primary" lay-filter="check_all" />评论内容</th>
+			<th>商品信息</th>
+			<th>审核状态</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+
+<div class="ns-table-bottom layui-table-bottom-tool-temp layui-form" style="float: left;border: none; padding-left: 15px;">
+	<input type="checkbox" name="check_all" lay-skin="primary" lay-filter="check_all">
+	<button class="layui-btn layui-btn-primary js-audit-pass" data-is-audit="1">批量通过</button>
+	<button class="layui-btn layui-btn-primary js-audit-refuse" data-is-audit="-1">批量拒绝</button>
+</div>
+<div id="laypage"></div>
+{/block}
+{block name="script"}
+<script>
+	var SHOPIMG = "SHOP_IMG";
+</script>
+<script src="SHOP_JS/evaluate.js"></script>
+<script>
+	var limit = 2;
+	var evaluate = new Evaluate(limit, [2, 4, 6]);
+	var goods_id = "{$goods_id}";
+	evaluate.getList({
+		"_this": evaluate,
+		"goods_id" : goods_id,
+
+	});
+	evaluate.pageInit({
+		"_this": evaluate,
+		"goods_id" : goods_id,
+	});
+
+	layui.use(['form', 'laydate'], function() {
+		var form = layui.form,
+			laydate = layui.laydate;
+		currentDate = new Date(),
+			minDate = "";
+		form.render();
+
+		currentDate.setDate(currentDate.getDate() - 7);
+
+		form.on('checkbox(check_all)', function(data){
+			$("input[name='evaluate']").prop("checked",data.elem.checked);
+			$("input[name='check_all']").prop("checked",data.elem.checked);
+			form.render();
+		});
+
+		form.on('checkbox(evaluate)', function(data){
+			if($("input[name='evaluate']:checked").length == limit){
+				$("input[name='check_all']").prop("checked",true);
+			} else {
+				$("input[name='check_all']").prop("checked",false);
+			}
+			form.render();
+		});
+
+		$(".js-audit-pass,.js-audit-refuse").click(function () {
+			var evaluate_ids = [];
+			var is_audit = $(this).attr("data-is-audit");
+			$("input[name='evaluate']:checked").each(function () {
+				evaluate_ids.push($(this).val());
+			});
+
+			if(evaluate_ids.length<1) {
+				layer.msg("请选择要操作的数据");
+				return;
+			}
+			modifyAuditEvaluate(evaluate_ids.toString(),is_audit);
+		});
+
+		//开始时间
+		laydate.render({
+			elem: '#start_time',
+			type: 'datetime'
+		});
+
+		//结束时间
+		laydate.render({
+			elem: '#end_time',
+			type: 'datetime'
+		});
+
+		/**
+		 * 重新渲染结束时间
+		 */
+		function reRender() {
+			$("#end_time").remove();
+			$(".end-time").html('<input type="text" class="layui-input" placeholder="结束时间" name="end_time" id="end_time" >');
+			laydate.render({
+				elem: '#end_time',
+				type: 'datetime',
+				min: minDate
+			});
+		}
+
+		/**
+		 * 搜索
+		 */
+		form.on('submit(search)', function(data) {
+			var evaluate = new Evaluate(2, [2, 4, 6]);
+			evaluate.getList({
+				"_this": evaluate,
+				"search_type": data.field.search_type,
+				"search_text": data.field.search_text,
+				"explain_type": data.field.explain_type,
+				"start_time": data.field.start_time,
+				"end_time": data.field.end_time,
+				"goods_id" : data.field.goods_id
+			});
+			evaluate.pageInit({
+				"_this": evaluate,
+				"search_type": data.field.search_type,
+				"search_text": data.field.search_text,
+				"explain_type": data.field.explain_type,
+				"start_time": data.field.start_time,
+				"end_time": data.field.end_time,
+				"goods_id" : data.field.goods_id
+			});
+			return false;
+		});
+	});
+
+	function replay(e) {
+		var input = $(e).parents("tr").prev().find(".evaluate_id");
+		var evaluate_id = input.val();
+		var isFirstExplain = input.attr("data-is-first-explain");
+
+		layer.prompt({
+			formType: 2,
+			value: '',
+			title: '请输入回复内容',
+			area: ['350px', '150px'] ,//自定义文本域宽高
+			yes: function(index, layero) {
+				var explain = layero.find(".layui-layer-input").val();
+				
+				if (explain) {
+					$.ajax({
+						url: ns.url("shop/goods/evaluateapply"),
+						data: {
+							evaluate_id: evaluate_id,
+							explain: explain,
+							is_first_explain: isFirstExplain
+						},
+						dataType: 'JSON', //服务器返回json格式数据
+						type: 'POST', //HTTP请求类型
+						success: function(res) {
+							layer.msg(res.message);
+							
+							if (res.code == 0) {
+								layer.closeAll();
+								evaluate.getList({
+									"_this": evaluate
+								});
+							}
+						}
+					});
+					layer.close(index);
+				} else {
+					layer.msg('请输入回复内容!', {icon: 5, anim: 6});
+				}
+			}
+		});
+	}
+	
+	var repeat_flag = false;
+	function deleteContent(e, isFirst) {
+		var input = $(e).parents("tr").prev().find(".evaluate_id");
+		var evaluate_id = input.val();
+		
+		if(repeat_flag) return false;
+		repeat_flag = true;
+		
+		layer.confirm('确定要删除回复内容吗?', function() {
+			$.ajax({
+				url: ns.url("shop/goods/deleteContent"),
+				data: {
+					evaluate_id: evaluate_id,
+					is_first: isFirst
+				},
+				dataType: 'JSON', //服务器返回json格式数据
+				type: 'POST', //HTTP请求类型
+				success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						evaluate.getList({
+							"_this": evaluate
+						});
+		
+						layer.closeAll();
+					} else {
+						layer.closeAll();
+						layer.msg(res.message);
+					}
+				}
+			});
+		}, function () {
+			layer.close();
+			repeat_flag = false;
+		});
+	}
+
+	// 修改审核状态
+	function audit(e,is_audit) {
+		var input = $(e).parents("tr").prev().find(".evaluate_id");
+		var evaluate_id = input.val();
+		modifyAuditEvaluate(evaluate_id,is_audit);
+	}
+
+	function modifyAuditEvaluate(evaluate_ids,is_audit) {
+		$.ajax({
+			url: ns.url("shop/goods/modifyAuditEvaluate"),
+			data: {
+				evaluate_ids: evaluate_ids,
+				is_audit: is_audit
+			},
+			dataType: 'JSON', //服务器返回json格式数据
+			type: 'POST', //HTTP请求类型
+			success: function (res) {
+				layer.msg(res.message);
+				if (res.code == 0) {
+					evaluate.getList({
+						"_this": evaluate
+					});
+				}
+			}
+		});
+	}
+</script>
+{/block}

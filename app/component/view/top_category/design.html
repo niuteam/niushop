@@ -1,0 +1,105 @@
+<nc-component v-bind:data="data[index]" class="top-category">
+
+	<!-- 预览 -->
+	<template slot="preview">
+		<div class="preview-box" v-bind:style="{ backgroundColor : nc.backgroundColor}" style="margin: 0 15px;">
+			<div class="topCategorty" v-if="nc.styleType == 'line'">
+				<div class="top-categorty-item active" v-bind:style="{ color : nc.selectColor?nc.selectColor:'rgba(0,0,0,0)'}">
+					<p>{{nc.title}}</p>
+					<p class="line"  v-bind:style="{ background : nc.selectColor}"></p>
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类1
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类2
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类3
+				</div>
+			</div>
+			<div class="topCategorty fill" v-if="nc.styleType == 'fill'">
+				<div class="top-categorty-item" v-bind:style="{ background : nc.selectColor?nc.selectColor:'rgba(0,0,0,0)'}" style="border-radius: 50px;">
+					<p style="color: #fff;">{{nc.title}}</p>
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类1
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类2
+				</div>
+				<div class="top-categorty-item" v-bind:style="{ color : nc.nsSelectColor?nc.nsSelectColor:'rgba(0,0,0,0)'}">
+					商品分类3
+				</div>
+			</div>
+		</div>
+		
+	</template>
+
+	<!-- 编辑 -->
+	<template slot="edit">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">主页名称</label> 
+			<div class="layui-input-block">
+				<input type="text" v-model="nc.title" v-bind:id="'title_'+index" placeholder="请输入文本" class="layui-input">
+			</div>
+		</div>
+		<!-- <div class="template-edit-title">
+			<h3>显示样式</h3>
+			<i class="layui-icon layui-icon-down" onclick="closeBox(this)"></i>
+		</div> -->
+		
+		<div class="template-edit-wrap">
+			<template v-if="nc.lazyLoad">
+				<style-choose></style-choose>
+				<color v-bind:data="{ field : 'backgroundColor', 'label' : '背景颜色' }"></color>
+				<color v-bind:data="{ field : 'selectColor', 'label' : '选中颜色' }"></color>
+				<color v-bind:data="{ field : 'nsSelectColor', 'label' : '未选中颜色' }"></color>
+				<!-- <div class="layui-form-item">
+					<label class="layui-form-label sm">主页名称</label>
+					<div class="layui-input-block">
+						<input type="text" v-model="nc.title" v-bind:id="'title_'+index" placeholder="请输入文本" class="layui-input">
+					</div>
+				</div> -->
+			</template>
+		</div>
+
+		<!-- 弹框 -->
+		<div class="top-category-style">
+			<div class="style-list-top-category layui-form">
+				<div class="style-list-con-top-category">
+					<div class="style-li-top-category" v-bind:class="{'selected ns-border-color': nc.styleType == 'line'}">
+						<div class="style-list1">
+							<div v-bind:style="{color:nc.selectColor}">标签一<div class="line" v-bind:style="{background:nc.selectColor}"></div></div>
+							<div v-bind:style="{color:nc.nsSelectColor}">标签二</div>
+						</div>
+						<span class="title" data-type="line">线条标签</span>
+					</div>
+					<div class="style-li-top-category" v-bind:class="{'selected ns-border-color': nc.styleType == 'fill'}">
+						<div class="style-list2">
+							<div v-bind:style="{background:nc.selectColor}">标签一</div>
+							<div v-bind:style="{color:nc.nsSelectColor}">标签二</div>
+						</div>
+						<span class="title" data-type="fill">填充标签</span>
+					</div>
+				</div>
+
+				<input type="hidden" name="style">
+				<input type="hidden" name="style_name" />
+			</div>
+		</div>
+		
+	</template>
+
+	<!-- 资源 -->
+	<template slot="resource">
+
+		<js>
+			var topCategoryResourcePath = "{$resource_path}";
+		</js>
+		<css src="{$resource_path}/top_category/css/design.css"></css>
+		<js src="{$resource_path}/top_category/js/design.js"></js>
+
+	</template>
+
+</nc-component>

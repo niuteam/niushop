@@ -1,0 +1,65 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+
+{if $conflict_data.type == 'goods'}
+<div class="ns-detail-card ns-tips">
+	<div class="ns-detail-con">
+		<p class="ns-detail-line">同一活动时间内，同一个商品只可参加一个满减活动，当前活动中有<span class="conflict-num ns-red-color"></span>件商品与以下商品冲突</p>
+		<p class="ns-detail-line">活动类型：{$conflict_data.promotion}</p>
+		<p class="ns-detail-line">当前活动时间：{:time_to_date($conflict_data.start_time)} - {:time_to_date($conflict_data.end_time)}</p>
+	</div>
+</div>
+{/if}
+
+{if $conflict_data.type == 'activity'}
+<div class="ns-detail-card ns-tips">
+	<div class="ns-detail-con">
+		<p class="ns-detail-line">同一活动时间内，同一个店铺只能同时存在一个全选商品的满减/送活动</p>
+		<p class="ns-detail-line">当前活动与以下<span class="conflict-num ns-red-color"></span>个活动存在冲突</p>
+		<p class="ns-detail-line">当前活动时间：{:time_to_date($conflict_data.start_time)} - {:time_to_date($conflict_data.end_time)}</p>
+	</div>
+</div>
+{/if}
+
+<table id="goods_list"></table>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var table, list = [],
+			form = layui.form;
+		form.render();
+		
+		list = {:json_encode($conflict_data.list, JSON_UNESCAPED_UNICODE)};
+		$(".conflict-num").text(list.length);
+	
+		table = new Table({
+			elem: '#goods_list',
+			cols: [
+				[
+				{if $conflict_data.type == 'goods'}
+				{
+					field: 'goods_name',
+					title: '商品名称',
+					unresize: 'false',
+				}, 
+				{/if}
+				{
+					field: 'manjian_name',
+					title: '活动名称',
+					unresize: 'false',
+				}, {
+					title: '活动时间',
+					unresize: 'false',
+					templet: function(data) {
+						return ns.time_to_date(data.start_time) +'至'+ ns.time_to_date(data.end_time);
+					}
+				}]
+			],
+			data: list
+		});
+	});
+</script>
+{/block}

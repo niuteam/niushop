@@ -1,0 +1,105 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-single-filter-box {
+		background-color: transparent;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<ul class="layui-colla-content layui-show">
+			<li>文件名称：{$info.filename}</li>
+			<li>导入订单数：{$info.order_num}</li>
+			<li>成功数：<span style="color: green">{$info.success_num}</span> </li>
+			<li>失败数：<span style="color: red">{$info.error_num}</span></li>
+			<li>导入时间：{:date('Y-m-d H:is',$info.create_time)}</li>
+		</ul>
+	</div>
+</div>
+
+
+
+<div class="layui-tab ns-table-tab"  lay-filter="file_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" data-status="">全部</li>
+		<li data-status="0">成功</li>
+		<li data-status="-1">失败</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="file_list" lay-filter="file_list"></table>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script>
+	var table, form, element, repeat_flag = false;// 防重复标识
+	layui.use(['form', 'element'], function () {
+		form = layui.form;
+		element = layui.element;
+		form.render();
+
+        //监听Tab切换，以改变地址hash值
+        element.on('tab(file_tab)', function () {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    'status': this.getAttribute('data-status')
+                }
+            });
+        });
+
+		table = new Table({
+			elem: '#file_list',
+			url: ns.url("shop/orderimportfile/detail"),
+			where:{
+			  file_id:{$file_id}
+			},
+			cols: [
+				[{
+					field: 'order_no',
+					title: '订单编号',
+					unresize: 'false',
+					width:'15%',
+					templet:function(data){
+						if(data.order_id){
+							return '<a href="'+ns.url("shop/order/detail", {order_id:data.order_id})+'">'+data.order_no+'</a>';
+						}else{
+							return data.order_no;
+						}
+					}
+				}, {
+                    field: 'order_name',
+                    title: '订单内容',
+                    unresize: 'false'
+                }, {
+                    field: 'status',
+                    title: '状态',
+                    unresize: 'false',
+					width:'10%',
+					templet:function(data){
+						if(data.status == 0){
+							return '<span style="color:green">成功</span>';
+						}else{
+                            return '<span style="color:red">失败</span>';
+						}
+					}
+                }, {
+                    field:'reason',
+                    title: '失败原因',
+                    unresize: 'false',
+                    width:'20%'
+                }]
+			]
+
+		});
+
+	});
+
+</script>
+{/block}

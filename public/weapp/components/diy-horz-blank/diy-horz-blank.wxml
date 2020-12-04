@@ -1,0 +1,1 @@
+<view style="{{'background-color:'+(value.backgroundColor)+';'+('height:'+(value.height*2+'rpx')+';')+('margin:'+('0 '+value.marginLeftRight*2+'rpx')+';')}}"></view>

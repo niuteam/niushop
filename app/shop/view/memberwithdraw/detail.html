@@ -1,0 +1,145 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-form-row {
+		margin-top: 0;
+		margin-left: 220px;
+	}
+</style>
+{/block}
+{block name="main"}
+<div style="height:30px;"></div>
+
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <span class="ns-card-title">提现信息</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现状态：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.status_name}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">申请提现金额：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.apply_money}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现手续费：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.service_money}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现到账金额：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.money}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现申请时间：</label>
+            <div class="layui-input-block">
+                <p>
+                    {:time_to_date($withdraw_info.apply_time)}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现方式：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.transfer_type_name}
+                </p>
+            </div>
+        </div>
+
+        {if $withdraw_info.transfer_type == "bank"}
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">银行名称：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info['bank_name']}
+                </p>
+            </div>
+        </div>
+        {/if}
+
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">提现收款账号：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.account_number}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">真实姓名：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.realname}
+                </p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">手机号：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.mobile}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{if $withdraw_info['status'] == 2}
+<div class="layui-card ns-card-common ns-card-brief">
+    <div class="layui-card-header">
+        <span class="ns-card-title">转账信息</span>
+    </div>
+    <div class="layui-card-body">
+        {if !empty($withdraw_info['certificate'])}
+            <div class="layui-form-item">
+                <label class="layui-form-label img-upload-lable">转账凭证：</label>
+                <div class="layui-input-block img-upload">
+                    <div class="upload-img-block icon">
+                        <div class="upload-img-box" >
+                            <img layer-src src="{:img($withdraw_info['certificate'])}" alt="转账凭证"   />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {/if}
+        <div class="layui-form-item">
+            <label class="layui-form-label img-upload-lable">凭证说明：</label>
+            <div class="layui-input-block">
+                <p>
+                    {$withdraw_info.certificate_remark}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{/if}
+
+<div class="ns-form-row">
+	<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+</div>
+{/block}
+
+{block name="script"}
+<script>
+	function back() {
+		location.href = ns.url("shop/memberwithdraw/lists");
+	}
+</script>
+{/block}

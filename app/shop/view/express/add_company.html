@@ -1,0 +1,465 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.design-sketch{width: 766px;height: 510px;border: 1px solid #ccc;}
+	.design-sketch div{display: inline-block;border: 1px solid #ccc;padding: 10px;margin: 8px;border-radius: 2px;color: #555;white-space: nowrap;user-select: none;background-color: #fff;line-height: 1;}
+	.design-sketch div i{position: absolute;top: -10px;right: -10px;display: none;width: 20px;height: 20px;border-radius: 10px;background-color: rgba(0, 0, 0, .5);color: #FFFFFF;text-align: center;line-height: 20px;z-index: 99;}
+	.print-option{display: inline-block;border: 1px solid;line-height: 1;padding: 10px;margin-left: 5px;margin-bottom: 8px;border-radius: 2px;color: #545454;cursor: pointer;}
+	.ns-form-row{margin-top: 0;margin-left: 220px;}
+	.express-sheet-rule .ns-form-row{margin-left: 200px;}
+	.ns-border-color-gray{border-color: #E5E5E5!important;}
+	.ns-bg-color-gray{background-color: #E5E5E5!important;}
+	.ns-discount {margin-bottom: 15px; display: flex; justify-content: space-between; height: 34px; line-height: 34px; padding: 5px 15px;background-color: #F6FBFD; border: 1px dashed #BCE8F1; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form">
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">物流公司信息</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label"><span class="required">*</span>物流公司名称：</label>
+				<div class="layui-input-inline">
+					<input type="text" name="company_name" lay-verify="required" class="layui-input ns-len-long">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label img-upload-lable ns-short-label">物流公司LOGO：</label>
+				<div class="layui-input-inline">
+					<div class="upload-img-block">
+						<div class="upload-img-box">
+							<div class="ns-upload-default"  id="companyLOGO">
+								<div class="upload">
+									<img src="SHOP_IMG/upload_img.png" />
+									<p>点击上传</p>
+								</div>
+							</div>
+							<div class="operation"  >
+								<div>
+									<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+									<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+								</div>
+								<div class="replace_img js-replace">点击替换</div>
+							</div>
+							<input type="hidden" name="logo"/>
+						</div>
+						<!-- <p id="companyLOGO" class="no-replace">替换</p>
+						<input type="hidden" name="logo"/>
+						<i class="del">x</i> -->
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">排序：</label>
+				<div class="layui-input-block">
+					<input type="number" name="sort" value="0" placeholder="请输入" lay-verify="sorts" autocomplete="off" class="layui-input ns-len-short">
+				</div>
+				<div class="ns-word-aux">排序值必须为整数：</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">URL：</label>
+				<div class="layui-input-block">
+					<input type="text" name="url" class="layui-input ns-len-long">
+				</div>
+				<div class="ns-word-aux">请输入物流公司官方网址</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">快递鸟编码：</label>
+				<div class="layui-input-block">
+					<input type="text" name="express_no" class="layui-input ns-len-long">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">快递100编码：</label>
+				<div class="layui-input-block">
+					<input type="text" name="express_no_kd100" class="layui-input ns-len-long">
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">菜鸟编码：</label>
+				<div class="layui-input-block">
+					<input type="text" name="express_no_cainiao" class="layui-input ns-len-long">
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="layui-card ns-card-common ns-card-brief">
+		<div class="layui-card-header">
+			<span class="ns-card-title">快递单打印模板</span>
+		</div>
+		<div class="layui-card-body">
+			<div class="layui-form-item">
+				<label class="layui-form-label">打印字体大小：</label>
+				<div class="layui-input-block">
+				<div class="layui-input-inline">
+					<input type="number" name="font_size" value="14" lay-verify="int" class="layui-input print-size ns-len-short">
+				</div>
+					<span class="layui-form-mid">px</span>
+				</div>
+				<div class="ns-word-aux">字体大小必须为正整数：</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">比例：</label>
+				<div class="layui-input-block">
+					<input type="number" name="scale" value="1" class="layui-input proportion ns-len-short">
+				</div>
+				<div class="ns-word-aux">比例为当前显示尺寸与实际尺寸的比例</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">显示尺寸：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<input name="width" type="number" value="766" lay-verify="int" class="layui-input show-width ns-len-short">
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input name="height" type="number" value="510" lay-verify="int" class="layui-input show-height ns-len-short">
+					</div>
+				</div>
+				<div class="ns-word-aux">尺寸单位：px，用于打印模板预览效果的尺寸，值为整数且不能小于0</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">实际尺寸：</label>
+				<div class="layui-input-block">
+					<div class="layui-input-inline">
+						<span id="realWidth">766</span>
+					</div>
+					<div class="layui-form-mid">*</div>
+					<div class="layui-input-inline">
+						<span id="realHeight">510</span>
+					</div>
+					<span class="layui-word-aux">单位：px，实际尺寸由当前尺寸乘以比例所得</span>
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">打印选项：</label>
+				<div class="layui-input-block">
+					{foreach $print_item_list as $print_k=>$print_v}
+					<span class="print-option ns-border-color-gray" data-print-name="{$print_v.item_name}">{$print_v.item_title}</span>
+					{/foreach}
+				</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">效果图预览：</label>
+				<div class="layui-input-block design-sketch"></div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label img-upload-lable">打印背景图：</label>
+				<div class="layui-input-block">
+					<div class="upload-img-block">
+						<div class="upload-img-box" >
+							<div class="ns-upload-default" id="printBackground">
+								<div class="upload">
+									<img src="SHOP_IMG/upload_img.png" />
+									<p>点击上传</p>
+								</div>
+							</div>
+							<div class="operation"  >
+								<div >
+									<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+									<i title="删除图片" class="layui-icon layui-icon-delete js-delete" ></i>
+								</div>
+								<div class="replace_img js-replace">点击替换</div>
+							</div>
+							<input type="hidden" name="background_image" />   <!-- 打印背景图 -->
+						</div>
+						<!-- <p id="printBackground" class="no-replace">替换</p>
+						<i class="del">x</i> -->
+					</div>
+				</div>
+				<div class="ns-word-aux">打印模板背景图</div>
+			</div>
+
+			<div class="layui-form-item">
+				<label class="layui-form-label img-upload-lable">是否支持电子面单：</label>
+				<div class="layui-input-block">
+					<input type="checkbox" name="is_electronicsheet" lay-skin="switch" lay-filter="express_sheet">
+				</div>
+			</div>
+
+			<div class="layui-form-item express-sheet-rule layui-hide">
+				<label class="layui-form-label">电子面单规则：</label>
+
+				<div class="ns-discount-box"></div>
+
+				<div class="layui-input-block ns-form-row">
+					<span class="layui-form-mid">面单模版</span>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input ns-len-short" id="template_style" autocomplete="off">
+					</div>
+					<span class="layui-form-mid">,TemplateSize</span>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input ns-len-short" id="template_size" autocomplete="off">
+					</div>
+					<button class="layui-btn ns-bg-color" onclick="submitRule()">确定规则设置</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+
+</div>
+{/block}
+{block name="script"}
+<script src="STATIC_JS/Tdrag.min.js"></script>
+<script>
+	var delRule,submitRule,printStyle=[],expressSheetChecked;
+	layui.use(['form'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		var logo_upload = new Upload({
+			elem: '#companyLOGO'
+		});
+
+		// 打印背景图
+		var bg_upload = new Upload({
+			elem: '#printBackground',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$(".design-sketch").css("background", "url("+ ns.img(res.data.pic_path) +") no-repeat center/ cover");
+				}
+			},
+			deleteCallback:function () {
+				$(".design-sketch").css("background", "");
+			}
+		});
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			if (expressSheetChecked && !printStyle.length){
+				layer.msg("电子面单规则不能为空");
+				return false;
+			}
+
+			var content = [];
+			$(".design-sketch div").each(function () {
+				var item = {};
+				item.item_name = $(this).attr("class").substring(5);
+				item.item_title = $(this).text();
+				item.left = $(this).position().left;
+				item.top = $(this).position().top;
+				content.push(item);
+			});
+
+			if (expressSheetChecked) data.field.is_electronicsheet = 1;
+			data.field.content_json = JSON.stringify(content);
+			data.field.print_style = JSON.stringify(printStyle);
+
+			// 删除图片
+			if(!data.field.logo) logo_upload.delete();
+
+			if(!data.field.background_image) bg_upload.delete();
+
+			if (repeat_flag) return;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/express/addCompany"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+
+					if (res.code == 0) {
+						layer.confirm('添加成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function(){
+								location.href = ns.url("shop/express/expressCompany")
+							},
+							btn2: function () {
+								location.href = ns.url("shop/express/addCompany")
+							}
+						});
+					} else {
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			sorts: function(value){
+				if (value == '') {
+					return;
+				}
+				if (value%1 != 0) {
+					return '排序数值必须为整数';
+				}
+				if (value < 0) {
+					return '排序数值必须为大于0';
+				}
+			},
+			int: function (value) {
+				if (value == '') {
+					return;
+				}
+				if (value < 0 && value%1 != 0) {
+					return '请输入0或正整数!'
+				}
+			}
+		});
+
+		/**
+		 * 预览内容添加
+		 */
+		$(".print-option").click(function(){
+			var dataValue = $(this).text(),
+				dataId = $(this).attr("data-print-name");
+			var fontSize = $("input[name=font_size]").val();
+			if (fontSize == '') {
+				fontSize = 14;
+			}
+
+			if ($(".span_"+ dataId).length > 0) {
+				return false;
+			} else {
+				$(this).addClass("ns-bg-color-gray");
+				$(this).css("cursor", "not-allowed");
+			}
+
+			var html = '<div class="span_' + dataId + '">'+
+							'<span style="font-size: '+ fontSize +'px;">' + dataValue + '</span>'+
+							'<i class="iconfont iconclose_light" onclick="remove(this)"></i>'+
+						'</div>';
+
+			$(".design-sketch").append(html);
+
+			$(".span_" + dataId).hover(function () {
+				$(this).find("i").show();
+			}, function () {
+				$(this).find("i").hide();
+			});
+
+			$(".span_" + dataId).Tdrag({
+				scope: ".design-sketch"
+			});
+		});
+
+		/**
+		 * 改变效果图宽和高
+		 */
+		$(".show-width").blur(function(){
+			$(".design-sketch").css("width", $(this).val());
+			$("#realWidth").text($(this).val() * $(".proportion").val());
+		});
+
+		$(".show-height").blur(function(){
+			$(".design-sketch").css("height", $(this).val());
+			$("#realHeight").text($(this).val() * $(".proportion").val());
+		});
+
+		/**
+		 * 实际尺寸
+		 */
+		$(".proportion").blur(function () {
+			$(this).val();
+			$("#realWidth").text($(this).val() * $(".show-width").val());
+			$("#realHeight").text($(this).val() * $(".show-height").val());
+		});
+
+		/**
+		 *  打印字体大小
+		 */
+		$(".print-size").blur(function(){
+			$(".design-sketch span").css("font-size", $(this).val() + "px");
+		});
+
+		//电子面单
+		form.on('switch(express_sheet)', function(data){
+
+			data.elem.checked ? $(".express-sheet-rule").removeClass("layui-hide") : $(".express-sheet-rule").addClass("layui-hide");
+
+			expressSheetChecked = data.elem.checked;
+			submitRule = function() {
+				var templateStyle = $("#template_style").val().trim(),
+						templateSize = $("#template_size").val().trim();
+
+				if (!templateStyle) {
+					layer.msg("面单模版不能为空", {icon: 5, anim: 6});
+					return false;
+				}
+
+				for (var i=0; i < $(".ns-discount-box .ns-discount").length; i++) {
+					var ident= $(".ns-discount-box .ns-discount").eq(i).find(".template-size").text();
+					if (templateSize == ident) {
+						layer.msg("TemplateSize值已添加，不可重复添加！");
+						return false;
+					}
+				}
+
+				var html = '<div class="ns-discount ns-form-row">'+
+						'<div class="ns-discount-con">'+
+						'<p>电子面单模版风格：<span class="required">' + templateStyle + '</span>，TemplateSize值：<span class="required template-size">' + templateSize + '</span></p>'+
+						'</div>'+
+						'<div class="ns-discount-del">'+
+						'<button class="layui-btn ns-bg-color" onclick="delRule(this)">删除</button>'+
+						'</div>'+
+						'</div>';
+				$(".ns-discount-box").append(html);
+
+				printStyle.push({template_name:templateStyle,template_size:templateSize});
+			};
+
+			delRule = function(obj) {
+				var val = $(obj).parents(".ns-discount").find(".template-size").text();
+
+				for (var i = 0; i < printStyle.length; i++){
+					if (printStyle[i].template_size == val){
+						printStyle.splice(i,1);
+					}
+				}
+
+				$(obj).parent().parent().remove();
+			}
+		});
+	});
+
+	function remove(e) {
+		var that = e;
+		$(that).parent().remove();
+
+		var attr_name = $(that).parent().attr("class").substring(5);
+		$(".print-option").each(function () {
+			var print_name = $(this).attr("data-print-name");
+			if (attr_name == print_name) {
+				$(this).removeClass("ns-bg-color-gray");
+				$(this).css("cursor", "pointer");
+			}
+		});
+	}
+
+	function back(){
+		location.href = ns.url("shop/express/expressCompany");
+	}
+</script>
+{/block}

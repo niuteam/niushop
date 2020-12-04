@@ -1,0 +1,162 @@
+{extend name="base"/}
+{block name="resources"}
+<link rel="stylesheet" href="SHOP_CSS/login.css">
+{/block}
+{block name="body"}
+<div class="login-body">
+	<!--<div class="log-carousel">-->
+		<!--<div class="layui-carousel" id="logCarousel">-->
+			<!--<div carousel-item>-->
+				<!--<div><img src="SHOP_IMG/login_bg_01.png" alt=""></div>-->
+				<!--<div><img src="SHOP_IMG/login_bg_02.png" alt=""></div>-->
+				<!--<div><img src="SHOP_IMG/login_bg_03.png" alt=""></div>-->
+			<!--</div>-->
+		<!--</div>-->
+	<!--</div>-->
+	<div class="log-content-box">
+		<div class="login-content">
+			<!--<div class="ns-login-logo">-->
+				<!--{notempty name='$shop_info.logo'}-->
+					<!--<img src="{:img($shop_info.logo)}" />-->
+				<!--{else/}-->
+					<!--<img src="SHOP_IMG/login/logo.png" />-->
+				<!--{/notempty}-->
+			<!--</div>-->
+			<h2>商家登录</h2>
+			<div class="layui-form">
+				<div class="login-input login-info">
+					<div class="login-icon">
+						<img src="SHOP_IMG/login/login_username.png" alt="">
+					</div>
+					<input type="text" name="username" lay-verify="userName" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+				</div>
+				<div class="login-input login-info">
+					<div class="login-icon">
+						<img src="SHOP_IMG/login/login_password.png" alt="">
+					</div>
+					<input type="password" name="password" lay-verify="password" placeholder="请输入密码" autocomplete="off" class="layui-input">
+				</div>
+				{if $shop_login == 1}
+				<div class="login-input login-verification">
+					<input type="text" name="captcha" lay-verify="verificationCode" placeholder="请输入验证码" autocomplete="off" class="layui-input">
+					<div class="login-verify-code-img">
+						<img id='verify_img' src="{$captcha['img']}" alt='captcha' onclick="verificationCode()"/>
+					</div>
+				</div>
+				<input type="hidden" name="captcha_id" value="{$captcha['id']}">
+				{/if}
+				<button id="login_btn" type="button" class="layui-btn ns-bg-color ns-login-btn" lay-submit lay-filter="login">登录</button>
+
+			</div>
+		</div>
+	</div>
+
+	<div class="ns-login-bottom">
+		<a class="ns-footer-img" href="#"><img src="{if !empty($copyright.logo)} {:img($copyright.logo)} {else /}__STATIC__/img/copyright_logo.png{/if}" /></a>
+		<p>{notempty name="$copyright.company_name"}{$copyright.company_name}{else/}上海牛之云网络科技有限公司{/notempty} {notempty name="$copyright.icp"}<a href="{notempty name='$copyright.copyright_link'}{$copyright.copyright_link}{/notempty}">&nbsp;&nbsp;备案号{$copyright.icp}</a>{/notempty}</p>
+		{notempty name="$copyright.gov_record"}<a class="gov-box" href={$copyright.gov_url}><img src="HOME_IMG/gov_record.png" alt="">公安备案{$copyright.gov_record}</a>{/notempty}
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var form, login_repeat_flag = false,carousel;
+	/**
+	 * 验证码
+	 */
+	function verificationCode(){
+		$.ajax({
+			type: "get",
+			url: "{:url('shop/login/captcha')}",
+			dataType: "JSON",
+			async: false,
+			success: function (res) {
+				var data = res.data;
+				$("#verify_img").attr("src",data.img);
+				$("input[name='captcha_id']").val(data.id);
+			}
+		});
+	}
+
+	layui.use(['form','carousel'], function(){
+		form = layui.form;
+		carousel = layui.carousel;
+		form.render();
+
+		/* 登录 */
+		form.on('submit(login)', function(data) {
+
+			if (login_repeat_flag) return;
+			login_repeat_flag = true;
+
+			$.ajax({
+				type: "POST",
+				dataType: "JSON",
+				url: '{:url("shop/login/login")}',
+				data: data.field,
+				success: function(res) {
+
+					if (res.code == 0) {
+						layer.msg('登录成功',{anim: 5,time: 500},function () {
+							window.location = '{:url("shop/index/index")}';
+						});
+					} else {
+						layer.msg(res.message);
+						login_repeat_flag = false;
+						verificationCode();
+					}
+
+				}
+			})
+		});
+
+		/*
+		* 轮播
+		* */
+		carousel.render({
+			elem: '#logCarousel'
+			,width: '100%' //设置容器宽度
+			,height: '100%'
+			,arrow: 'none' //始终显示箭头
+			,anim: 'fade'
+			,indicator: 'none'
+		});
+
+
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			userName: function(value) {
+				if (!value.trim()) {
+					return "账号不能为空";
+				}
+			},
+			password: function(value) {
+				if (!value.trim()) {
+					return "密码不能为空";
+				}
+			},
+			verificationCode: function(value) {
+				if (!value.trim()) {
+					return "验证码不能为空";
+				}
+			}
+
+		});
+	});
+	
+	$("body").on("blur",".login-content .login-input",function(){
+		$(this).removeClass("login-input-select");
+	});
+	$("body").on("focus",".login-content .login-input",function(){
+		$(this).addClass("login-input-select");
+	});
+
+	$(document).keydown(function (event) {
+		if (event.keyCode == 13) {
+			$(".ns-login-btn").trigger("click");
+		}
+	});
+</script>
+{/block}

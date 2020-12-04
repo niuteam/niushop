@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>打印发货单</title>
+
+    <style media="print" type="text/css">.noprint{display:none}</style>
+    <style media="screen,print" type="text/css">
+        .order-print{
+            padding: 20px;
+            border: 1px dashed #ccc;
+        }
+        .order-print .print-title{
+            font-size: 24px;
+            text-align: center;
+            font-weight: normal;
+        }
+        .order-print .order-info{
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .order-print .order-info thead .basic-info{
+            display: flex;
+            height: 20px;
+            line-height: 20px;
+            font-weight: normal;
+        }
+        .order-print .order-info thead .basic-info:last-of-type{
+            margin-bottom: 15px;
+        }
+        .order-print .order-info thead .basic-info span{
+            flex: 1;
+            text-align: left;
+        }
+        .order-print .order-info thead tr:nth-child(3) th{
+            border: none;
+            border-top: 2px solid;
+            border-bottom: 2px solid;
+            padding: 2px 0;
+            background-color: #e7e7e7;
+        }
+        .order-print .order-info tbody tr td, .order-print .order-info tfoot th{
+            padding: 8px 0;
+        }
+        .order-print .order-info tbody .table-floot td{
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            background-color: #f7f7f7;
+        }
+
+        .order-print .order-info tfoot th{
+            text-align: left;
+            border-bottom: 2px solid #000;
+        }
+        .order-print .order-info tfoot th span{
+            display: inline-block;
+            height: 20px;
+            width: 172px;
+            line-height: 20px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="order-print">
+
+        <table class="order-info">
+            <thead>
+                <tr>
+                    <th colspan="5">
+                        <h1 class="print-title">{$order_detail.site_name} 发货单</h1>
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="5">
+                        <div class="basic-info">
+                            <span>收货人：{$order_detail.name}</span>
+                            <span>电话:{$order_detail.mobile}</span>
+                        </div>
+                        <div class="basic-info">地址：{$order_detail.full_address} {$order_detail.address}</div>
+                        <div class="basic-info">
+                            <span>订单号：{$order_detail.order_no}</span>
+                            <span>下单时间：{$order_detail.create_time|date="Y-m-d"}</span>
+                        </div>
+                    </th>
+                </tr>
+                <tr>
+                    <th align="center">序号</th>
+                    <th align="left">商品名称</th>
+                    <th align="left">单价(元)</th>
+                    <th align="left">数量</th>
+                    <th align="left">小计(元)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {php}
+                $total_goods_num = 0;
+                {/php}
+                {foreach $order_detail['order_goods'] as $list_k => $order_goods_item}
+                {php}
+                $total_goods_num += $order_goods_item['num'];
+                {/php}
+                <tr class="table-body">
+                    <td align="center">{$list_k+1}</td>
+                    <td class="tl">{$order_goods_item.sku_name}</td>
+                    <td class="tl">{$order_goods_item.price}</td>
+                    <td>{$order_goods_item.num}</td>
+                    <td class="tl">{$order_goods_item.goods_money}</td>
+                </tr>
+                {/foreach}
+                <tr class="table-floot">
+                    <td></td>
+                    <td colspan="2">合计</td>
+                    <td>{$total_goods_num}</td>
+                    <td>{$order_detail.goods_money}</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5">
+                        <span>总计:￥{$order_detail.goods_money}</span>
+                        <span>运费：￥{$order_detail.delivery_money}</span>
+                        <span>优惠:￥{$order_detail.promotion_money}</span>
+                        <span>订单总额：￥{$order_detail.order_money}</span>
+                        <span>店铺：{$order_detail.site_name}</span>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+
+</html>

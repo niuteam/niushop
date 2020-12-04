@@ -1,0 +1,101 @@
+.date-picker-btn.selected {
+    background-color: #0d73f9;
+    color: #FFF;
+}
+
+.search_form {
+	padding: 15px;
+}
+
+.search_form .reset {
+    background: transparent;
+    border: none;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.search_form .layui-form-mid {
+    display: inline-block;
+    float: unset;
+    margin-right: 0;
+}
+
+.search_form .layui-btn+.layui-btn {
+	margin-left: 0;
+}
+
+.layui-table {
+	margin: 0;
+}
+
+.layui-layer-content {
+    padding: 15px;
+    height: auto!important;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.headimg-box {
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+    line-height: 50px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.headimg-box img{
+    max-width: 50px;
+    max-height: 50px;
+    margin: auto;
+}
+.layui-table-cell{
+    text-overflow: ellipsis;
+    overflow: initial !important;
+    white-space: initial;
+}
+.tag-list{
+    display: inline-block;
+    line-height: 40px;
+    vertical-align: middle;
+}
+
+.tag-list span{
+    margin: 2px;
+    padding: 2px 5px;
+    border-radius: 2px;
+    color: #fff;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.progress-layer {
+    width: 400px;
+    background: #fff;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);    
+    box-shadow: 1px 1px 50px rgba(0,0,0,.3);
+    padding: 20px 20px;
+    z-index: 100;
+    display: none;
+}
+
+.progress-layer h3{
+    line-height: 1;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.progress-layer .layui-progress-big, .progress-layer .layui-progress-big .layui-progress-bar{
+    height: 14px;
+    line-height: 14px;
+}
+
+.progress-layer .layui-progress-text{
+    line-height: 14px;
+}

@@ -1,0 +1,33 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-store": "/components/ns-store/ns-store",
+    "ns-store-info": "/components/ns-store-info/ns-store-info",
+    "diy-text": "/components/diy-text/diy-text",
+    "diy-text-nav": "/components/diy-text-nav/diy-text-nav",
+    "diy-notice": "/components/diy-notice/diy-notice",
+    "diy-graphic-nav": "/components/diy-graphic-nav/diy-graphic-nav",
+    "diy-img-ads": "/components/diy-img-ads/diy-img-ads",
+    "diy-search": "/components/diy-search/diy-search",
+    "diy-title": "/components/diy-title/diy-title",
+    "diy-rich-text": "/components/diy-rich-text/diy-rich-text",
+    "diy-horz-line": "/components/diy-horz-line/diy-horz-line",
+    "diy-horz-blank": "/components/diy-horz-blank/diy-horz-blank",
+    "diy-coupon": "/components/diy-coupon/diy-coupon",
+    "diy-goods-list": "/components/diy-goods-list/diy-goods-list",
+    "diy-rubik-cube": "/components/diy-rubik-cube/diy-rubik-cube",
+    "diy-video": "/components/diy-video/diy-video",
+    "diy-seckill": "/components/diy-seckill/diy-seckill",
+    "diy-pintuan": "/components/diy-pintuan/diy-pintuan",
+    "diy-groupbuy": "/components/diy-groupbuy/diy-groupbuy",
+    "diy-bargain": "/components/diy-bargain/diy-bargain",
+    "diy-notes": "/components/diy-notes/diy-notes",
+    "diy-goods-level-category": "/components/diy-goods-level-category/diy-goods-level-category",
+    "diy-float-btn": "/components/diy-float-btn/diy-float-btn",
+    "diy-live": "/components/diy-live/diy-live",
+    "diy-fenxiao-goods-list": "/components/diy-fenxiao-goods-list/diy-fenxiao-goods-list",
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "diy-bottom-nav": "/components/diy-bottom-nav/diy-bottom-nav",
+    "diy-group-buy": "/components/diy-groupbuy/diy-groupbuy"
+  }
+}

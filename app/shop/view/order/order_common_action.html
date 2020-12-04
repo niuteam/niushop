@@ -1,0 +1,176 @@
+<script type="text/javascript">
+var laytpl;
+var form;
+//渲染模板引擎
+layui.use(['laytpl','form'], function(){
+    laytpl = layui.laytpl;
+    form = layui.form;
+	form.render();
+});
+/**
+ * 订单操作
+ * @param fun
+ * @param order_data
+ */
+function orderAction(fun, order_id){
+    eval(fun+"("+order_id+")");
+}
+
+//打印发货单
+function printDeliverOrder(order_id){
+
+    var url = ns.url("shop/printer/batchprintorder",{order_id: order_id});
+
+    var LODOP=getLodop();
+    LODOP.PRINT_INIT("发货单打印");
+    LODOP.ADD_PRINT_TBURL(5,10,"770","95%",url);
+    LODOP.SET_PRINT_STYLEA(0,"HOrient",3);
+    LODOP.SET_PRINT_STYLEA(0,"VOrient",3);
+    LODOP.ADD_PRINT_TEXT(590,680,130,22,"页号：第#页/共&页");
+    LODOP.SET_PRINT_STYLEA(0,"ItemType",2);
+    LODOP.SET_PRINT_STYLEA(0,"Horient",1);
+    LODOP.SET_PRINT_STYLEA(0,"Vorient",1);
+    LODOP.SET_SHOW_MODE("MESSAGE_GETING_URL",""); //该语句隐藏进度条或修改提示信息
+
+    LODOP.PREVIEW(); //预览
+}
+
+/**
+ *订单备注
+ **/
+function orderRemark(order_id){
+    $.ajax({
+        type : "post",
+        url : ns.url("shop/order/getOrderInfo"),
+        async : true,
+        data : {order_id : order_id},
+        dataType: 'json',
+        success : function(res) {
+            if (res.code == 0) {
+                layer.prompt({
+                    formType: 2,
+                    value: res.data.remark,
+                    title: '卖家备注',
+                    area: ['400px', '100px'], //自定义文本域宽高
+                    yes: function(index, layero){
+                        var value = layero.find(".layui-layer-input").val();
+                        if(value.trim().length == 0){
+                            layer.msg("请填写备注！");
+                            return false;
+                        }
+                        $.ajax({
+                            type: "post",
+                            url: ns.url("shop/order/orderRemark"),
+                            async: true,
+                            dataType: 'json',
+                            data: {order_id : order_id, remark : value},
+                            success: function (res) {
+                                layer.msg(res.message, {}, function () {
+                                    if (res.code == 0) {
+                                        layer.close(index);
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        })
+                    }
+                });
+            } else {
+                layer.msg(res.message);
+            }
+        }
+    })
+}
+
+/**
+ * 关闭订单
+ * @param order_id
+ */
+function orderClose(order_id){
+	layer.confirm('确定要关闭该订单吗?', function() {
+		$.ajax({
+			url: ns.url("shop/order/close"),
+			data: {order_id : order_id},
+			dataType: 'JSON',
+			type: 'POST',
+			success: function(res) {
+				layer.msg(res.message);
+				
+				if (res.code == 0) {
+					location.reload();
+				}
+			}
+		});
+	}, function () {
+		layer.close();
+	});
+}
+
+/**
+* 线下支付
+* @param order_id
+*/
+function offlinePay(order_id){
+    $.ajax({
+        url: ns.url("shop/order/offlinePay"),
+        data: {order_id : order_id},
+        dataType: 'JSON',
+        type: 'POST',
+        success: function(res) {
+            layer.msg(res.message);
+
+            if (res.code == 0) {
+                location.reload();
+            }
+        }
+    });
+}
+/**
+ * 删除订单
+ * @param order_id
+ */
+function orderDelete(order_id){
+    layer.confirm('确定要删除该订单吗?', function() {
+        $.ajax({
+            url: ns.url("shop/order/delete"),
+            data: {order_id : order_id},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function(res) {
+                layer.msg(res.message);
+
+                if (res.code == 0) {
+                    location.reload();
+                }
+            }
+        });
+    }, function () {
+        layer.close();
+    });
+}
+
+/**
+ * 确认收货
+ * @param order_id
+ */
+function takeDelivery(order_id){
+    layer.confirm('确保买家已经收到您的商品，并且与买家协商完毕提前确认收货?', function() {
+        $.ajax({
+            url: ns.url("shop/order/takeDelivery"),
+            data: {order_id : order_id},
+            dataType: 'JSON',
+            type: 'POST',
+            success: function(res) {
+                layer.msg(res.message);
+                if (res.code == 0) {
+                    location.reload();
+                }
+            }
+        });
+    }, function () {
+        layer.close();
+    });
+}
+</script>
+<!-- 修改订单价格 -->
+{include file="order/order_adjust_price" /}

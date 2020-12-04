@@ -1,0 +1,117 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .layui-form-radio{margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+
+<div class="layui-collapse ns-tips">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">操作提示</h2>
+        <ul class="layui-colla-content layui-show">
+            <li>修改了物流跟踪类型后，请修改相对的物流公司跟踪编码。</li>
+        </ul>
+    </div>
+</div>
+
+<div class="layui-form">
+    <!-- 基础上传 -->
+    <div class="layui-card ns-card-common ns-card-brief">
+        <div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label">类型选择：</label>
+                <div class="layui-input-block">
+                    <div class="layui-input-inline">
+                        {foreach $traces_type as $k => $v}
+                            <input type="radio" name="traces_type" value="{$v.name}" lay-filter="traces_type" title="{$v.title}" {$v.is_use == 1 ? 'checked' : ''} />
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item config-item kd100"{if $kd100_config.is_use != 1} style="display:none;"{/if}>
+        <label class="layui-form-label">APPKEY：</label>
+        <div class="layui-input-block">
+            <input type="text" name="appkey" placeholder="请输入内容APPKEY" value="{$kd100_config.value.appkey ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+        </div>
+        <div class="ns-word-aux">快递100应用密钥</div>
+    </div>
+
+    <div class="layui-form-item config-item kd100"{if $kd100_config.is_use != 1} style="display:none;"{/if}>
+        <label class="layui-form-label">CUSTOMER：</label>
+        <div class="layui-input-block">
+            <input type="text" name="customer" placeholder="请输入CUSTOMER" value="{$kd100_config.value.customer ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+        </div>
+        <div class="ns-word-aux">快递100分配给的公司编号</div>
+    </div>
+
+    <div class="layui-form-item config-item kdbird"{if $kdbird_config.is_use != 1} style="display:none;"{/if}>
+        <label class="layui-form-label">EBusinessID：</label>
+        <div class="layui-input-block">
+            <input type="text" name="EBusinessID" placeholder="请输入电商ID" value="{$kdbird_config.value.EBusinessID ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+        </div>
+        <div class="ns-word-aux">快递鸟电商ID，请到快递鸟官网申请http://kdniao.com/reg</div>
+    </div>
+
+    <div class="layui-form-item config-item kdbird"{if $kdbird_config.is_use != 1} style="display:none;"{/if}>
+        <label class="layui-form-label">AppKey：</label>
+        <div class="layui-input-block">
+            <input type="text" name="AppKey" placeholder="请输入AppKey" value="{$kdbird_config.value.AppKey ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+        </div>
+        <div class="ns-word-aux">快递鸟分配的电商加密私钥，请到快递鸟官网申请http://kdniao.com/reg</div>
+    </div>
+
+    <div class="ns-single-filter-box">
+        <div class="ns-form-row">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use('form', function() {
+        var form = layui.form,
+            repeat_flag = false; //防重复标识
+        form.render();
+
+        form.on('radio(traces_type)', function(data){
+            $(".config-item").hide();
+
+            $("."+data.value).show();
+        });
+
+        form.on('submit(save)', function(data) {
+            if (repeat_flag) return;
+            repeat_flag = true;
+            $.ajax({
+                url: ns.url("shop/express/trace"),
+                data: data.field,
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    repeat_flag = false;
+                    if (res.code == 0) {
+
+                        layer.confirm('操作成功', {
+                            title:'操作提示',
+                            btn: ['修改物流公司编码', '继续编辑'],
+                            yes: function(){
+                                location.href = ns.url("shop/express/expresscompany")
+                            },
+                            btn2: function () {
+                                location.href = ns.url("shop/express/trace")
+                            }
+                        });
+                    }else{
+                        layer.msg(res.message);
+                    }
+                }
+            });
+        });
+    });
+</script>
+{/block}

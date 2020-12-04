@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="__STATIC__/css/seller_center.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        body {
+            background: #FFF none;
+        }
+    </style>
+    <script src="__STATIC__/js/jquery-3.1.1.js"></script>
+    <script src="__STATIC__/ext/layui/layui.js"></script>
+    <script>
+        window.ns_url = {
+            baseUrl: "ROOT_URL/",
+            route: ['{:request()->module()}', '{:request()->controller()}', '{:request()->action()}'],
+        };
+    </script>
+    <script type="text/javascript" src="__STATIC__/js/common.js" charset="utf-8"></script>
+    <script type="text/javascript" src="__STATIC__/js/jquery.printarea.js" charset="utf-8"></script>
+    <title>{$menu_info['title']|default="打印发货单"} - {$shop_info['site_name']|default=""}</title>
+</head>
+<body>
+{notempty name="order_detail"}
+<div class="print-layout">
+    <div class="print-btn" id="printbtn" title="选择喷墨或激光打印机<br/>根据下列纸张描述进行<br/>设置并打印发货单据"><i></i><a href="javascript:void(0);">打印</a></div>
+    <div class="a5-size"></div>
+    <dl class="a5-tip">
+        <dt>
+            <h1>A5</h1>
+            <em>Size: 210mm x 148mm</em></dt>
+        <dd>当打印设置选择A5纸张、横向打印、无边距时每张A5打印纸可输出1页订单。</dd>
+    </dl>
+    <div class="a4-size"></div>
+    <dl class="a4-tip">
+        <dt>
+            <h1>A4</h1>
+            <em>Size: 210mm x 297mm</em></dt>
+        <dd>当打印设置选择A4纸张、竖向打印、无边距时每张A4打印纸可输出2页订单。</dd>
+    </dl>
+    <div class="print-page">
+        <div id="printarea">
+            <div class="orderprint">
+                <div class="top">
+                    <div class="full-title">{$order_detail.site_name} 发货单</div>
+                </div>
+                <table class="buyer-info">
+                    <tr>
+                        <td class="w200">收货人：{$order_detail.name}</td>
+                        <td>电话:{$order_detail.mobile}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">地址：{$order_detail.full_address} {$order_detail.address}</td>
+                    </tr>
+                    <tr>
+                        <td>订单号：{$order_detail.order_no}</td>
+                        <td>下单时间：{$order_detail.create_time|date="Y-m-d"}</td>
+                    </tr>
+                </table>
+                <table class="order-info">
+                    <thead>
+                    <tr>
+                        <th class="w40">序号</th>
+                        <th class="tl">商品名称</th>
+                        <th class="w70 tl">单价(元)</th>
+                        <th class="w50">数量</th>
+                        <th class="w70 tl">小计(元)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {php}
+                    $total_goods_num = 0;
+                    {/php}
+                    {foreach $order_detail['order_goods'] as $list_k => $order_goods_item}
+                    {php}
+                    $total_goods_num += $order_goods_item['num'];
+                    {/php}
+                    <tr>
+                        <td>{$list_k+1}</td>
+                        <td class="tl">{$order_goods_item.sku_name}</td>
+                        <td class="tl">{$order_goods_item.price}</td>
+                        <td>{$order_goods_item.num}</td>
+                        <td class="tl">{$order_goods_item.goods_money}</td>
+                    </tr>
+                    {/foreach}
+                    <tr>
+                        <th></th>
+                        <th colspan="2" class="tl">合计</th>
+                        <th>{$total_goods_num}</th>
+                        <th class="tl">{$order_detail.goods_money}</th>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th colspan="10"><span>总计:￥{$order_detail.goods_money}</span><span>运费：￥{$order_detail.delivery_money}</span><span>优惠:￥{$order_detail.promotion_money}</span><span>订单总额：￥{$order_detail.order_money}</span><span>店铺：{$order_detail.site_name}</span>
+                    </tr>
+                    </tfoot>
+                </table>
+                <div class="explain"></div>
+                <div class="tc page">第1页/共1页</div>
+            </div>
+        </div>
+    </div>
+</div>
+{/notempty}
+</body>
+<script>
+    $(function(){
+        $("#printbtn").click(function(){
+            $("#printarea").printArea();
+        });
+    });
+</script>
+</html>

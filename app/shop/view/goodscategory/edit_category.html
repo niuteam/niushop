@@ -1,0 +1,275 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.js-pid a{
+		margin-left: 20px;
+	}
+	.ns-form {
+		margin-top: 0;
+	}
+</style>
+{/block}
+{block name="main"}
+<form class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>分类名称：</label>
+		<div class="layui-input-block">
+			<input name="category_name" type="text" value="{$goods_category_info['category_name']}" placeholder="请输入分类名称" maxlength="30" lay-verify="required" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+		<div class="ns-word-aux">
+			<p>分类名称最长不超过30个字符</p>
+		</div>
+	</div>
+	
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">简称：</label>
+		<div class="layui-input-block">
+			<input name="short_name" type="text" value="{$goods_category_info['short_name']}" placeholder="请输入简称" maxlength="20" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+		<div class="ns-word-aux">
+			<p>分类名过长设置简称方便显示，字数设置为不超过20个字符</p>
+		</div>
+	</div> -->
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">上级分类：</label>
+		<div class="layui-input-block ns-len-mid js-pid">
+			{if $goods_category_info['pid'] == 0}
+			<span class="ns-input-text">顶级分类</span>
+			{else/}
+			<span class="ns-input-text">{$goods_category_parent_info['category_name']}</span>
+			{/if}
+			<input type="hidden" name="pid" value="{$goods_category_info['pid']}">
+			<input type="hidden" name="level" value="{$goods_category_info['level']}">
+			<input type="hidden" name="category_id_1" value="{$goods_category_info['category_id_1']}">
+			<input type="hidden" name="category_id_2" value="{$goods_category_info['category_id_2']}">
+			<input type="hidden" name="category_id_3" value="{$goods_category_info['category_id_3']}">
+			<input type="hidden" name="category_name_1" value="">
+			{if $goods_category_info['level'] > 1}
+			<a class="ns-text-color" href="javascript:selectedCategoryPopup();">选择分类</a>
+			{/if}
+		</div>
+		<div class="ns-word-aux">
+			{if $goods_category_info['level'] == 1}
+			<p>注意：顶级分类不能修改</p>
+			{elseif $goods_category_info['level'] == 2}
+			<p>注意：二级分类可以修改一级分类</p>
+			{elseif $goods_category_info['level'] == 3}
+			<p>注意：三级分类可以修改二级分类</p>
+			{/if}
+		</div>
+	</div>
+	
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">商品属性：</label>
+		<div class="layui-input-block ns-len-mid">
+			<select name="attr_class_id" lay-filter="attr_class_id">
+				<option value=""></option>
+				{foreach name="$attr_class_list" item="vo"}
+				<option value="{$vo.class_id}" {if $goods_category_info['attr_class_id'] == $vo['class_id']}selected{/if}>{$vo.class_name}</option>
+				{/foreach}
+			</select>
+		</div>
+
+	</div> -->
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">分类图标：</label>
+		<div class="layui-input-block">
+			<div class="upload-img-block">
+				<div class="upload-img-box {notempty name="$goods_category_info['image']"}hover{/notempty}">
+					<div class="ns-upload-default" id="imgUpload">
+						{notempty name="$goods_category_info['image']"}
+						<div id="preview_imgUpload" class="preview_img">
+							<img layer-src src="{:img($goods_category_info['image'])}" class="img_prev"/>
+						</div>
+						{else/}
+						<div class="upload">
+							<img src="SHOP_IMG/upload_img.png" data-id="imgUpload"/>
+							<p>点击上传</p>
+						</div>
+							
+						{/notempty}
+					</div>
+					<div class="operation"  >
+						<div>
+							<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+							<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+						</div>
+						
+						<div class="replace_img js-replace">点击替换</div>
+					</div>
+					<input type="hidden" name="image" value="{$goods_category_info['image']}">
+				</div>
+			</div>
+		</div>
+		<div class="ns-word-aux">
+			<p>建议图片尺寸：100px * 100px。图片格式：jpg、png、jpeg。</p>
+		</div>
+	</div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">分类广告图：</label>
+        <div class="layui-input-block">
+            <div class="upload-img-block ">
+                <div class="upload-img-box {notempty name="$goods_category_info['image_adv']"} hover {/notempty}" >
+					<div class="ns-upload-default" id="imgUploadAdv">
+						{notempty name="$goods_category_info['image_adv']"}
+						<div id="preview_imgUploadAdv" class="preview_img">
+							<img layer-src src="{:img($goods_category_info['image_adv'])}" class="img_prev"/>
+						 </div>
+						{else/}
+						    <div class="upload">
+						        <img src="SHOP_IMG/upload_img.png" />
+						        <p>点击上传</p>
+						    </div>
+						{/notempty}
+					</div>
+                    <div class="operation"  >
+                    	<div>
+                    		<i title="图片预览" class="iconfont iconreview js-preview" style="margin-right: 20px;"></i>
+                    		<i title="删除图片" class="layui-icon layui-icon-delete js-delete"></i>
+                    	</div>
+                    	
+                    	<div class="replace_img js-replace">点击替换</div>
+                    </div>
+					<input type="hidden" name="image_adv" value="{$goods_category_info['image_adv']}">
+                </div>
+				
+				<!-- <p id="imgUploadAdv" class=" {if condition="$goods_category_info['image_adv']"} replace {else/} no-replace{/if}">替换</p> -->
+	            <!-- <i class="del {if condition="$goods_category_info['image_adv']"}show{/if}">x</i> -->
+            </div>
+        </div>
+	    <div class="ns-word-aux">
+		    <p>建议图片尺寸：550px * 250px。图片格式：jpg、png、jpeg。</p>
+	    </div>
+    </div>
+	
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">是否显示：</label>
+		<div class="layui-input-block">
+			<input type="checkbox" name="is_show" lay-skin="switch" value="1" {if $goods_category_info['is_show']==1}checked{/if}>
+		</div>
+		<div class="ns-word-aux">
+			<p>用于控制前台是否展示</p>
+		</div>
+	</div> -->
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">关键字：</label>
+		<div class="layui-input-block">
+			<input name="keywords" type="text" placeholder="请输入关键字" value="{$goods_category_info['keywords']}" class="layui-input ns-len-long" autocomplete="off">
+		</div>
+		<div class="ns-word-aux">
+			<p>用于网站搜索引擎的优化，关键字之间请用英文逗号分隔</p>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">分类描述：</label>
+		<div class="layui-input-inline ns-len-long">
+			<textarea name="description" placeholder="请输入分类描述" class="layui-textarea">{$goods_category_info['description']}</textarea>
+		</div>
+	</div>
+	
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">排序：</label>
+		<div class="layui-input-block">
+			<input name="sort" type="number" placeholder="请输入排序" lay-verify="num" class="layui-input ns-len-short" value="{$goods_category_info['sort']}">
+		</div>
+		<div class="ns-word-aux">
+			<p>排序值只能为整数</p>
+		</div>
+	</div> -->
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否显示</label>
+		<div class="layui-input-block">
+			<input type="radio" name="is_show" value="0" title="显示" {if $goods_category_info['is_show'] == 0} checked="" {/if}>
+			<input type="radio" name="is_show" value="-1" title="不显示"  {if $goods_category_info['is_show'] == -1} checked="" {/if}>
+		</div>
+		<div class="ns-word-aux">
+			<p>如果不显示会导致小程序、h5没有该分类以及该分类下的所有商品</p>
+		</div>
+	</div>
+
+	<input type="hidden" name="category_id" value="{$goods_category_info['category_id']}">
+	<input type="hidden" name="category_full_name" value="{$goods_category_info['category_full_name']}">
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button type="reset" class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</form>
+
+<script type="text/html" id="selectedCategory">
+	
+	<form class="layui-form">
+		
+		{if $goods_category_info['level'] == 2}
+		<!--二级分类修改一级-->
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">一级分类</label>
+			<div class="layui-input-block ns-len-mid">
+				<select name="category_id_1" lay-filter="category_id_1">
+					{{# for(var i=0;i<d.category_list_1.length;i++){ }}
+						{{# if(d.category_id_1 ==d.category_list_1[i].category_id){ }}
+						<option value="{{ d.category_list_1[i].category_id }}" data-level="{{d.category_list_1[i].level}}" selected>{{ d.category_list_1[i].category_name }}</option>
+						{{# }else{ }}
+						<option value="{{ d.category_list_1[i].category_id }}" data-level="{{d.category_list_1[i].level}}">{{ d.category_list_1[i].category_name }}</option>
+						{{# } }}
+					{{# } }}
+				</select>
+			</div>
+		</div>
+		{/if}
+		
+		{if $goods_category_info['level'] == 3}
+		<!--三级分类修改二级-->
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">二级分类</label>
+			<div class="layui-input-block ns-len-mid">
+				<select name="category_id_2" lay-filter="category_id_2">
+					{{# for(var i=0;i<d.category_list_2.length;i++){ }}
+						{{# if(d.category_id_2 ==d.category_list_2[i].category_id){ }}
+						<option value="{{ d.category_list_2[i].category_id }}" data-level="{{d.category_list_2[i].level}}" data-category-id-1="{{d.category_list_2[i].category_id_1}}" selected>{{ d.category_list_2[i].category_name }}</option>
+						{{# }else{ }}
+						<option value="{{ d.category_list_2[i].category_id }}" data-level="{{d.category_list_2[i].level}}" data-category-id-1="{{d.category_list_2[i].category_id_1}}">{{ d.category_list_2[i].category_name }}</option>
+						{{# } }}
+					{{# } }}
+				</select>
+			</div>
+		</div>
+		{/if}
+		
+		<div class="ns-form-row sm">
+			<button class="layui-btn ns-bg-color" lay-submit lay-filter="save_pid">保存</button>
+		</div>
+	
+	</form>
+</script>
+{/block}
+{block name="script"}
+<script src="SHOP_JS/goods_edit_category.js"></script>
+<script type="text/html" id="goodsImage">
+	// {{# if(d.list.length){ }}
+	// 	{{# for(var i=0;i<d.list.length;i++){ }}
+	// 		<div class="item upload_img_square_item" data-index="{{i}}">
+	// 			<div class="img-wrap">
+	// 				<img src="{{ns.img(d.list[i])}}" layer-src>
+	// 			</div>
+	// 			<div class="operation">
+	// 				<i title="图片预览" class="iconfont iconreview js-preview"></i>
+	// 				<i title="删除图片" class="layui-icon layui-icon-delete js-delete" data-index="{{i}}"></i>
+	// 				<div class="replace_img" data-index="{{i}}">点击替换</div>
+	// 			</div>
+	// 		</div>
+	// 	{{# } }}
+	// 	{{# if(d.list.length < d.max){ }}
+	// 		<div class="item js-add-goods-image upload_img_square">+</div>
+	// 	{{# } }}
+	// {{# }else{ }}
+	// 	<div class="item js-add-goods-image upload_img_square">+</div>
+	// {{# } }}
+</script>
+{/block}

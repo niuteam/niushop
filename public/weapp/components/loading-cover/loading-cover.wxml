@@ -1,0 +1,1 @@
+<view hidden="{{!(isShow)}}" class="loading-layer"><view class="loading-anim"><view class="box item"><view class="border out item color-base-border-top color-base-border-left"></view></view></view></view>

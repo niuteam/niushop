@@ -1,0 +1,185 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-input-text span{margin-right: 15px;}
+	.ns-form {margin-top: 0;}
+	.file-upload {display: inline-block; margin-right: 5px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">公众账号ID：</label>
+		<div class="layui-input-block">
+			<input name="appid" type="text" value="{$info.value.appid ?? ''}" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux"><span class="ns-text-color-red">[AppID]</span>微信支付对应公众账号APPID</div>
+	</div> -->
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">商户号：</label>
+		<div class="layui-input-block">
+			<input name="mch_id" type="text" value="{$info.value.mch_id ?? ''}" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux"><span class="ns-text-color-red">[MCHID]</span>微信支付商户号</div>
+	</div>
+
+	<!-- <div class="layui-form-item">
+		<label class="layui-form-label">应用密钥：</label>
+		<div class="layui-input-block">
+			<textarea name="app_secrect" class="layui-textarea ns-len-long">{$info.value.app_secrect ?? ''}</textarea>
+		</div>
+		<div class="ns-word-aux"><span class="ns-text-color-red">[AppSecrect]</span>微信支付对应公众账号APPSecrect</div>
+	</div> -->
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">支付签名串API密钥：</label>
+		<div class="layui-input-block">
+			<textarea name="pay_signkey" class="layui-textarea ns-len-long">{$info.value.pay_signkey ?? ''}</textarea>
+		</div>
+		<div class="ns-word-aux"><span class="ns-text-color-red">[paySignKey]</span>微信商户API密钥</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">支付证书cert：</label>
+		<div class="layui-input-block">
+			{notempty name="$info.value.apiclient_cert"}
+			<p class="file-upload">已上传</p>
+			{else/}
+			<p class="file-upload">未上传</p>
+			{/notempty}
+			<button type="button" class="layui-btn ns-bg-color" id="cert_upload">
+				<i class="layui-icon">&#xe67c;</i>上传文件
+			</button>
+			<input type="hidden" name="apiclient_cert" class="layui-input ns-len-long" value="{$info.value.apiclient_cert ?? ''}">
+		</div>
+		<div class="ns-word-aux">上传apiclient_cert.pem文件</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">支付证书key：</label>
+		<div class="layui-input-block">
+			{notempty name="$info.value.apiclient_key"}
+			<p class="file-upload">已上传</p>
+			{else/}
+			<p class="file-upload">未上传</p>
+			{/notempty}
+			<button type="button" class="layui-btn ns-bg-color" id="key_upload">
+				<i class="layui-icon">&#xe67c;</i>上传文件
+			</button>
+			<input type="hidden" name="apiclient_key" class="layui-input ns-len-long" value="{$info.value.apiclient_key ?? ''}">
+		</div>
+		<div class="ns-word-aux">上传apiclient_key.pem文件</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">支持端口：</label>
+		<div class="ns-input-text">
+			{foreach $app_type as $app_type_k => $app_type_v}
+				{if condition="$app_type_v['name'] !='支付宝小程序'"}
+				<span>{$app_type_v['name']}</span>
+				{/if}
+			{/foreach}
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用支付：</label>
+		<div class="layui-input-inline">
+			<input type="checkbox" name="pay_status" value="1" lay-skin="switch" {if condition="$info.value && $info.value.pay_status == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用退款：</label>
+		<div class="layui-input-inline">
+			<input type="checkbox" name="refund_status" value="1" lay-skin="switch" {if condition="$info.value && $info.value.refund_status == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">是否启用转账：</label>
+		<div class="layui-input-inline">
+			<input type="checkbox" name="transfer_status" value="1" lay-skin="switch" {if condition="$info.value && $info.value.transfer_status == 1"} checked {/if} />
+		</div>
+	</div>
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form'], function() {
+		var form = layui.form,
+			repeat_flag = false; //防重复标识
+		form.render();
+
+		var cert_upload = new Upload({
+			elem: '#cert_upload',
+			url: ns.url("wechatpay://shop/pay/uploadwechatcert"), //改成您自己的上传接口
+			accept: 'file',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$("input[name='apiclient_cert']").val(res.data.path);
+					$("input[name='apiclient_cert']").siblings(".file-upload").text("已上传");
+				}
+			}
+		});
+
+		var key_upload = new Upload({
+			elem: '#key_upload',
+			url: ns.url("wechatpay://shop/pay/uploadwechatcert"), //改成您自己的上传接口
+			accept: 'file',
+			callback:function (res) {
+				if (res.code >= 0) {
+					$("input[name='apiclient_key']").val(res.data.path);
+					$("input[name='apiclient_key']").siblings(".file-upload").text("已上传");
+				}
+			}
+		});
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("wechatpay://shop/pay/config"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					repeat_flag = false;
+					
+					if (res.code == 0) {
+						layer.confirm('编辑成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续操作'],
+							yes: function(){
+								location.href = ns.url("shop/config/pay")
+							},
+							btn2: function() {
+								location.reload();
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+	function back() {
+		location.href = ns.url("shop/config/pay");
+	}
+</script>
+{/block}

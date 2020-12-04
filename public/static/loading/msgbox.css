@@ -1,0 +1,85 @@
+/* @charset "utf-8"; */
+/* CSS Document */
+
+.zeng_msgbox_layer,
+.zeng_msgbox_layer .gtl_ico_succ,
+.zeng_msgbox_layer .gtl_ico_fail,
+.zeng_msgbox_layer .gtl_ico_hits,
+.zeng_msgbox_layer .gtl_ico_clear,
+.zeng_msgbox_layer .gtl_end {
+	display: inline-block;
+	height: 54px;
+	line-height: 54px;
+	font-size: 14px;
+	color: #fff;
+	background-image: url("gb_tip_layer.png");
+	_background-image: url("gb_tip_layer.png");
+	background-repeat: no-repeat
+}
+
+.zeng_msgbox_layer_wrap {
+	width: 100%;
+	position: fixed;
+	_position: absolute;
+	top: 46%;
+	left: 0;
+	text-align: center;
+	z-index: 65533
+}
+
+.zeng_msgbox_layer {
+	background-position: 0 -161px;
+	background-repeat: repeat-x;
+	padding: 0 18px 0 9px;
+	margin: 0 auto;
+	position: relative
+}
+
+.zeng_msgbox_layer .gtl_ico_succ {
+	background-position: -4px 0;
+	left: -45px;
+	top: 0;
+	width: 45px;
+	position: absolute
+}
+
+.zeng_msgbox_layer .gtl_end {
+	background-position: 0 0;
+	position: absolute;
+	right: -6px;
+	top: 0;
+	width: 6px
+}
+
+.zeng_msgbox_layer .gtl_ico_fail {
+	background-position: -6px -108px;
+	position: absolute;
+	left: -45px;
+	top: 0;
+	width: 45px
+}
+
+.zeng_msgbox_layer .gtl_ico_hits {
+	background-position: -6px -54px;
+	position: absolute;
+	left: -45px;
+	top: 0;
+	width: 45px
+}
+
+.zeng_msgbox_layer .gtl_ico_clear {
+	background-position: -6px 0;
+	left: -5px;
+	width: 5px;
+	position: absolute;
+	top: 0
+}
+
+.zeng_msgbox_layer .gtl_ico_loading {
+	width: 16px;
+	height: 16px;
+	border: 0;
+	background-image: url(loading.gif);
+	float: left;
+	margin: 19px 10px 0 5px
+}

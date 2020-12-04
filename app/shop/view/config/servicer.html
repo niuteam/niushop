@@ -1,0 +1,88 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-input-text span{margin-right: 15px;}
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+	<div class="layui-form-item">
+		<label class="layui-form-label">小程序客服：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="weapp" value="1" title="启用" {if condition="!empty($config) && $config.weapp == 1"} checked {/if}>
+			<input type="radio" name="weapp" value="0" title="不启用" {if condition="empty($config) || $config.weapp != 1"} checked  {/if}>
+			<!-- <input type="checkbox" name="weapp" value="1" lay-skin="switch" {if condition="!empty($config) && $config.weapp == 1"} checked {/if} /> -->
+		</div>
+		<div class="ns-word-aux">适用于小程序端,只要启用此客服,会优先接入小程序客服,否则将接入其他客服</div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">第三方客服：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="open" value="1" title="启用" {if condition="!empty($config) && $config.open == 1"} checked {/if}>
+			<input type="radio" name="open" value="0" title="不启用" {if condition="empty($config) || $config.open != 1"} checked  {/if}>
+			<!-- <input type="checkbox" name="open" value="1" lay-skin="switch" {if condition="!empty($config) && $config.open == 1"} checked {/if} /> -->
+		</div>
+		<div class="ns-word-aux">适用于非小程序端,只要启用此客服，会优先接入第三方客服，否则将接入其他客服，需配置第三方客服聊天链接。例如：美洽</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">第三方客服链接：</label>
+		<div class="layui-input-block">
+			<input type="text" name="open_url" value="{$config.open_url ?? ''}" autocomplete="off" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">第三方客服启用时，必需填写本链接，聊天时调用此链接到第三方聊天窗口。例如：美洽（需开通美洽的聊天链接）</div>
+	</div>
+	{if addon_is_exit('servicer')}
+	<div class="layui-form-it em">
+		<label class="layui-form-label">系统客服：</label>
+		<div class="layui-input-block">
+			<input type="radio" name="system" value="1" title="启用" {if condition="!empty($config) && $config.system == 1"} checked {/if}>
+			<input type="radio" name="system" value="0" title="不启用" {if condition="empty($config) || $config.system != 1"} checked  {/if}>
+			<!-- <input type="checkbox" name="system" value="1" lay-skin="switch" {if condition="!empty($config) && $config.system == 1"} checked {/if} /> -->
+		</div>
+		<div class="ns-word-aux">适用于各种场景，启用后，其他客服未开启时，会接入本客服</div>
+	</div>
+	{/if}
+
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script>
+	layui.use('form', function() {
+		var form = layui.form;
+		repeat_flag = false; //防重复标识
+		form.render();
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			$.ajax({
+				url: ns.url("shop/config/servicer"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res) {
+					if (res.code == 0) {
+						layer.msg('编辑成功');
+						location.reload();
+					}else{
+						repeat_flag = false;
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+	});
+
+
+</script>
+{/block}

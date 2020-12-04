@@ -1,0 +1,35 @@
+.refund-title{font-weight:700;margin-bottom:8px}
+.refund-box{padding:0;font-size:12px;max-width:240px;line-height:21px}
+.refund-item .refund-label{color:#646566;display:inline-block;min-width:60px}
+.refund-item .refund-content{display:inline;white-space:pre-wrap;word-break:break-all}
+.goods-item{display:-ms-flexbox;display:flex;-ms-flex-align:start;align-items:flex-start}
+.refund-item .goods-item .image-wrap{width:64px;height:64px;padding-top:5px;vertical-align:middle;text-align:center;display:-ms-flexbox;display:flex;-ms-flex-align:start;align-items:flex-start}
+.refund-item .goods-item img{width:64px;height:64px;max-width:64px;max-height:64px;min-width:64px}
+.refund-item .goods-item .detail-wrap{margin-left:10px;color:#646566;padding-top:5px}
+.refund-item .goods-item .gray{color:#999}
+.refund-line{border-top:1px solid #ebedf0;padding-top:20px;margin-top:20px}
+.refund-state-box{font-size:12px;line-height:18px}
+.refund-state-box ul{color:#969799}
+.refund-status-remind{color:#ed6a0c}
+.refund-status-top{display:-ms-flexbox;display:flex;-ms-flex-pack:justify;justify-content:space-between;-ms-flex-align:center;align-items:center}
+.refund-status-top-left{position:relative;font-size:17px;margin-left:-16px}
+.refund-status-top-right{color:#646566}
+.refund-status-label{display:inline-block;vertical-align:middle;color:#fff;box-sizing:border-box;height:40px;padding:10px 22px 10px 15px;background:linear-gradient(90deg,#faa04f,#f38421);position:relative}
+.refund-status-label:after{display:inline-block;position:absolute;content:"";right:0;top:0;border-color:transparent #fff transparent transparent;border-style:solid;border-width:20px 6px}
+.refund-no{display:inline-block;margin-left:8px;vertical-align:middle;font-size:16px}
+.refund-apply-member{display:inline-block;margin-right:16px;line-height:20px;vertical-align:middle;position:relative}
+.refund-apply-member:after{display:block;content:"";position:absolute;width:1px;height:20px;background-color:#ebedf0;right:-10px;top:0}
+.refund-apply-time:last-child{margin-right:0}
+.refund-apply-time{display:inline-block;margin-right:16px;line-height:20px;vertical-align:middle;position:relative}
+.refund-button{display: block;position: fixed;left: 274px;right: 27px;bottom: 0;min-width: 760px;clear: both;z-index: 10;transition: right .2s;box-shadow: 0 -3px 5px #eee;}
+.refund-button .inner{padding: 10px;background-color: #fff;border-top: 0;margin: 0;text-align: center;}
+.refund-btn{color:#323233;color:var(--theme-stroke-1,#323233);background-color:#fff;background-color:var(--theme-stroke-9,#fff);display:inline-block;height:32px;line-height:30px;font-size:14px;padding:0 16px;border-radius:2px;font-family:inherit;border:1px solid #dcdee0;border-color:var(--theme-stroke-5,#dcdee0);text-align:center;vertical-align:middle;box-sizing:border-box;cursor:pointer;transition:all .3s}
+.refund-money{color:#d40000}
+.refund-block-title{font-weight:700;padding-bottom:10px;border-bottom:1px solid #ebedf0;background-color:#fff;font-size:14px;margin-top:30px;}
+.refund-block-content{margin-top:20px}
+.refund-way{width:24px;height:24px;line-height:24px;display:inline-block;border-radius:50%;background-color:#74829d;color:#fff;text-align:center}
+.seller-buyer{background-color:#ff8143}
+.platform-buyer{background-color:#5FB878}
+.layui-timeline-item:last-child:before{display:none !important;}
+.layui-timeline-axis:hover{color:#FFF;}
+.desc {color: #999;font-size: 12px}

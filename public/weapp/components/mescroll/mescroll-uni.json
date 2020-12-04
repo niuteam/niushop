@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-loading": "/components/ns-loading/ns-loading",
+    "mescroll-empty": "/components/mescroll/components/mescroll-empty",
+    "mescroll-top": "/components/mescroll/components/mescroll-top"
+  }
+}

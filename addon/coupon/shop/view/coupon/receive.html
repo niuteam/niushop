@@ -1,0 +1,150 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.layui-layer-page .layui-layer-content { padding: 20px 30px; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>查看优惠券领取详情</li>
+		</ul>
+	</div>
+</div>
+<div class="layui-tab ns-table-tab" lay-filter="coupon_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">全部</li>
+		<li lay-id="1">已领取</li>
+		<li lay-id="2">已使用</li>
+		<li lay-id="3">已过期</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="coupon_list" lay-filter="coupon_list"></table>
+	</div>
+</div>
+<!--获取方式-->
+<script type="text/html" id="get_type">
+    {{# if(d.get_type == 1){ }}
+    <div class="layui-elip">订单领取</div>
+    {{# }else if(d.get_type == 2){ }}
+    <div class="layui-elip">直接领取</div>
+    {{# }else if(d.get_type == 3){ }}
+    <div class="layui-elip">获取领取</div>
+	{{# }else if(d.get_type == 4){ }}
+	<div class="layui-elip">转赠</div>
+	{{# }else if(d.get_type == 5){ }}
+	<div class="layui-elip">分享获取</div>
+    {{# } }}
+</script>
+
+<!--状态-->
+<script type="text/html" id="state">
+    {{# if(d.state == 1){ }}
+    <div class="layui-elip">已领取</div>
+    {{# }else if(d.state == 2){ }}
+    <div class="layui-elip">已使用</div>
+    {{# }else if(d.state == 3){ }}
+    <div class="layui-elip">已过期</div>
+    {{# } }}
+</script>
+
+<!--领取时间-->
+<script type="text/html" id="fetch_time">
+	{{ ns.time_to_date(d.fetch_time) }}
+</script>
+
+<!--使用时间-->
+<script type="text/html" id="use_time">
+    {{ ns.time_to_date(d.use_time) }}
+</script>
+
+<input id="coupon_type_id" type="hidden" value="{$coupon_type_id}" />
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form', 'element'], function() {
+		var table,
+			form = layui.form,
+			element = layui.element,
+			coupon_type_id = $('#coupon_type_id').val();
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(coupon_tab)', function(){
+		
+			table.reload({
+		        page: {curr: 1},
+		        where: {'state': this.getAttribute('lay-id'),"coupon_type_id": coupon_type_id},
+		    })
+		});
+
+		table = new Table({
+			elem: '#coupon_list',
+			url: ns.url("coupon://shop/coupon/receive"),
+            where: {
+                "coupon_type_id": coupon_type_id
+            },
+			cols: [
+				[{
+					field: 'coupon_name',
+					title: '优惠券名称',
+					unresize: 'false',
+					width: '15%'
+				},{
+					field: 'nickname',
+					title: '领取人',
+					unresize: 'false',
+					width: '12%'
+				}, {
+					field: 'coupon_code',
+					title: '优惠码',
+					unresize: 'false',
+					width: '10%'
+				}, {
+					field: 'money',
+					title: '面额',
+					unresize: 'false',
+					width: '10%',
+					align: 'right',
+					templet: function(data) {
+						return '￥'+ data.money;
+					}
+				}, {
+					title: '获取方式',
+					unresize: 'false',
+					templet: '#get_type',
+					width: '10%'
+				}, {
+					title: '状态',
+					unresize: 'false',
+                    templet: '#state',
+					width: '8%'
+				}, {
+                    title: '领取时间',
+                    unresize: 'false',
+                    templet: '#fetch_time',
+                    width: '16%'
+                }, {
+                    title: '使用时间',
+                    unresize: 'false',
+                    templet: '#use_time',
+                    width: '16%'
+                }]
+			],
+		});
+		
+		// 搜索
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+</script>
+{/block}

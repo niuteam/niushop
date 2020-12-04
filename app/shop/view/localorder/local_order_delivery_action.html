@@ -1,0 +1,170 @@
+<!-- 订单物流发货 -->
+<style>
+    .delivery-box {
+        padding: 20px;
+        /*border-bottom:1px  solid #e6e6e6;*/
+    }
+
+    .layui-table-body {
+        overflow: unset;
+    }
+
+    .delivery-content {
+        padding: 7px 0 !important;
+    }
+
+    .layui-table-view {
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-delivery .layui-table {
+        /*margin-bottom: 30px;*/
+    }
+
+    .layui-form #order_goods_list thead th, .layui-form #order_goods_list tbody tr {
+        border-bottom: 1px solid #E6E6E6;
+    }
+
+    .layui-form #order_goods_list thead th {
+        background-color: #F5F5F5;
+        line-height: 30px;
+    }
+
+    .order-delivery .ns-input-text {
+        height: auto;
+        min-height: 34px;
+    }
+</style>
+<!--发送订单弹出框-->
+<script type="text/html" id="local_order_delivery_html">
+    <div class="order-delivery">
+        <div class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">收货地址：</label>
+                <div class="layui-input-block">
+                    <p class="ns-input-text ns-len-long"> {{ d.order_info.full_address }}{{ d.order_info.address }}</p>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">发货方式：</label>
+                <div class="layui-input-block">
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="default" title="商家自配送"
+                           checked>
+                    <input type="radio" lay-filter="delivery_type" name="delivery_type" value="default" title="第三方配送"
+                           disabled>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">配送员：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="deliverer" lay-verify="required" placeholder="" autocomplete="off" class="layui-input ns-len-mid">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">配送员手机号：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="deliverer_mobile" lay-verify="required|phone" placeholder="" autocomplete="off" class="layui-input ns-len-mid">
+                </div>
+            </div>
+
+            <input type="hidden" name="order_id" value="{{ d.order_info.order_id }}"class="layui-input" />
+            <div class="ns-form-row">
+                <button type="button" class="layui-btn" lay-submit id="button_local_delivery_order" lay-filter="button_local_delivery_order" style="display:none;">保存
+                </button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+
+    /**
+     * 外卖配送订单发货
+     */
+    var submitting = false;
+
+    function orderLocalDelivery(order_id) {
+        var product_arr = [];
+        layui.use(['table', 'form', 'laytpl'], function () {
+            var laytpl = layui.laytpl, table = layui.table, form = layui.form;
+            form.render();
+            //获取模板
+            var getTpl = $("#local_order_delivery_html").html();
+            //渲染模板
+            var data = {};
+            //查询订单信息
+            $.ajax({
+                type: "post",
+                url: ns.url("shop/order/getorderinfo"),
+                dataType: 'json',
+                async: false,
+                data: {
+                    "order_id": order_id
+                },
+                success: function (res) {
+                    if (res.code == 0) {
+                        data.order_info = res.data;
+                    }
+                }
+            });
+
+            laytpl(getTpl).render(data, function (html) {
+                layer.open({
+                    type: 1,
+                    shadeClose: true,
+                    shade: 0.3,
+                    fixed: false,
+                    scrollbar: false,
+                    title: "订单发货",
+                    area: '800px',
+                    btn: ['保存'],
+                    yes: function (index, layero) {
+                        $("#button_local_delivery_order").click();
+                    },
+                    content: html,
+                    cancel: function (index, layero) {
+                        //右上角关闭回调
+                        layer.close(index);
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    },
+                    success: function (layero, index) {
+                        form.render();
+
+                        form.on('submit(button_local_delivery_order)', function (data) {
+                            if (submitting) {
+                                return false;
+                            }
+                            submitting = true;
+
+                            $.ajax({
+                                type: "post",
+                                url: ns.url("shop/localorder/delivery"),
+                                async: true,
+                                dataType: 'json',
+                                data: data.field,
+                                success: function (res) {
+                                    layer.msg(res.message, {}, function () {
+                                        if (res.code == 0) {
+                                            layer.close(index);
+                                            location.reload();
+                                        } else {
+                                            submitting = false;
+                                        }
+                                    });
+                                }
+                            })
+                        });
+
+                    }
+
+                });
+            })
+        })
+
+    }
+
+</script>

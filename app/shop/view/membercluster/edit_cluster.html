@@ -1,0 +1,721 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .ns-form {margin-top: 0;}
+    .layui-btn+.layui-btn {margin-left: 0;}
+    .layui-btn {margin-right: 10px; margin-bottom: 15px;}
+    .weight-list span{display: inline-block;width: 60px;line-height: 30px;border:1px solid #eee;border-radius: 4px;text-align: center;font-size: 12px;cursor: pointer;}
+    .weight-list span.active{border-color: #ff8143; }
+    .weight-list span.disabled{background:#f1f1f1;cursor: not-allowed; }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form">
+    <!-- 基础上传 -->
+    <div class="layui-card ns-card-common ns-card-brief">
+        <div class="layui-card-header">
+            <span class="ns-card-title">基础设置</span>
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>群体名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="cluster_name" lay-verify="required" autocomplete="off" value="{$cluster_info['cluster_name']}" class="layui-input ns-len-mid">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card ns-card-common ns-card-brief">
+        <div class="layui-card-header">
+            <span class="ns-card-title">选项设置</span>
+        </div>
+        <div class="layui-card-body">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">会员基本信息</label>
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['member_level']['is_show'] == 1} ns-border-color {/if}">会员等级<input type="hidden" value="0" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['member_label']['is_show'] == 1} ns-border-color {/if}">会员标签<input type="hidden" value="1" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['sex']['is_show'] == 1} ns-border-color {/if}">性别<input type="hidden" value="2" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['birthday']['is_show'] == 1} ns-border-color {/if}">生日<input type="hidden" value="3" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['reg_time']['is_show'] == 1} ns-border-color {/if}">注册时间<input type="hidden" value="4" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['point']['is_show'] == 1} ns-border-color {/if}">当前积分<input type="hidden" value="5" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['balance']['is_show'] == 1} ns-border-color {/if}">当前余额<input type="hidden" value="6" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['growth']['is_show'] == 1} ns-border-color {/if}">当前成长值<input type="hidden" value="7" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['sign_days_series']['is_show'] == 1} ns-border-color {/if}">连续签到次数<input type="hidden" value="8" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['basic']['mobile']['is_show'] == 1} ns-border-color {/if}">会员手机<input type="hidden" value="9" /></button>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">会员消费情况</label>
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['consume']['order_money']['is_show'] == 1} ns-border-color {/if}">付款金额<input type="hidden" value="10" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['consume']['order_complete_money']['is_show'] == 1} ns-border-color {/if}">消费金额<input type="hidden" value="11" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['consume']['order_num']['is_show'] == 1} ns-border-color {/if}">付款次数<input type="hidden" value="12" /></button>
+                    <button class="layui-btn layui-btn-primary ns-cluster-btn {if $cluster_info['rule_arr']['consume']['order_complete_num']['is_show'] == 1} ns-border-color {/if}">消费次数<input type="hidden" value="13" /></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card ns-card-common ns-card-brief">
+        <div class="layui-card-header">
+            <span class="ns-card-title">群体设置</span>
+        </div>
+        <div class="layui-card-body">
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <table class="layui-table" id="goods" lay-skin="line" lay-size="lg">
+                        <colgroup>
+                            <col width="15%">
+                            <col width="20%">
+                            <col width="50%">
+                            <col width="10%">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>选项</th>
+                            <th>范围</th>
+                            <th>条件</th>
+                            <th class="operation">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['member_level']['is_show'] == 0} layui-hide {/if}">
+                            <td>会员等级</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[member_level][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['member_level']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[member_level][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['member_level']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="text" autocomplete="off" class="layui-input member-level-con" readonly onclick="settinglevel()" value="{$cluster_info['rule_arr']['basic']['member_level']['content_name']}">
+                                    <input type="hidden" name="basic[member_level][content]" value="{$cluster_info['rule_arr']['basic']['member_level']['content']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[member_level][is_show]" value="{$cluster_info['rule_arr']['basic']['member_level']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['member_label']['is_show'] == 0} layui-hide {/if}">
+                            <td>会员标签</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[member_label][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['member_label']['include'] == 1"} checked {/if}>
+								<input type="radio" class="include" name="basic[member_label][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['member_label']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="text" autocomplete="off" class="layui-input member-label-con" readonly onclick="settinglabel()" value="{$cluster_info['rule_arr']['basic']['member_label']['content_name']}">
+                                    <input type="hidden" name="basic[member_label][content]" value="{$cluster_info['rule_arr']['basic']['member_label']['content']}">
+								</div>
+                                <input type="hidden" class="is-show" name="basic[member_label][is_show]" value="{$cluster_info['rule_arr']['basic']['member_label']['is_show']}">
+                            </td>
+							<td class='operation'>
+								<div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+							</td>
+						</tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['sex']['is_show'] == 0} layui-hide {/if}">
+                            <td>会员性别</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[sex][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['sex']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[sex][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['sex']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <input type="checkbox" class="ns-input-checkbox" lay-skin="primary" lay-filter="sex" name="basic[sex][content]" value="0" title="保密" {if in_array(0, $cluster_info['rule_arr']['basic']['sex']['content_arr'])}checked{/if}>
+                                <input type="checkbox" class="ns-input-checkbox" lay-skin="primary" lay-filter="sex" name="basic[sex][content]" value="1" title="男" {if in_array(1, $cluster_info['rule_arr']['basic']['sex']['content_arr'])}checked{/if}>
+                                <input type="checkbox" class="ns-input-checkbox" lay-skin="primary" lay-filter="sex" name="basic[sex][content]" value="2" title="女" {if in_array(2, $cluster_info['rule_arr']['basic']['sex']['content_arr'])}checked{/if}>
+                                <input type="hidden" class="is-show" name="basic[sex][is_show]" value="{$cluster_info['rule_arr']['basic']['sex']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['birthday']['is_show'] == 0} layui-hide {/if}">
+                            <td>会员生日</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[birthday][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['birthday']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[birthday][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['birthday']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input layui-input-start" name="basic[birthday][start]" id="birthday_start_date" placeholder="请输入开始时间" autocomplete="off" readonly value="{$cluster_info['rule_arr']['basic']['birthday']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="text" class="layui-input layui-input-end" name="basic[birthday][end]" id="birthday_end_date" placeholder="请输入结束时间" autocomplete="off" readonly value="{$cluster_info['rule_arr']['basic']['birthday']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[birthday][is_show]" value="{$cluster_info['rule_arr']['basic']['birthday']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['reg_time']['is_show'] == 0} layui-hide {/if}">
+                            <td>注册时间</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[reg_time][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['reg_time']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[reg_time][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['reg_time']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="text" class="layui-input layui-input-start" name="basic[reg_time][start]" id="reg_start_date" placeholder="请输入开始时间" autocomplete="off" readonly value="{$cluster_info['rule_arr']['basic']['reg_time']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="text" class="layui-input layui-input-end" name="basic[reg_time][end]" id="reg_end_date" placeholder="请输入结束时间" autocomplete="off" readonly value="{$cluster_info['rule_arr']['basic']['reg_time']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[reg_time][is_show]" value="{$cluster_info['rule_arr']['basic']['reg_time']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['point']['is_show'] == 0} layui-hide {/if}">
+                            <td>当前积分</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[point][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['point']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[point][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['point']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-int" name="basic[point][start]" placeholder="请输入积分最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['point']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-int" name="basic[point][end]" placeholder="请输入积分最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['point']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[point][is_show]" value="{$cluster_info['rule_arr']['basic']['point']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['balance']['is_show'] == 0} layui-hide {/if}">
+                            <td>当前余额</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[balance][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['balance']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[balance][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['balance']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-flo" name="basic[balance][start]" placeholder="请输入当前余额最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['balance']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-flo" name="basic[balance][end]" placeholder="请输入当前余额最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['balance']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[balance][is_show]" value="{$cluster_info['rule_arr']['basic']['balance']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['growth']['is_show'] == 0} layui-hide {/if}">
+                            <td>当前成长值</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[growth][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['growth']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[growth][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['growth']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-flo" name="basic[growth][start]" placeholder="请输入当前成长值最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['growth']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-flo" name="basic[growth][end]" placeholder="请输入当前成长值最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['growth']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[growth][is_show]" value="{$cluster_info['rule_arr']['basic']['growth']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['sign_days_series']['is_show'] == 0} layui-hide {/if}">
+                            <td>签到次数</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[sign_days_series][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['sign_days_series']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[sign_days_series][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['sign_days_series']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-int" name="basic[sign_days_series][start]" placeholder="请输入签到次数最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['sign_days_series']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-int" name="basic[sign_days_series][end]" placeholder="请输入签到次数最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['basic']['sign_days_series']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[sign_days_series][is_show]" value="{$cluster_info['rule_arr']['basic']['sign_days_series']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['basic']['mobile']['is_show'] == 0} layui-hide {/if}">
+                            <td>会员手机</td>
+                            <td>
+                                <input type="radio" class="include" name="basic[mobile][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['basic']['mobile']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="basic[mobile][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['basic']['mobile']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="basic[mobile][content]" lay-verify="flo" autocomplete="off" class="layui-input member-mobile" value="{$cluster_info['rule_arr']['basic']['mobile']['content']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="basic[mobile][is_show]" value="{$cluster_info['rule_arr']['basic']['mobile']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['consume']['order_money']['is_show'] == 0} layui-hide {/if}">
+                            <td>付款金额</td>
+                            <td>
+                                <input type="radio" class="include" name="consume[order_money][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['consume']['order_money']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="consume[order_money][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['consume']['order_money']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-flo" name="consume[order_money][start]" placeholder="请输入付款金额最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_money']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-flo" name="consume[order_money][end]" placeholder="请输入付款金额最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_money']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="consume[order_money][is_show]" value="{$cluster_info['rule_arr']['consume']['order_money']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['consume']['order_complete_money']['is_show'] == 0} layui-hide {/if}">
+                            <td>消费金额</td>
+                            <td>
+                                <input type="radio" class="include" name="consume[order_complete_money][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['consume']['order_complete_money']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="consume[order_complete_money][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['consume']['order_complete_money']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-flo" name="consume[order_complete_money][start]" placeholder="请输入消费金额最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_complete_money']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-flo" name="consume[order_complete_money][end]" placeholder="请输入消费金额最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_complete_money']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="consume[order_complete_money][is_show]" value="{$cluster_info['rule_arr']['consume']['order_complete_money']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['consume']['order_num']['is_show'] == 0} layui-hide {/if}">
+                            <td>付款次数</td>
+                            <td>
+                                <input type="radio" class="include" name="consume[order_num][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['consume']['order_num']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="consume[order_num][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['consume']['order_num']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-int" name="consume[order_num][start]" placeholder="请输入付款次数最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_num']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-int" name="consume[order_num][end]" placeholder="请输入付款次数最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_num']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="consume[order_num][is_show]" value="{$cluster_info['rule_arr']['consume']['order_num']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        <tr class="ns-cluster-content {if $cluster_info['rule_arr']['consume']['order_complete_num']['is_show'] == 0} layui-hide {/if}">
+                            <td>消费次数</td>
+                            <td>
+                                <input type="radio" class="include" name="consume[order_complete_num][include]" value="1" title="包含" {if condition="$cluster_info['rule_arr']['consume']['order_complete_num']['include'] == 1"} checked {/if}>
+                                <input type="radio" class="include" name="consume[order_complete_num][include]" value="2" title="不包含" {if condition="$cluster_info['rule_arr']['consume']['order_complete_num']['include'] == 2"} checked {/if}>
+                            </td>
+                            <td>
+                                <div class="layui-input-inline">
+                                    <input type="number" class="layui-input layui-input-start layui-input-int" name="consume[order_complete_num][start]" placeholder="请输入消费次数最小值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_complete_num']['start']}">
+                                </div>
+                                <div class="layui-input-inline ns-split">-</div>
+                                <div class="layui-input-inline end-time">
+                                    <input type="number" class="layui-input layui-input-end layui-input-int" name="consume[order_complete_num][end]" placeholder="请输入消费次数最大值" autocomplete="off" min="0" value="{$cluster_info['rule_arr']['consume']['order_complete_num']['end']}">
+                                </div>
+                                <input type="hidden" class="is-show" name="consume[order_complete_num][is_show]" value="{$cluster_info['rule_arr']['consume']['order_complete_num']['is_show']}">
+                            </td>
+                            <td class='operation'>
+                                <div class='ns-table-btn '><a href='javascript:;' class='layui-btn' onclick='delDiv(this)'>删除</a></div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="ns-form-row">
+                <button class="layui-btn ns-bg-color" lay-submit lay-filter="calculate">计算会员数</button>
+                <div>符合条件的群体人数： <span class="member_num ns-text-color">{$cluster_info['member_num']}</span> 人，点击计算按钮可查看符合条件的群体人数。</div>
+            </div>
+        </div>
+
+        <div class="layui-card-body">
+
+            <div class="ns-form-row">
+                <!-- 获取cluster_id -->
+                <input type="hidden" name="cluster_id" id="cluster_id" lay-verify="required" value="{$cluster_info.cluster_id}"  class="layui-input">
+                <button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+                <button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    $(function(){
+        $('.weight-list span').not('.disabled').eq(0).addClass("active");
+		
+		$(".ns-cluster-content").each(function() {
+			if ($(this).hasClass("layui-hide")) {
+				$(this).find("input").removeAttr("lay-verify");
+			} else {
+				$(this).find(".layui-input-inline input.layui-input").attr("lay-verify", "notnull");
+				$(this).find(".layui-input-inline input.layui-input-start").attr("lay-verify", "notnull|start");
+				$(this).find(".layui-input-inline input.layui-input-end").attr("lay-verify", "notnull|end");
+				$(this).find(".layui-input-inline input[type='number']").attr("lay-verify", "notnull|end|num");
+				$(this).find(".layui-input-inline input.member-mobile").attr("lay-verify", "notnull|len");
+				$(this).find(".layui-input-inline input.layui-input-int").attr("lay-verify", "notnull|end|num|int");
+				$(this).find(".layui-input-inline input.layui-input-flo").attr("lay-verify", "notnull|end|num|flo");
+			}
+		});
+    })
+
+    var form, laytpl, laydate, isClick = false, member_num = 0, member_ids = '', sexVal = [];
+
+    layui.use(['form', 'laytpl', 'laydate'], function() {
+        form = layui.form;
+        laytpl = layui.laytpl;
+        laydate = layui.laydate;
+        var repeat_flag = false; //防重复标识
+        form.render();
+
+        //生日开始时间
+        laydate.render({
+            elem: '#birthday_start_date',
+            type: 'datetime'
+        });
+
+        //生日结束时间
+        laydate.render({
+            elem: '#birthday_end_date',
+            type: 'datetime'
+        });
+
+        //注册开始时间
+        laydate.render({
+            elem: '#reg_start_date',
+            type: 'datetime'
+        });
+
+        //注册结束时间
+        laydate.render({
+            elem: '#reg_end_date',
+            type: 'datetime'
+        });
+
+
+        $(".weight-list span").click(function() {
+            if (!$(this).hasClass("disabled")) {
+                $(this).addClass("active");
+                $(this).siblings().removeClass("active");
+            }
+        });
+
+        $(".ns-cluster-btn").click(function() {
+            var _index = $(this).children().val();
+
+            if (!$(this).hasClass("ns-border-color")) {
+                $(this).addClass("ns-border-color");
+				$(".ns-cluster-content").eq(_index).removeClass("layui-hide");
+				$(".ns-cluster-content").eq(_index).find(".is-show").val(1);
+				$(".ns-cluster-content").eq(_index).find(".layui-input-inline input.layui-input").attr("lay-verify", "notnull");
+				$(".ns-cluster-content").eq(_index).find(".layui-input-inline input.layui-input-start").attr("lay-verify", "notnull|start");
+				$(".ns-cluster-content").eq(_index).find(".layui-input-inline input.layui-input-end").attr("lay-verify", "notnull|end");
+				$(".ns-cluster-content").eq(_index).find(".layui-input-inline input[type='number']").attr("lay-verify", "notnull|end|num");
+				$(".ns-cluster-content").eq(_index).find(".layui-input-inline input.member-mobile").attr("lay-verify", "notnull|len");
+                $(".ns-cluster-content").eq(_index).find(".layui-input-inline input.layui-input-int.layui-input-start").attr("lay-verify", "notnull|start|num|int");
+                $(".ns-cluster-content").eq(_index).find(".layui-input-inline input.layui-input-flo.layui-input-end").attr("lay-verify", "notnull|end|num|flo");
+            }
+            //点击了需要重新计算
+            // isClick = false;
+
+			form.render();
+        });
+
+        form.on('submit(calculate)', function(data) {
+            // isClick = true;
+            var rule_json = resetData(data.field);
+
+			if (rule_json.basic.sex.is_show == 1) {
+				var flag = false;
+				$(".ns-input-checkbox").each(function() {
+					var isChecked = $(this).is(":checked");
+					if (isChecked) {
+						flag = true;
+					}
+				});
+				if (!flag) {
+					layer.msg("请选择性别", {icon: 5, anim: 6});
+					return false;
+				}
+			}
+
+            $.ajax({
+                url: ns.url("shop/membercluster/calculate"),
+                type: "POST",
+                dataType: "JSON",
+                data: {
+                    rule_json: JSON.stringify(rule_json)
+                },
+                success: function(res) {
+                    if (res.code >= 0) {
+                        member_num = res.data.member_num;
+                        member_ids = res.data.member_ids;
+                        $(".member_num").html(member_num);
+                    }
+                }
+            })
+        });
+
+        form.on('submit(save)', function(data) {
+            // if (isClick) {
+                var rule_json = resetData(data.field);
+                $.ajax({
+                    url: ns.url("shop/membercluster/editCluster"),
+                    type: "POST",
+                    dataType: "JSON",
+                    data: {
+                        cluster_name: data.field.cluster_name,
+                        rule_json: JSON.stringify(rule_json),
+                        cluster_id: $("#cluster_id").val()
+                    },
+                    success: function(res) {
+                        layer.msg(res.message);
+                        if (res.code >= 0) {
+                            location.href = ns.url("shop/membercluster/clusterList")
+                        }
+                    }
+                })
+            // } else {
+            //     layer.msg("请先计算会员数", {icon: 5, anim: 6});
+            // }
+        });
+
+
+        form.on('submit(setlabel)', function(obj) {
+            var field = obj.field;
+            var arr_id = [], temp = [];
+
+            for (var prop in field) {
+                arr_id.push(field[prop]);
+                $("#set_label").find("input").each(function() {
+                    var label_id = $(this).attr("data-id");
+                    if (field[prop] == label_id) {
+                        temp.push($(this).attr("title"))
+                    }
+                })
+            }
+            $(".member-label-con").val(temp);
+            $("input[name='basic[member_label][content]']").val(arr_id);
+            layer.closeAll('page');
+        });
+
+
+        form.on('submit(setlevel)', function(obj) {
+            var field = obj.field;
+            var arr_id = [], temp = [];
+
+            for (var prop in field) {
+                arr_id.push(field[prop]);
+                $("#set_level").find("input").each(function() {
+                    var level_id = $(this).attr("data-id");
+                    if (field[prop] == level_id) {
+                        temp.push($(this).attr("title"))
+                    }
+                })
+            }
+            $(".member-level-con").val(temp);
+            $("input[name='basic[member_level][content]']").val(arr_id);
+            layer.closeAll('page');
+        });
+
+        /**
+         * 表单验证
+         */
+        form.verify({
+            notnull: function(value, item) {
+                var str = $(item).parents(".ns-cluster-content").find("td").eq(0).text();
+                if (value == '') {
+                    return str + '不能为空';
+                }
+            },
+            end: function(value, item) {
+                var start = $(item).parents(".ns-cluster-content").find(".layui-input-start").val();
+                var str1 = $(item).attr("placeholder").slice(3);
+                var str2 = $(item).parents(".ns-cluster-content").find(".layui-input-start").attr("placeholder").slice(3);
+                if (Number(value) < Number(start)) {
+                    return str1 + "不能小于" + str2;
+                }
+            },
+            num: function(value, item) {
+                var str = $(item).parents(".ns-cluster-content").find("td").eq(0).text();
+                if (value < 0) {
+                    return str + "不能小于0";
+                }
+            },
+            len: function(value, item) {
+                if (value.length > 11) {
+                    return "手机号为11位";
+                }
+            },
+            int: function(value, item) {
+                var str = $(item).parents(".ns-cluster-content").find("td").eq(0).text();
+                if (value % 1 != 0) {
+                    return str + "不能为小数";
+                }
+            },
+            flo: function(value, item) {
+                var str = $(item).parents(".ns-cluster-content").find("td").eq(0).text();
+                if (value * 100 % 1 != 0) {
+                    return str + "最多保留两位小数";
+                }
+            }
+        })
+    });
+
+    /**
+     * 设置标签
+     */
+    function settinglabel() {
+
+        laytpl($("#label_change").html()).render({}, function(html) {
+            layer_label = layer.open({
+                title: '设置标签',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['450px'],
+                content: html,
+            });
+        });
+
+        form.render();
+    }
+
+    /**
+     * 设置等级
+     */
+    function settinglevel() {
+        laytpl($("#level_change").html()).render({}, function(html) {
+            layer_level = layer.open({
+                title: '设置等级',
+                skin: 'layer-tips-class',
+                type: 1,
+                area: ['450px'],
+                content: html,
+            });
+        });
+
+        form.render();
+    }
+
+    function delDiv(e) {
+        var _len = $(e).parents(".ns-cluster-content").index();
+        $(e).parents(".ns-cluster-content").addClass("layui-hide");
+        $(e).parents(".ns-cluster-content").find("input").removeAttr("lay-verify");
+        $(e).parents(".ns-cluster-content").find(".layui-input-inline input").val("");
+        $(e).parents(".ns-cluster-content").find(".is-show").val(0);
+        $(e).parents(".ns-cluster-content").find("input[name='basic[sex][content]']").prop("checked",false);
+        $(".ns-cluster-btn").eq(_len).removeClass("ns-border-color");
+    }
+
+    function closeLabel() {
+        layer.close(layer_label);
+    }
+
+    function closeLevel() {
+        layer.close(layer_level);
+    }
+
+    function back() {
+        location.href = ns.url("shop/membercluster/clusterList");
+    }
+
+    // 数据结构
+    function resetData(data) {
+        var rule_json = {};
+
+        $.each(data, function(index, item) {
+            if (index.indexOf("[") != -1) {
+                var arr = index.split("[");
+                if (rule_json[arr[0]] == undefined) {
+                    rule_json[arr[0]] = {};
+                }
+                var name = arr[1].slice(0, arr[1].length - 1);
+                if (rule_json[arr[0]][name] == undefined) {
+                    rule_json[arr[0]][name] = {};
+                }
+                var attr = arr[2].slice(0, arr[2].length - 1);
+                rule_json[arr[0]][name][attr] = item;
+            }
+        })
+
+        sexVal = [];
+        $("input[name='basic[sex][content]']:checked").each(function (index, item) {
+            sexVal.push($(this).val());
+        });
+
+		rule_json.basic.sex.content = sexVal.toString();
+        return rule_json;
+    }
+</script>
+
+<!-- 设置标签弹框html -->
+<script type="text/html" id="label_change">
+    <div class="layui-form member-form" id="set_label" lay-filter="form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">标签：</label>
+            <div class="layui-input-block">
+                {foreach $member_label_list as $member_label_list_k => $member_label_list_v}
+                <input type="checkbox" name="label_id{$member_label_list_v.label_id}" data-id="{$member_label_list_v.label_id}" value="{$member_label_list_v.label_id}" title="{$member_label_list_v.label_name}" lay-skin="primary">
+                {/foreach}
+            </div>
+        </div>
+
+        <div class="ns-form-row sm">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="setlabel">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeLabel()">返回</button>
+        </div>
+    </div>
+</script>
+
+<!-- 设置标签弹框html -->
+<script type="text/html" id="level_change">
+    <div class="layui-form member-form" id="set_level" lay-filter="form">
+        <div class="layui-form-item">
+            <label class="layui-form-label sm">等级：</label>
+            <div class="layui-input-block">
+                {foreach $member_level_list as $member_level_list_k => $member_level_list_v}
+                <input type="checkbox" name="level_id{$member_level_list_v.level_id}" data-id="{$member_level_list_v.level_id}" value="{$member_level_list_v.level_id}" title="{$member_level_list_v.level_name}" lay-skin="primary">
+                {/foreach}
+            </div>
+        </div>
+
+        <div class="ns-form-row sm">
+            <button class="layui-btn ns-bg-color" lay-submit lay-filter="setlevel">确定</button>
+            <button class="layui-btn layui-btn-primary" onclick="closeLevel()">返回</button>
+        </div>
+    </div>
+</script>
+{/block}

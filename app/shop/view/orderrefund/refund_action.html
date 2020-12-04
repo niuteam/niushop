@@ -1,0 +1,401 @@
+<style>
+    .refund-view-list{margin-top:20px;font-size:14px;line-height:20px;color:#323233;color:var(--theme-stroke-1,#323233)}
+	.refund-view-item {margin-bottom: 10px;}
+    /*!*display: -ms-flexbox;*!*//*!*display: flex;*!*/.refund-view-item-label{width:75px; vertical-align: top;}
+    .refund-view-item-content{display:inline-block}
+</style>
+<!-- 售后申请同意 -->
+<script type="text/html" id="refund_agree_html">
+    <div style="padding:10px;">
+        <div class="layui-form refund-agree-html" id='refund_agree'lay-filter="refund_agree">
+            <div style="color: #666;">注意 : 该笔订单通过在线付款，商家同意后，退款将自动原路退回买家付款账户。</div>
+            <div class="refund-view-list">
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款方式：</label>
+                    <div class="refund-view-item-content">{if $detail.refund_type == 1}仅退款{else/}退货退款{/if}</div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款金额：</label>
+                    <div class="refund-view-item-content">
+                        <span class="refund-money">￥{$detail.refund_apply_money}</span>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="order_goods_id" value="{$detail.order_goods_id}"/>
+            <button class="layui-btn"  lay-submit id="submit_agree" lay-filter="submit_agree" style="display:none;">保存</button>
+        </div>
+    </div>
+</script>
+<!-- 售后申请拒绝 -->
+<script type="text/html" id="refund_refuse_html">
+    <div style="padding:10px;">
+        <div class="layui-form refund-refuse-html" id='refund_refuse'lay-filter="refund_refuse">
+            <div style="color: #666;">注意 : 建议你与买家协商后，再确定是否拒绝退款。如你拒绝退款后，买家可修改退款申请协议重新发起退款。</div>
+            <div class="refund-view-list">
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款方式：</label>
+                    <div class="refund-view-item-content">{if $detail.refund_type == 1}仅退款{else/}退货退款{/if}</div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款金额：</label>
+                    <div class="refund-view-item-content">
+                        <span class="refund-money">￥{$detail.refund_apply_money}</span>
+                    </div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">拒绝理由：</label>
+                    <div class="refund-view-item-content">
+                        <textarea name="refund_refuse_reason" placeholder="请填写您的拒绝理由!" class="layui-textarea ns-len-mid" style="overflow: hidden;word-wrap: break-word;resize: horizontal;height: 54px;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="order_goods_id" value="{$detail.order_goods_id}"/>
+            <button class="layui-btn"  lay-submit id="submit_refuse" lay-filter="submit_refuse" style="display:none;">保存</button>
+        </div>
+    </div>
+</script>
+<!-- 买家退货接收 -->
+<script type="text/html" id="refund_take_delivery_html">
+    <div style="padding:10px;">
+        <div class="layui-form refund-take-delivery-html" id='refund_take_delivery'lay-filter="refund_take_delivery">
+            <div style="color: #666;">注意 : 需你同意退款申请，买家才能退货给你；买家退货后你需再次确认收货后，退款将自动原路退回至买家付款账户。</div>
+            <div class="refund-view-list">
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款方式：</label>
+                    <div class="refund-view-item-content">{if $detail.refund_type == 1}仅退款{else/}退货退款{/if}</div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款金额：</label>
+                    <div class="refund-view-item-content">
+                        <span class="refund-money">￥{$detail.refund_apply_money}</span>
+                    </div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退货地址：</label>
+                    <div class="refund-view-item-content">{$detail.refund_address}</div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">是否入库：</label>
+                    <div class="refund-view-item-content">
+                        <input type="radio" name="is_refund_stock" value="0" title="否"lay-skin="primary" checked>
+                        <input type="radio" name="is_refund_stock" value="1" title="是"lay-skin="primary">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="order_goods_id" value="{$detail.order_goods_id}"/>
+            <button class="layui-btn"  lay-submit id="submit_take_delivery" lay-filter="submit_take_delivery" style="display:none;">保存</button>
+        </div>
+    </div>
+</script>
+<!-- 转账退款接收 -->
+<script type="text/html" id="refund_transfer_html">
+    <div style="padding:10px;">
+        <div class="layui-form refund-transfer-html" id='refund_transfer'lay-filter="refund_transfer">
+            <div style="color: #666;">注意 : 当你确认转账后，退款将自动原路退回至买家付款账户。</div>
+            <div class="refund-view-list">
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款方式：</label>
+                    <div class="refund-view-item-content">{if $detail.refund_type == 1}仅退款{else/}退货退款{/if}</div>
+                </div>
+                <div class="refund-view-item">
+                    <label class="refund-view-item-label">退款金额：</label>
+                    <div class="refund-view-item-content">
+                        <span class="refund-money">￥{$detail.refund_apply_money}</span>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="order_goods_id" value="{$detail.order_goods_id}"/>
+            <button class="layui-btn"  lay-submit id="submit_transfer" lay-filter="submit_transfer" style="display:none;">保存</button>
+        </div>
+    </div>
+</script>
+
+
+<script>
+    var laytpl;
+    var form;
+    //渲染模板引擎
+    layui.use(['laytpl','form'], function(){
+        laytpl = layui.laytpl;
+        form = layui.form;
+		form.render();
+    });
+    /**
+     * 订单调价
+     */
+    function orderRefundAgree(order_goods_id) {
+
+        //获取模板
+        var getTpl = $("#refund_agree_html").html();
+        var data = [];
+        //渲染模板
+        laytpl(getTpl).render(data, function(html) {
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                shade: 0.3,
+                offset: 'auto',
+                scrollbar: true,
+                fixed: false,
+                title: "售后维权处理",
+                area: ['700px', 'auto'],
+                btn: ['确认退款', '取消'],
+                yes: function(index, layero){
+                    $("#submit_agree").click();
+                },
+                btn2: function(index, layero){
+                    layer.close(index);
+                },
+                content:  html,
+                cancel: function(){
+                    //右上角关闭回调
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                success: function(layero, index){
+                    var repeat_flag = false;//防重复标识
+                    form.render();
+
+                    form.on('submit(submit_agree)', function(data){
+                        if(repeat_flag)return;
+                        repeat_flag = true;
+                        $.ajax({
+                            url: ns.url("shop/orderrefund/agree"),
+                            type: "POST",
+                            dataType: "JSON",
+                            async: false,
+                            data: data.field,
+                            success: function (res) {
+                                layer.msg(res.message);
+                                if(res.code == 0){
+                                    layer.closeAll();
+                                    location.reload();
+                                }else{
+                                    repeat_flag = false;
+                                }
+
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            form.render();
+        });
+
+    }
+    
+    /**
+     * 售后拒绝
+     */
+    function orderRefundRefuse(order_goods_id) {
+
+        //获取模板
+        var getTpl = $("#refund_refuse_html").html();
+        var data = [];
+        //渲染模板
+        laytpl(getTpl).render(data, function(html) {
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                shade: 0.3,
+                offset: 'auto',
+                scrollbar: true,
+                fixed: false,
+                title: "售后维权处理",
+                area: ['700px', 'auto'],
+                btn: ['确认拒绝', '取消'],
+                yes: function(index, layero){
+                    $("#submit_refuse").click();
+                },
+                btn2: function(index, layero){
+                    layer.close(index);
+                },
+                content:  html,
+                cancel: function(){
+                    //右上角关闭回调
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                success: function(layero, index){
+                    var repeat_flag = false;//防重复标识
+                    form.render();
+
+                    form.on('submit(submit_refuse)', function(data){
+                        if(repeat_flag)return;
+                        repeat_flag = true;
+                        $.ajax({
+                            url: ns.url("shop/orderrefund/refuse"),
+                            type: "POST",
+                            dataType: "JSON",
+                            async: false,
+                            data: data.field,
+                            success: function (res) {
+                                layer.msg(res.message);
+                                if(res.code == 0){
+                                    layer.closeAll();
+                                    location.reload();
+                                }else{
+                                    repeat_flag = false;
+                                }
+
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            form.render();
+        });
+
+    }
+    
+    /**
+     * 买家退货接收
+     */
+    function orderRefundTakeDelivery(order_goods_id) {
+
+        //获取模板
+        var getTpl = $("#refund_take_delivery_html").html();
+        var data = [];
+        //渲染模板
+        laytpl(getTpl).render(data, function(html) {
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                shade: 0.3,
+                offset: 'auto',
+                scrollbar: true,
+                fixed: false,
+                title: "售后维权处理",
+                area: ['700px', 'auto'],
+                btn: ['确认收到退货', '取消'],
+                yes: function(index, layero){
+                    $("#submit_take_delivery").click();
+                },
+                btn2: function(index, layero){
+                    layer.close(index);
+                },
+                content:  html,
+                cancel: function(){
+                    //右上角关闭回调
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                success: function(layero, index){
+                    var repeat_flag = false;//防重复标识
+                    form.render();
+
+                    form.on('submit(submit_take_delivery)', function(data){
+                        if(repeat_flag)return;
+                        repeat_flag = true;
+                        $.ajax({
+                            url: ns.url("shop/orderrefund/receive"),
+                            type: "POST",
+                            dataType: "JSON",
+                            async: false,
+                            data: data.field,
+                            success: function (res) {
+                                layer.msg(res.message);
+                                if(res.code == 0){
+                                    layer.closeAll();
+                                    location.reload();
+                                }else{
+                                    repeat_flag = false;
+                                }
+
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            form.render();
+        });
+
+    }
+
+    /**
+     * 退款转账
+     */
+    function orderRefundTransfer(order_goods_id) {
+
+        //获取模板
+        var getTpl = $("#refund_transfer_html").html();
+        var data = [];
+        //渲染模板
+        laytpl(getTpl).render(data, function(html) {
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                shade: 0.3,
+                offset: 'auto',
+                scrollbar: true,
+                fixed: false,
+                title: "售后维权处理",
+                area: ['700px', 'auto'],
+                btn: ['确认转账', '取消'],
+                yes: function(index, layero){
+                    $("#submit_transfer").click();
+                },
+                btn2: function(index, layero){
+                    layer.close(index);
+                },
+                content:  html,
+                cancel: function(){
+                    //右上角关闭回调
+                    //return false 开启该代码可禁止点击该按钮关闭
+                },
+                success: function(layero, index){
+                    var repeat_flag = false;//防重复标识
+                    form.render();
+
+                    form.on('submit(submit_transfer)', function(data){
+                        if(repeat_flag)return;
+                        repeat_flag = true;
+                        $.ajax({
+                            url: ns.url("shop/orderrefund/complete"),
+                            type: "POST",
+                            dataType: "JSON",
+                            async: false,
+                            data: data.field,
+                            success: function (res) {
+                                layer.msg(res.message);
+                                if(res.code == 0){
+                                    layer.closeAll();
+                                    location.reload();
+                                }else{
+                                    repeat_flag = false;
+                                }
+
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            form.render();
+        });
+
+    }
+
+    /**
+     * 关闭维权
+     * @param order_goods_id
+     */
+    function orderRefundClose(order_goods_id){
+        layer.confirm('确定要关闭本次维权吗？', function() {
+            $.ajax({
+                url: ns.url("shop/orderrefund/close"),
+                data: { order_goods_id: order_goods_id },
+                dataType: 'JSON',
+                type: 'POST',
+                success: function(res) {
+                    layer.msg(res.message);
+                    if (res.code == 0) {
+                        location.href = ns.url("shop/orderrefund/lists");
+                    }
+                }
+            });
+        }, function () {
+            layer.closeAll();
+        });
+    }
+</script>

@@ -1,0 +1,10 @@
+{
+  "component": true,
+  "usingComponents": {
+    "ns-empty": "/components/ns-empty/ns-empty",
+    "ns-login": "/components/ns-login/ns-login",
+    "ns-loading": "/components/ns-loading/ns-loading",
+    "ns-search": "/components/ns-search/ns-search",
+    "ns-goods-sku-category": "/components/ns-goods-sku/ns-goods-sku-category"
+  }
+}

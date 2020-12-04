@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "ns-switch": "/components/ns-switch/ns-switch"
+  }
+}

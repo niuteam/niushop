@@ -1,0 +1,1 @@
+<view data-theme="{{themeStyle}}"><view class="closeBox"><image src="{{$root.g0}}" mode="widthFix"></image><text class="close-title">{{textVal}}</text></view></view>

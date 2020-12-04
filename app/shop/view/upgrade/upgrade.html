@@ -1,0 +1,278 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+    .layui-layer-content {
+        word-break: break-all;
+        line-height: 24px;
+    }
+    .ns-single-filter-box{
+        display: block;
+    }
+    .upgrade-tips p{margin-bottom: 5px;}
+    .upgrade-tips p:last-child{margin-bottom: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+    <div class="layui-colla-item">
+        <h2 class="layui-colla-title">操作提示</h2>
+        <ul class="layui-colla-content layui-show">
+            <li>一、建议在系统升级前将网站的文件权限全部修改为777，保证系统备份文件、下载文件和覆盖文件的正常进行</li>
+            <li>二、在升级完成后，为保证网站的安全，需要重新设置文件权限。建议进行如下修改</li>
+            <li>1、runtime文件夹，upload文件夹依旧为777权限</li>
+            <li>2、其他文件设置为755权限</li>
+        </ul>
+    </div>
+</div>
+<!-- 操作栏 -->
+<div class="ns-single-filter-box">
+    <button class="layui-btn ns-bg-color" id="upgrade_btn">一键升级</button>
+    <button class="layui-btn ns-bg-color" id="refresh_btn">一键刷新</button>
+</div>
+<table id="version_list" lay-filter="version_list"></table>
+
+<script type="text/html" id="operation">
+    <div class="ns-table-btn">
+        <a class="layui-btn" lay-event="upgrade_desc">查看更新说明</a>
+        <a class="layui-btn" lay-event="upgrade_file">查看更新文件</a>
+    </div>
+</script>
+
+<script type="text/html" id="upgrade_desc">
+    <div><span>需更新版本数：{{d.scripts.length}}</span></div>
+    <table class="layui-table" lay-skin="lg">
+        <colgroup>
+            <col width="20%">
+            <col width="80%">
+        </colgroup>
+        <thead>
+        <tr>
+            <th>版本号</th>
+            <th>更新说明</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#  layui.each(d.scripts, function(index, item){  }}
+        <tr>
+            <td>{{item.version_no}}</td>
+            <td>{{item.description}}</td>
+        </tr>
+        {{#  })  }}
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="upgrade_file">
+    <div style="height:100%; overflow-y: auto;">
+        <div><span>需更新文件数：{{d.files.length}}</span></div>
+        <table class="layui-table" lay-skin="lg">
+            <tbody>
+            {{#  layui.each(d.files, function(index, item){  }}
+            <tr>
+                <td>{{item.file_path}}</td>
+            </tr>
+            {{#  })  }}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<script type="text/html" id="right_check">
+    <div style="height:100%; overflow-y: auto;">
+        <div><span>共有{{d.length}}个文件或文件夹不可写，请先修正这些问题，再继续升级</span></div>
+        <table class="layui-table" lay-skin="lg">
+            <thead>
+            <tr>
+                <th>类型</th>
+                <th>路径</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#  layui.each(d, function(index, item){  }}
+            <tr>
+                <td>{{item.type_name}}</td>
+                <td>{{item.path}}</td>
+            </tr>
+            {{#  })  }}
+            </tbody>
+        </table>
+    </div>
+</script>
+{/block}
+{block name="script"}
+<script>
+    //升级的权限检测
+    var right_check = null;
+    var system_upgrade_info_ready = null;
+
+    layui.use(['form', 'laytpl'], function() {
+        var table,
+            laytpl = layui.laytpl,
+            form = layui.form;
+        form.render();
+
+        table = new Table({
+            elem: '#version_list',
+            url: ns.url("shop/upgrade/upgrade"),
+            parseData: function(res){ //res 即为原始返回的数据
+                if (res.code == 0) {
+                    right_check = res.data.right_check;
+                    system_upgrade_info_ready = res.data.system_upgrade_info_ready;
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.message, //解析提示文本
+                        "data": res.data.system_upgrade_info_ready //解析数据列表
+                    };
+                } else {
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.message, //解析提示文本
+                        "data": [] //解析数据列表
+                    };
+                }
+            },
+            page: false,
+            cols: [
+                [{
+                    field: 'type_name',
+                    title: '主体',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return data.goods_name;
+                    }
+                },{
+                    field: 'type_name',
+                    title: '操作类型',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return data.action_name;
+                    }
+                }, {
+                    field: 'current_version_name',
+                    title: '当前版本',
+                    width: '10%',
+                    unresize: 'false'
+                }, {
+                    field: 'latest_version_name',
+                    title: '最新版本',
+                    width: '10%',
+                    unresize: 'false'
+                }, {
+                    field: 'scripts',
+                    title: '更新版本数',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return data.scripts.length;
+                    }
+                }, {
+                    field: 'files',
+                    title: '更新文件数',
+                    width: '10%',
+                    unresize: 'false',
+                    templet: function (data) {
+                        return data.files.length;
+                    }
+                }, {
+                    title: '操作',
+                    width: '30%',
+                    toolbar: '#operation',
+                    unresize: 'false'
+                }]
+            ]
+        });
+
+        /**
+         * 监听工具栏操作
+         */
+        table.tool(function(obj) {
+            var data = obj.data,
+                event = obj.event;
+            switch (event) {
+                case 'upgrade_desc':
+                    upgradeDesc(data);
+                    break;
+                case 'upgrade_file':
+                    upgradeFile(data);
+                    break;
+            }
+        });
+
+        //详情说明
+        function upgradeDesc(data) {
+            var uploadHtml = $("#upgrade_desc").html();
+            laytpl(uploadHtml).render(data, function(html) {
+                layer.open({
+                    type: 1,
+                    title: '更新说明',
+                    area: ['700px', '500px'],
+                    content: html
+                });
+            })
+        }
+
+        //更新文件
+        function upgradeFile(data) {
+            var uploadHtml = $("#upgrade_file").html();
+            laytpl(uploadHtml).render(data, function(html) {
+                layer.open({
+                    type: 1,
+                    title: '更新文件',
+                    area: ['700px', '500px'],
+                    content: html
+                });
+            })
+        }
+
+        $("#upgrade_btn").click(function(){
+            if(system_upgrade_info_ready === null){
+                layer.msg('数据正在获取中，请稍候');
+                return false;
+            }
+            if(system_upgrade_info_ready.length <= 0){
+                layer.msg('暂无可以升级的内容');
+                return false;
+            }
+            if(right_check.length > 0){
+                var uploadHtml = $("#right_check").html();
+                laytpl(uploadHtml).render(right_check, function(html) {
+                    layer.open({
+                        type: 1,
+                        title: '权限检测',
+                        area: ['700px', '500px'],
+                        content: html
+                    });
+                });
+                return false;
+            }
+            layer.open({
+                title: '注意事项',
+                area: ['400px'],
+                btn: ['继续'],
+                content: `<div class="upgrade-tips"><p>1、升级前请先检查防火墙以及cc拦截是否已经关闭。</p>
+                        <p>2、强烈建议清理runtime下的子文件夹，做好备份工作（后台程序、数据库），方便后期与售后人员协调。</p>
+                        <p>3、升级完成后，点击一键刷新按钮（授权升级—>系统升级功能），清理runtime缓存，清理浏览器缓存，Ctrl+F5强制刷新。</p>
+                        <p>4、重置自定义首页，可在模板选择中选择。</p></div>`,
+                yes: function () {
+                    window.location.href = ns.url("shop/upgrade/upgradeAction");
+                }
+            });
+        });
+
+        $("#refresh_btn").click(function () {
+            var index = layer.load(2);
+            $.ajax({
+                type: "post",
+                url: ns.url('shop/upgrade/refresh'),
+                dataType: "JSON",
+                success: function (res) {
+                    layer.msg(res.message);
+                    layer.close(index);
+                }
+            });
+        });
+    });
+</script>
+{/block}

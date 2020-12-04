@@ -1,0 +1,263 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<!--<li>物流公司由平台端进行统计管理和维护。</li>-->
+			<li>系统配置物流公司的地址，联系方式，查询接口，初始打印模板等。</li>
+		</ul>
+	</div>
+</div>
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加物流公司</button>
+	
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="search_text" placeholder="请输入物流公司名称" class="layui-input">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+			  <i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="expressCompany" lay-filter="expressCompany"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="delete">删除</a>
+	</div>
+</script>
+<!-- logo -->
+<script type="text/html" id="company">
+	<div class="ns-table-tuwen-box">
+		<div class="ns-img-box">
+			{{# if(d.logo){ }}
+			<img layer-src src={{ns.img(d.logo)}} >
+			{{# } }}
+		</div>
+	</div>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+<!-- 批量删除 -->
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="del">批量删除</button>
+</script>
+
+<!-- url -->
+<script type="text/html" id="url">
+	{{# if (d.url != ''){ }}
+	<a class="layui-elip" target="_blank" href="{{ns.url(d.url)}}">{{d.url}}</a>
+	{{# } else { }}
+	<a class="layui-elip" target="_blank" href="javascript:;"></a>
+	{{# } }}
+</script>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.company_id}}, this)" value="{{d.sort}}" class="layui-input edit-sort ns-len-short">
+</script>
+
+{/block}
+{block name="script"}
+<script>
+	var form, table;
+	layui.use(['form'], function() {
+		form = layui.form;
+		var repeat_flag = false; //防重复标识
+
+		table = new Table({
+			elem: '#expressCompany',
+			url: ns.url("shop/express/expressCompany"),
+			cols: [
+				[{
+					width: '3%',
+					type: 'checkbox',
+					unresize: 'false'
+				}, {
+					title: '公司logo',
+					unresize: 'false',
+					templet:'#company',
+					width: '10%'
+				}, {
+			    	field:'company_name',
+                    title: '公司名称',
+                    unresize: 'false',
+                    width: '20%'
+                }, {
+					field: 'url',
+					title: '物流公司网址',
+					unresize: 'false',
+					width: '25%',
+                    templet:'#url'
+				},{
+					title: '排序',
+					unresize: 'false',
+					width:'15%',
+					templet: '#editSort'
+				},{
+                    title: '电子面单',
+                    unresize: 'false',
+                    width:'12%',
+                    templet: function(data){
+						if(data.is_electronicsheet == 1){
+							return '支持';
+						}else{
+                            return '不支持';
+						}
+					}
+                },{
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false',
+					width: '15%'
+				}]
+			],
+			toolbar: '#toolbarOperation',
+			bottomToolbar: "#batchOperation"
+		});
+		
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'edit': //编辑
+					location.href = ns.url("shop/express/editCompany?company_id=" + data.company_id);
+					break;
+				case 'delete': //删除
+					deleteCompany(data.company_id);
+					break;
+			}
+		});
+		
+		/**
+		 * 删除
+		 */
+		function deleteCompany(company_ids) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+			
+			layer.confirm('确定要删除该物流公司吗?', function() {
+				$.ajax({
+					url: ns.url("shop/express/deleteCompany"),
+					data: {company_ids},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+						
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function () {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		 * 批量操作
+		 */
+		table.bottomToolbar(function(obj) {
+
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].company_id);
+					deleteCompany(id_array.toString());
+					break;
+			}
+		});
+		
+		/**
+		 * 批量操作
+		 */
+		table.toolbar(function(obj) {
+		
+			if (obj.data.length < 1) {
+				layer.msg('请选择要操作的数据');
+				return;
+			}
+			switch (obj.event) {
+				case "del":
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].company_id);
+					deleteCompany(id_array.toString());
+					break;
+			}
+		});
+
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+
+	});
+
+    // 监听单元格编辑（排序）
+    function editSort(id, event){
+        var data = $(event).val();
+
+        if (data == '') {
+            $("input[name=sort]").val(0);
+            data = 0;
+        }
+
+        if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+            layer.msg("排序号只能是整数");
+            return ;
+        }
+        if(data<0){
+            layer.msg("排序号必须大于0");
+            return ;
+        }
+        $.ajax({
+            type: 'POST',
+            url: ns.url("shop/express/modifySort"),
+            data: {
+                sort: data,
+                company_id: id
+            },
+            dataType: 'JSON',
+            success: function(res) {
+                layer.msg(res.message);
+                if(res.code==0){
+                    table.reload();
+                }
+            }
+        });
+    }
+	
+	function add() {
+		location.href = ns.url("shop/express/addCompany");
+	}
+</script>
+{/block}

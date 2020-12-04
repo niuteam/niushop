@@ -1,0 +1,194 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>组合套餐显示在商品详情，是一种捆绑购买的优惠活动</li>
+			<li>商家可以选择发布组合套餐，同时可以设置套餐价格</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加组合套餐</button>
+	
+	<div class="layui-form">
+		<div class="layui-input-inline">
+			<input type="text" name="bl_name" placeholder="请输入优惠套餐名称" class="layui-input" autocomplete="off">
+			<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+			  <i class="layui-icon">&#xe615;</i>
+			</button>
+		</div>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab"  lay-filter="activity_tab">
+	<ul class="layui-tab-title">
+		<li class="layui-this" lay-id="">所有套餐</li>
+		<li lay-id="1">已上架</li>
+		<li lay-id="0">已下架</li>
+	</ul>
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="activity_list" lay-filter="activity_list"></table>
+	</div>
+</div>
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{ d.status == 0 ? '已下架' : '已上架' }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="detail">详情</a>
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		<a class="layui-btn" lay-event="del">删除</a>
+	</div>
+</script>
+{/block}
+{block name="script"}
+<script>
+	layui.use(['form','element'], function() {
+		var table,
+			form = layui.form,
+			element = layui.element,
+			repeat_flag = false; //防重复标识
+
+		form.render();
+
+		//监听Tab切换，以改变地址hash值
+		element.on('tab(activity_tab)', function(){
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where:{
+                    'status':this.getAttribute('lay-id')
+                }
+            });
+		});
+
+			table = new Table({
+				elem: '#activity_list',
+				url: ns.url("bundling://shop/bundling/lists"),
+				cols: [
+					[ {
+						field: 'bl_name',
+						title: '名称',
+						unresize: 'false',
+						width: '22%'
+					}, {
+						field: 'bl_price',
+						title: '套餐价',
+						unresize: 'false',
+						width: '12%',
+						align: 'right',
+						templet: function(data) {
+							return '￥'+ data.bl_price;
+						}
+					}, {
+						field: 'goods_money',
+						title: '市场价',
+						unresize: 'false',
+						width: '12%',
+						align: 'right',
+						templet: function(data) {
+							return '￥'+ data.goods_money;
+						}
+					}, {
+						unresize: 'false',
+						width: '6%',
+					}, {
+						title: '状态',
+						unresize: 'false',
+						width: '12%',
+						templet: '#status'
+					}, {
+						field: 'update_time',
+						title: '创建时间',
+						unresize: 'false',
+						width: '17%',
+						templet: function(data) {
+							return ns.time_to_date(data.update_time);
+						}
+					}, {
+						title: '操作',
+						toolbar: '#operation',
+						unresize: 'false',
+						width: '17%'
+					}]
+				]
+			});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data;
+			switch (obj.event) {
+				case 'detail': //详情
+					location.href = ns.url("bundling://shop/bundling/detail", {"bl_id": data.bl_id});
+					break;
+				case 'edit': //编辑
+					location.href = ns.url("bundling://shop/bundling/edit", {"bl_id": data.bl_id});
+					break;
+				case 'del': //删除
+					deleteBund(data.bl_id);
+					break;
+			}
+		});
+
+		/**
+		 * 删除
+		 */
+		function deleteBund(id) {
+			if (repeat_flag) return false;
+			repeat_flag = true;
+
+			layer.confirm('确定要删除该组合套餐吗?', function() {
+				$.ajax({
+					url: ns.url("bundling://shop/bundling/delete"),
+					data: {
+						"bl_id": id
+					},
+					dataType: 'JSON',
+					type: 'POST',
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+				layer.close();
+				repeat_flag = false;
+			});
+		}
+		
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+		});
+	});
+	
+	function add() {
+		location.href = ns.url("bundling://shop/bundling/add");
+	}
+</script>
+{/block}

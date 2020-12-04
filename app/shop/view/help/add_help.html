@@ -1,0 +1,131 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-form-select dl { z-index: 9999; }
+	.ns-form {margin-top: 0;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-form ns-form" >
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>帮助标题：</label>
+		<div class="layui-input-block">
+			<input name="title" type="text" placeholder="请输入帮助标题" lay-verify="required" class="layui-input ns-len-long">
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label"><span class="required">*</span>帮助类型：</label>
+		<div class="layui-input-block ns-len-mid">
+			<select name="class_id" lay-verify="required" lay-filter="help_class_list" class="ns-len-mid">
+				<option value="">请选择</option>
+				{foreach $help_class_list as $help_class_k => $help_class_v}
+					<option value="{$help_class_v.class_id}">{$help_class_v.class_name}</option>
+				{/foreach}
+			</select>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">排序：</label>
+		<div class="layui-input-block">
+			<input name="sort" type="number" value="0" placeholder="请输入排序值" lay-verify="num" class="layui-input ns-len-short">
+		</div>
+		<div class="ns-word-aux">排序值必须为整数</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">链接地址：</label>
+		<div class="layui-input-block">
+			<input name="link_address" type="text" placeholder="请输入链接地址" class="layui-input ns-len-long">
+		</div>
+		<div class="ns-word-aux">当填写链接后点击标题将直接跳转至链接地址，不显示内容。链接格式请以http://开头</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">帮助内容：</label>
+		<div class="layui-input-block ns-special-length">
+			<script id="container" name="content" type="text/plain" style="width:800px;height:300px;"></script>
+		</div>
+	</div>
+	
+	<div class="ns-form-row">
+		<button class="layui-btn ns-bg-color" lay-submit lay-filter="save">保存</button>
+		<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+	</div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/ueditor.all.js"></script>
+<script type="text/javascript" charset="utf-8" src="STATIC_EXT/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+	var ue = UE.getEditor('container');
+	layui.use('form', function() {
+		var form = layui.form,
+			repeat_flag = false;//防重复标识
+		form.render();
+
+		/**
+		 * 监听提交
+		 */
+		form.on('submit(save)', function(data) {
+			var html;
+			ue.ready(function() {   //对编辑器的操作最好在编辑器ready之后再做
+				html = ue.getContent();   //获取html内容，返回: <p>hello</p>
+			});
+			data.field.content = html;
+			
+			var class_name = $("option[value="+data.field.class_id+"]").text();
+			data.field.class_name = class_name;
+			
+	        if (repeat_flag) return;
+	        repeat_flag = true;
+			
+			$.ajax({
+				url: ns.url("shop/help/addHelp"),
+				data: data.field,
+				dataType: 'JSON',
+				type: 'POST',
+				success: function(res){
+					repeat_flag = false;
+					if (res.code == 0) {
+						layer.confirm('添加成功', {
+							title:'操作提示',
+							btn: ['返回列表', '继续添加'],
+							closeBtn: 0,
+							yes: function(){
+								location.href = ns.url("shop/help/helpList")
+							},
+							btn2: function() {
+								location.href = ns.url("shop/help/addHelp")
+							}
+						});
+					}else{
+						layer.msg(res.message);
+					}
+				}
+			});
+		});
+		
+		/**
+		 * 表单验证
+		 */
+		form.verify({
+			num: function(value) {
+				if (value == '') {
+					return;
+				}
+				if (value%1 != 0) {
+					return "输入错误,请输入整数!";
+				}
+			}
+		});
+	});
+	
+	function back() {
+		location.href = ns.url("shop/help/helpList");
+	}
+</script>
+{/block}

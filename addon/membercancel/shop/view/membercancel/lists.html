@@ -1,0 +1,341 @@
+{extend name="app/shop/view/base.html"/}
+{block name="resources"}
+<style>
+	.ns-screen {
+		margin-top: 15px;
+	}
+</style>
+{/block}
+{block name="main"}
+
+
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+
+				<div class="layui-inline">
+					<label class="layui-form-label">会员：</label>
+					<div class="layui-input-inline">
+						<select name="search_type">
+							{foreach $search_type as $k=>$v}
+							<option value="{$k}">{$v}</option>
+							{/foreach}
+						</select>
+					</div>
+
+					<div class="layui-input-inline">
+						<input type="text" name="mobile" placeholder="请输入" class="layui-input">
+					</div>
+				</div>
+
+				<div class="layui-inline">
+					<label class="layui-form-label">申请时间：</label>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="start_time"  id="start_time" autocomplete="off" placeholder="开始时间" >
+						<i class="ns-calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+						<input type="text" class="layui-input" name="end_time" id="end_time" autocomplete="off" placeholder="结束时间" >
+						<i class="ns-calendar"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="layui-tab ns-table-tab" lay-filter="member_tab">
+
+	<ul class="layui-tab-title">
+		<li class="layui-this" data-status="">全部</li>
+		<li data-status="0">待审核</li>
+		<li data-status="1">注销成功</li>
+		<li data-status="-1">审核拒绝</li>
+	</ul>
+
+	<div class="layui-tab-content">
+		<!-- 列表 -->
+		<table id="member_list" lay-filter="member_list"></table>
+	</div>
+</div>
+
+<!--时间-->
+<script type="text/html" id="times">
+	<div class="layui-elip" title="申请时间：{{ns.time_to_date(d.create_time)}}">
+		申请时间：{{ns.time_to_date(d.create_time)}}</div>
+	<div class="layui-elip" title="到账时间：{{ns.time_to_date(d.payment_time)}}">
+		审核时间：{{ns.time_to_date(d.audit_time)}}</div>
+</script>
+
+
+<!-- 状态 -->
+<script type="text/html" id="status">
+	{{# if(d.status == 1){ }}
+		<span style="color: red;">待审核</span>
+	{{# }else if(d.status == 2){ }}
+		<span style="color: green;">审核通过</span>
+	{{# }else if(d.status == -1){ }}
+		<span style="color: gray;">审核拒绝</span>
+	{{# } }}
+</script>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="detail">查看</a>
+		{{# if(d.status != 1){ }}
+		<a class="layui-btn" lay-event="memberInfo">会员信息</a>
+		{{# } }}
+		{{# if(d.status == 0){ }}
+		<a class="layui-btn" lay-event="pass">审核通过</a>
+		<a class="layui-btn" lay-event="refuse">审核拒绝</a>
+		{{# } }}
+	</div>
+</script>
+{/block}
+
+{block name="script"}
+<script>
+	layui.use(['form', 'laydate', 'element', 'laytpl'], function() {
+		var table,
+			form = layui.form,
+            element = layui.element,
+            laytpl = layui.laytpl,
+			laydate = layui.laydate;
+		form.render();
+
+		//渲染时间
+		laydate.render({
+			elem: '#start_time',
+			type: 'datetime'
+		});
+
+		laydate.render({
+			elem: '#end_time',
+			type: 'datetime'
+		});
+
+        //监听Tab切换
+        element.on('tab(member_tab)', function(data) {
+            table.reload({
+                page: {
+                    curr: 1
+                },
+                where: {
+                    'status': this.getAttribute('data-status')
+                }
+            });
+        });
+
+		table = new Table({
+			elem: '#member_list',
+			url: ns.url("membercancel://shop/membercancel/lists"),
+			cols: [
+				[{
+                    field: 'username',
+                    title: '会员账号',
+                    unresize: 'false'
+                }, {
+                    field: 'nickname',
+                    title: '昵称',
+                    unresize: 'false'
+                }, {
+					field: 'mobile',
+					title: '电话',
+					unresize: 'false'
+				}, {
+					title: '状态',
+					unresize: 'false',
+                    templet: function(data) {
+                        var str = '';
+                        if(data.status == 0){
+							str = '审核中';
+						}else if(data.status == 1){
+							str = '注销成功';
+						}else{
+						    str = '审核拒绝';
+						}
+						return str;
+                    }
+				}, {
+                    field: 'create_time',
+                    title: '申请时间',
+                    unresize: 'false',
+                    templet: function(data){
+                        return ns.time_to_date(data.create_time);
+					}
+                }, {
+					title: '操作',
+					toolbar: '#operation',
+					unresize: 'false'
+				}]
+			]
+		});
+
+		/**
+		 * 搜索功能
+		 */
+		form.on('submit(search)', function(data) {
+			table.reload({
+				page: {
+					curr: 1
+				},
+				where: data.field
+			});
+			return false;
+		});
+
+		/**
+		 * 监听工具栏操作
+		 */
+		table.tool(function(obj) {
+			var data = obj.data,
+					event = obj.event;
+			switch (event) {
+
+                case 'detail': //查看
+
+                    var detailHtml = $("#cancelDetail").html();
+                    laytpl(detailHtml).render(data, function (html) {
+                        layer.open({
+                            type: 1,
+                            title: '会员注销详情',
+                            area: ['700px'],
+                            content: html
+                        });
+                    })
+                    break;
+
+				case 'memberInfo': //会员信息
+					location.href = ns.url('shop/member/editmember','member_id='+data.member_id);
+					break;
+
+				case 'pass': //通过
+					layer.confirm('确定要通过吗?', function () {
+						if (repeat_flag) return;
+						repeat_flag = true;
+						$.ajax({
+							url: ns.url("membercancel://shop/membercancel/auditPass"),
+                            data: {id:data.id},
+							dataType: 'JSON',
+							type: 'POST',
+							success: function(res) {
+								layer.msg(res.message);
+								repeat_flag = false;
+								if (res.code == 0) {
+									table.reload();
+								}
+							}
+						});
+					});
+					break;
+
+				case 'refuse': //拒绝
+                    layer.prompt({
+                        formType: 2,
+                        value: '',
+                        title: '请输入拒绝理由',
+                        area: ['300px', '100px'] ,//自定义文本域宽高
+                        yes: function(index, layero){
+                            // 获取文本框输入的值
+                            var value = layero.find(".layui-layer-input").val();
+                            if (value) {
+                                $.ajax({
+                                    url: ns.url("membercancel://shop/membercancel/auditrefuse"),
+                                    data: {
+                                        "id":data.id,
+                                        "reason":value
+                                    },
+                                    dataType: 'JSON', //服务器返回json格式数据
+                                    type: 'POST', //HTTP请求类型
+                                    success: function(res) {
+                                        layer.msg(res.message);
+                                        if (res.code == 0) {
+
+                                            table.reload();
+
+                                        }
+                                    }
+                                });
+                                layer.close(index);
+                            } else {
+                                layer.msg('请输入拒绝原因!', {icon: 5, anim: 6});
+                                return;
+                            }
+                        }
+                    });
+                    break;
+			}
+		});
+
+	});
+
+</script>
+
+<script type="text/html" id="cancelDetail">
+	<table class="layui-table">
+		<colgroup>
+			<col width="80">
+			<col width="200">
+		</colgroup>
+		<tbody>
+		<tr>
+			<td>会员账号</td>
+			<td>{{d.username}}</td>
+		</tr>
+		<tr>
+			<td>昵称</td>
+			<td>{{d.nickname}}</td>
+		</tr>
+		<tr>
+			<td>联系电话</td>
+			<td>{{d.mobile}}</td>
+		</tr>
+
+		{{# if(d.bank_type != 0){ }}
+		<tr>
+			<td>审核人账号</td>
+			<td>{{d.audit_username}}</td>
+		</tr>
+		<tr>
+			<td>审核时间</td>
+			<td>{{ ns.time_to_date(d.audit_time) }}</td>
+		</tr>
+		{{# } }}
+
+		{{# if(d.status == -1){ }}
+		<tr>
+			<td>拒绝原因</td>
+			<td>{{ d.reason }}</td>
+		</tr>
+		{{# } }}
+
+		<tr>
+			<td>状态</td>
+			<td>
+				{{# if(d.status == 0){ }}
+					待审核
+				{{#} else if(d.status == 1){ }}
+					审核通过
+				{{#} else { }}
+					审核拒绝
+				{{#} }}
+			</td>
+		</tr>
+		<tr>
+			<td>申请时间</td>
+			<td>{{ ns.time_to_date(d.create_time) }}</td>
+		</tr>
+		</tbody>
+	</table>
+</script>
+
+{/block}

@@ -1,0 +1,13 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "门店详情",
+  "disableScroll": true,
+  "usingComponents": {
+    "ns-navbar": "/components/ns-navbar/ns-navbar",
+    "diy-index-page": "/components/diy-index-page/diy-index-page",
+    "diy-group": "/components/diy-group/diy-group",
+    "uni-popup": "/components/uni-popup/uni-popup",
+    "loading-cover": "/components/loading-cover/loading-cover",
+    "diy-bottom-nav": "/components/diy-bottom-nav/diy-bottom-nav"
+  }
+}

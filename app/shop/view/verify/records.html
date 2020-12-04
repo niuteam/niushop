@@ -1,0 +1,309 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.ns-screen{margin-bottom: 15px;}
+	.contraction span {
+		cursor: pointer;
+		display: inline-block;
+		width: 17px;
+		height: 17px;
+		text-align: center;
+		line-height: 14px;
+		user-select: none;
+	}
+	.verify-list {
+		overflow: hidden;
+		padding: 0 45px;
+	}
+	.verify-list li .img-wrap {
+		vertical-align: middle;
+		margin-right: 8px;
+		width: 80px;
+		height: 80px;
+		text-align: center;
+		border: 1px solid #e2e2e2;
+	}
+	.verify-list li .img-wrap img {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.verify-list li .info-wrap{
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.verify-list li .name-wrap{
+		flex: 1;
+	}
+	.verify-list li .info-wrap span.sku-name {
+		-webkit-line-clamp: 2;
+		margin-bottom: 5px;
+		line-height: 1.3;
+		margin-top: 0;
+		color: #333;
+		font-size: 14px;
+	}
+	.verify-list li .info-wrap span {
+		display: -webkit-box;
+		margin-top: 5px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: normal;
+		word-break: break-all;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 1;
+		line-height: 1;
+		font-size: 12px;
+	}
+	.verify-list li {
+		float: left;
+		display: flex;
+		padding: 10px;
+		margin-right: 10px;
+		margin-bottom: 10px;
+		border: 1px solid #EFEFEF;
+		width: 294px;
+		align-items: center;
+	}
+</style>
+{/block}
+{block name="main"}
+
+<!-- 搜索框 -->
+<div class="ns-screen layui-collapse" lay-filter="selection_panel">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title"></h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">核销员名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="verifier_name" placeholder="请输入核销员名称" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-inline">
+					<label class="layui-form-label">核销类型：</label>
+					<div class="layui-input-inline">
+						<select name="verify_type">
+							<option value="">请选择核销类型</option>
+							{foreach $verify_type as $k => $v}
+							<option value="{$k}">{$v.name}</option>
+							{/foreach}
+						</select>
+					</div>
+				</div>
+			</div>
+			
+			<div class="layui-form-item">
+				<div class="layui-inline">
+					<label class="layui-form-label">核销时间：</label>
+					<div class="layui-input-inline">
+					    <input type="text" class="layui-input" name="start_time" id="start_time" autocomplete="off" placeholder="开始时间" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+					<div class="layui-form-mid">-</div>
+					<div class="layui-input-inline">
+					    <input type="text" class="layui-input" name="end_time" id="end_time" autocomplete="off" placeholder="结束时间" readonly>
+						<i class="ns-calendar"></i>
+					</div>
+				</div>
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">核销码：</label>
+					<div class="layui-input-inline">
+					    <input type="text" name="verify_code" placeholder="请输入核销码" autocomplete="off" class="layui-input">
+					</div>
+				</div>
+			</div>
+
+			<div class="ns-form-row">
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+				<button class="layui-btn layui-btn-primary" lay-submit lay-filter="export_verify" >批量导出</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<!-- 列表 -->
+<table id="verify_list" lay-filter="verify_list"></table>
+
+<!-- 工具栏操作 -->
+<script type="text/html" id="operation">
+
+</script>
+
+
+<!-- 核销信息 -->
+<script type="text/html" id="verify_code">
+	<div class="ns-table-title">
+		<div class="contraction" data-id="{{d.id}}" data-open="0">
+			<span>+</span>
+		</div>
+
+		<div class="ns-title-content">
+			{{ d.verify_code }}
+		</div>
+	</div>
+</script>
+
+
+<!-- 核销内容 -->
+<script type="text/html" id="verifyList">
+	<tr class="js-list-{{d.index}}" id="sku_img_{{d.index}}">
+		<td colspan="8">
+			<ul class="verify-list">
+				{{# for(var i=0; i<d.list.length; i++){ }}
+				<li>
+					<div class="img-wrap">
+						<img layer-src src="{{ns.img(d.list[i].img, 'mid')}}">
+					</div>
+					<div class="info-wrap">
+						<div class="name-wrap">
+							<span class="sku-name">{{d.list[i].name}}</span>
+						</div>
+						<span class="price">价格：￥{{d.list[i].price}}</span>
+						<span class="sale_num">数量：{{d.list[i].num}}</span>
+					</div>
+				</li>
+				{{# } }}
+			</ul>
+		</td>
+	</tr>
+</script>
+
+
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+    $(function () {
+        $("body").on("click", ".contraction", function () {
+
+            var id = $(this).attr("data-id");
+            var open = $(this).attr("data-open");
+            var tr = $(this).parent().parent().parent().parent();
+            var index = tr.attr("data-index");
+            if (open == 1) {
+                $(this).children("span").text("+");
+                $(".js-list-" + index).remove();
+            } else {
+                $(this).children("span").text("-");
+                $.ajax({
+                    url: ns.url("shop/verify/verifyInfo"),
+                    data: {id: id},
+                    dataType: 'JSON',
+                    type: 'POST',
+                    async: false,
+                    success: function (res) {
+                        var verify_list = $("#verifyList").html();
+                        var data = {
+                            list: res.data.data.item_array,
+                            index: index
+                        };
+						console.log(data.list);
+
+                        laytpl(verify_list).render(data, function (html) {
+                            tr.after(html);
+                        });
+                        layer.photos({
+                            photos: '.img-wrap',
+                            anim: 5
+                        });
+                    }
+                });
+            }
+            $(this).attr("data-open", (open == 0 ? 1 : 0));
+        });
+
+        layui.use(['form', 'laydate','laytpl'], function () {
+            laytpl = layui.laytpl;
+            var table,
+                form = layui.form,
+                laydate = layui.laydate;
+            form.render();
+
+            //渲染时间
+            laydate.render({
+                elem: '#start_time',
+                type: 'datetime'
+            });
+
+            laydate.render({
+                elem: '#end_time',
+                type: 'datetime'
+            });
+
+            /**
+             * 加载表格
+             */
+            table = new Table({
+                elem: '#verify_list',
+                url: ns.url("shop/verify/records"), //数据接口
+                cols: [
+                    [{
+                        title: '核销码',
+                        width: '20%',
+                        templet: '#verify_code'
+                    }, {
+                        field: 'verify_type_name',
+                        title: '核销类型',
+                        width: '14%'
+                    }, {
+                        field: 'verifier_name',
+                        title: '核销员',
+                        width: '13%'
+                    }, {
+                        field: 'verify_status',
+                        title: '状态',
+                        width: '13%',
+                        templet: function (data) {
+                            var verify_name = "";
+                            if (data.is_verify == 1) {
+                                verify_name = "已核销";
+                            } else {
+                                verify_name = "尚未核销";
+                            }
+                            return verify_name; //创建时间转换方法
+                        }
+                    }, {
+                        field: 'create_time',
+                        title: '创建时间',
+                        width: '20%',
+                        templet: function (data) {
+                            return ns.time_to_date(data.create_time); //创建时间转换方法
+                        }
+                    }, {
+                        field: 'verify_time',
+                        title: '核销时间',
+                        width: '20%',
+                        templet: function (data) {
+                            return ns.time_to_date(data.verify_time); //创建时间转换方法
+                        }
+                    }]
+                ]
+            });
+
+            /**
+             * 搜索功能
+             */
+            form.on('submit(search)', function (data) {
+                table.reload({
+                    page: {
+                        curr: 1
+                    },
+                    where: data.field
+                });
+                return false;
+            });
+
+            //批量导出
+            form.on('submit(export_verify)', function (data) {
+                location.href = ns.url("shop/verify/exportVerify", data.field);
+                return false;
+            });
+        });
+
+    })
+</script>
+{/block}

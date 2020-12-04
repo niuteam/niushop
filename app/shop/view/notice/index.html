@@ -1,0 +1,219 @@
+{extend name="base"/}
+{block name="resources"}
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>公告显示在网站的首页</li>
+			<li>公告可进行置顶</li>
+			<li>公告默认排序号为0，数字越小，排序越靠前，数字重复，则最新添加的靠前。</li>
+		</ul>
+	</div>
+</div>
+
+<!-- 筛选面板 -->
+<!-- <div class="ns-screen layui-collapse">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">筛选</h2>
+		<form class="layui-colla-content layui-form layui-show">
+			<div class="layui-form-item">
+				
+				<div class="layui-inline">
+					<label class="layui-form-label">接收范围：</label>
+					<div class="layui-input-inline">
+						<select name="receiving_type">
+							<option value="">全部</option>
+							<option value="mobile">手机端</option>
+						</select>
+					</div>
+				</div>
+				
+				<button class="layui-btn ns-bg-color" lay-submit lay-filter="search">筛选</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		
+		</form>
+	</div>
+</div> -->
+
+<!-- 搜索框 -->
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="add()">添加公告</button>
+</div>
+
+<!-- 列表 -->
+<table id="notice_list" lay-filter="notice_list"></table>
+
+<!-- 操作 -->
+<script type="text/html" id="operation">
+	<div class="ns-table-btn">
+		<a class="layui-btn" lay-event="basic">查看</a>
+		<a class="layui-btn" lay-event="edit">编辑</a>
+		{{# if(!d.is_top){ }}
+			<a class="layui-btn" lay-event="setTop">置顶</a>
+		{{# } }}
+		<a class="layui-btn" lay-event="del">删除</a>
+	</div>
+</script>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.id}}, this)" value="{{d.sort}}" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	var repeat_flag = false; //防重复标识
+	layui.use('form', function() {
+		var table,
+			form = layui.form;
+		form.render();
+
+		table = new Table({
+			elem: '#notice_list',
+			url: ns.url("shop/notice/index"),
+			cols: [
+				[{
+					width: '35%',
+					title: '公告标题',
+					unresize: 'false',
+					templet: function(data) {
+						var html = data.is_top ? '<span class="required">[ 置顶 ] </span>' : '';
+						html += data.title;
+						return html;
+					}
+				},
+				// 	{
+				// 	field:'receiving_name',
+				// 	width: '20%',
+				// 	title: '接收范围',
+				// 	unresize: 'false',
+				// },
+					{
+					width: '25%',
+					title: '创建时间',
+					unresize: 'false',
+					templet: function(data) {
+						return ns.time_to_date(data.create_time);
+					}
+				}, {
+                    field: 'sort',
+                    unresize:'false',
+                    title: '排序',
+                    width: '20%',
+                    templet: '#editSort'
+                }, {
+					title: '操作',
+					width: '20%',
+					unresize: 'false',
+					templet: '#operation',
+				}
+			]]
+		});
+
+		table.tool(function(obj) {
+			var data = obj.data;
+			var event = obj.event;
+			if (event === 'edit') {
+				location.href = ns.url('shop/notice/editNotice', {
+					"id": data.id
+				});
+			} else if (event === 'del') {
+				deleteNotice(data.id);
+			} else if (event === 'setTop') {
+				modifySiteNoticeTop(data.id);
+			} else if (event === 'basic') {
+				location.href = ns.url("shop/notice/detail?id=" + data.id);
+			}
+		});
+		
+		function deleteNotice(id) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+			layer.confirm('确定要删除该公告吗?', function() {
+				$.ajax({
+					type: "post",
+					async: false,
+					url: ns.url("shop/notice/deleteNotice"),
+					data: {
+						'id': id
+					},
+					dataType: "JSON",
+					success: function(res) {
+						layer.msg(res.message);
+						repeat_flag = false;
+
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+			}, function() {
+					repeat_flag = false;
+					layer.close();
+				}
+			);
+		}
+
+		function modifySiteNoticeTop(id) {
+			if (repeat_flag) return;
+			repeat_flag = true;
+			
+			$.ajax({
+				type: "POST",
+				dataType: "JSON",
+				async: false,
+				url: ns.url("shop/notice/modifyNoticeTop"),
+				data: {id},
+				success: function(res) {
+					layer.msg(res.message);
+					repeat_flag = false;
+					if (res.code == 0) {
+						table.reload();
+					}
+				}
+			});
+		}
+	});
+	
+	function add() {
+		location.href = ns.url("shop/notice/addNotice");
+	}
+
+    // 监听单元格编辑
+    function editSort(id, event){
+        var data = $(event).val();
+
+        if (data == '') {
+            $(event).val(0);
+            data = 0;
+        }
+
+        if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+            layer.msg("排序号只能是整数");
+            return ;
+        }
+        if(data<0){
+            layer.msg("排序号必须大于0");
+            return ;
+        }
+        $.ajax({
+            type: 'POST',
+            url: ns.url("shop/notice/modifySort"),
+            data: {
+                sort: data,
+                id: id
+            },
+            dataType: 'JSON',
+            success: function(res) {
+                layer.msg(res.message);
+                if(res.code==0){
+                    table.reload();
+                }
+            }
+        });
+    }
+</script>
+{/block}

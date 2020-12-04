@@ -1,0 +1,294 @@
+{extend name="base"/}
+{block name="resources"}
+<style>
+	.layui-table-view td:last-child>div{overflow: inherit;}
+	.operation-wrap{position: relative;}
+	.layui-table-box{overflow: inherit;}
+	.layui-table-body{overflow: inherit;}
+	.set-home{display:inline-block;margin-left: 5px;padding: 3px;font-size: 12px;line-height: 1;color: #fff;}
+	.popup-qrcode-wrap{text-align: center;background: #fff;border-radius: 2px;box-shadow: 0 2px 8px 0 rgba(200,201,204,.5);padding: 10px;position: absolute;z-index: 1;top: -73px;left: -180px;display: none;width: 170px;height: 230px;}
+	.popup-qrcode-wrap:before, .popup-qrcode-wrap:after {left: 100%;top: 50%;border: solid transparent;content: " ";height: 0;width: 0;position: absolute;pointer-events: none;}
+	.popup-qrcode-wrap:before {border-color: transparent;border-left-color: #e5e5e5;border-width: 8px;margin-top: -29px;}
+	.popup-qrcode-wrap:after {border-color: transparent;border-left-color: #ffffff;border-width: 7px;margin-top: -31px;}
+	.popup-qrcode-wrap img{width: 150px;height: 150px;max-width: initial;}
+	.popup-qrcode-wrap p{font-size: 12px;margin: 5px 0;line-height: 1.8!important;}
+	.popup-qrcode-wrap a{font-size: 12px;}
+	.popup-qrcode-wrap input{opacity: 0;position: absolute;}
+	.popup-qrcode-wrap .popup-qrcode-loadimg {width: 16px!important; height: 16px!important; margin-top: 107px;}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-collapse ns-tips">
+	<div class="layui-colla-item">
+		<h2 class="layui-colla-title">操作提示</h2>
+		<ul class="layui-colla-content layui-show">
+			<li>微页面是用户打开的具体内容页面，您可以完全实现自定义页面，不同模块组合及样式的自由编辑。</li>
+			<li>好的页面可以吸引客户浏览的兴趣，快速找到自己想要买的商品，给客户带来良好的购物体验，最终实现高的转化率。</li>
+			<li>创建不同活动页面，实现线上推广转化，提升网店的传播量。</li>
+			<li>满足不同商家各种场景下页面的样式及推广诉求。</li>
+		</ul>
+	</div>
+</div>
+
+<div class="ns-single-filter-box">
+	<button class="layui-btn ns-bg-color" onclick="location.href = ns.url('shop/diy/edit')">新建页面</button>
+</div>
+
+<table id="diy_list" lay-filter="diy_list"></table>
+
+<script type="text/html" id="operation">
+	<div class="operation-wrap" data-id="{{d.id}}">
+		<div class="ns-table-btn">
+			<div class="popup-qrcode-wrap"><img class="popup-qrcode-loadimg" src="__STATIC__/loading/loading.gif" /></div>
+			{{# if(d.name != 'DIYVIEW_INDEX'){ }}
+			<a class="layui-btn" lay-event="setHome">设为主页</a>
+			{{# } }}
+			<a class="layui-btn" lay-event="promote">推广</a>
+			<a class="layui-btn" lay-event="edit">编辑</a>
+			<a class="layui-btn" lay-event="delete">删除</a>
+		</div>
+	</div>
+</script>
+
+<script type="text/html" id="toolbarOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+</script>
+
+<script type="text/html" id="batchOperation">
+	<button class="layui-btn layui-btn-primary" lay-event="delete">批量删除</button>
+</script>
+
+<!-- 推广 -->
+<script type="text/html" id="promote">
+	{{# if(d.path.h5.status == 1){ }}
+	<img src="{{ ns.img(d.path.h5.img) }}" alt="推广二维码">
+	<p class="qrcode-item-description">扫码后直接访问页面</p>
+	<a class="ns-text-color" href="javascript:ns.copy('h5_url_{{ d.id }}');">复制链接</a>
+	<a class="ns-text-color" href="{{ ns.img(d.path.h5.img) }}" download>下载二维码</a>
+	<input class="layui-input nc-len-mid" type="text" value="{{ d.path.h5.url }}" id="h5_url_{{ d.id }}" readonly>
+	{{# } }}
+</script>
+
+<!-- 编辑排序 -->
+<script type="text/html" id="editSort">
+	<input name="sort" type="number" onchange="editSort({{d.id}}, this)" value="{{d.sort}}" class="layui-input edit-sort ns-len-short">
+</script>
+{/block}
+{block name="script"}
+<script>
+	var laytpl;
+	layui.use([ 'laytpl'], function () {
+		laytpl = layui.laytpl;
+	});
+	var table = new Table({
+		elem: '#diy_list',
+		filter: "diy_list",
+		url: ns.url("shop/diy/lists"),
+		cols: [[{
+			type: 'checkbox',
+			unresize : 'true',
+			width: '3%'
+		}, {
+			width: '32%',
+			title: '名称',
+			unresize : 'true',
+			templet:function (res) {
+				var html ='';
+				html += `<span>${res.title}</span>`;
+				if (res.name == 'DIYVIEW_INDEX')
+					html += `<span class="ns-bg-color set-home">主页</span>`;
+				return html;
+			}
+		}, {
+			width: '20%',
+			title: '创建时间',
+			unresize : 'true',
+			templet: function (d) {
+				return ns.time_to_date(d.create_time);
+			}
+		}, {
+			field: 'click_num',
+			width: '15%',
+			title: '浏览量',
+			unresize : 'true'
+		}, {
+			field: 'sort',
+			width: '15%',
+			title: '排序',
+			align: 'center',
+			templet: '#editSort'
+		}, {
+			title: '操作',
+			toolbar: '#operation',
+            width: '15%',
+			unresize : 'true'
+		}]],
+		toolbar: '#toolbarOperation',
+		bottomToolbar: "#batchOperation"
+	});
+	
+	//监听工具条
+	table.tool(function(obj) {
+		var data = obj.data;
+		if (obj.event === 'promote') {
+			promote(data.id);
+		} else if (obj.event === 'edit') {
+			location.href = ns.url("shop/diy/edit", {
+				id: data.id,
+				name: data.name
+			});
+		} else if (obj.event == "delete") {
+			layer.confirm('确定要删除该微页面模板吗', function (index) {
+				$.ajax({
+					type: "post",
+					url: ns.url("shop/diy/deleteSiteDiyView"),
+					data: {'id': data.id},
+					dataType: "JSON",
+					success: function (res) {
+						layer.msg(res.message);
+						if (res.code == 0) {
+							table.reload();
+						}
+					}
+				});
+				layer.close(index);
+			});
+		} else if(obj.event == "setHome"){
+			$.ajax({
+				type: "post",
+				url: ns.url("shop/diy/homePage"),
+				data: {'id': data.id},
+				dataType: "JSON",
+				success: function (res) {
+					layer.msg(res.message);
+					if (res.code >= 0) {
+						table.reload();
+					}
+				}
+			});
+		}
+	});
+
+	//批量操作
+	table.bottomToolbar(function(obj) {
+		
+		if(obj.data.length < 1){
+			layer.msg('请选择要操作的数据');
+			return;
+		}
+		
+		switch (obj.event) {
+			case "delete":
+				layer.confirm('确定要删除这些微页面模板吗', function (index) {
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].id);
+					$.ajax({
+						url: ns.url("shop/diy/deleteSiteDiyView"),
+						data: {'id': id_array.toString()},
+						dataType: "JSON",
+						success: function (res) {
+							layer.msg(res.message);
+							if (res.code == 0) {
+								table.reload();
+							}
+						}
+					});
+					layer.close(index);
+				});
+				break;
+		}
+	});
+	
+	//批量操作
+	table.toolbar(function(obj) {
+		
+		if(obj.data.length < 1){
+			layer.msg('请选择要操作的数据');
+			return;
+		}
+		
+		switch (obj.event) {
+			case "delete":
+				layer.confirm('确定要删除这些微页面模板吗', function (index) {
+					var id_array = new Array();
+					for (i in obj.data) id_array.push(obj.data[i].id);
+					$.ajax({
+						url: ns.url("shop/diy/deleteSiteDiyView"),
+						data: {'id': id_array.toString()},
+						dataType: "JSON",
+						success: function (res) {
+							layer.msg(res.message);
+							if (res.code == 0) {
+								table.reload();
+							}
+						}
+					});
+					layer.close(index);
+				});
+				break;
+		}
+	});
+	
+	function promote(id) {
+		$(".operation-wrap[data-id='" + id + "'] .popup-qrcode-wrap").show();
+		$.ajax({
+			type: "POST",
+			url: ns.url("shop/diy/promote"),
+			data: {
+				'id': id,
+			},
+			dataType: 'JSON',
+			success: function (res) {
+				if(res.data.path.h5.status == 1) {
+					res.data.id = id;
+					laytpl($("#promote").html()).render(res.data, function (html) {
+						$(".operation-wrap[data-id='" + id + "'] .popup-qrcode-wrap").html(html).show();
+						
+						$("body").click(function (e) {
+							if (!$(e.target).closest(".popup-qrcode-wrap").length) {
+								$(".operation-wrap[data-id='" + id + "'] .popup-qrcode-wrap").hide();
+							}
+						});
+					});
+				}else{
+					layer.msg(res.data.path.h5.message);
+				}
+			}
+		});
+	}
+
+	// 监听单元格编辑
+	function editSort(id, event){
+	 	var data = $(event).val();
+		
+		if (data == '') {
+			$(event).val(0);
+			data = 0;
+		}
+		
+		if(!new RegExp("^-?[0-9]\\d*$").test(data)){
+			layer.msg("排序号只能是整数");
+			return ;
+		}
+		if(data<0){
+			layer.msg("排序号必须大于0");
+			return ;
+		}
+	 	$.ajax({
+	 		type: 'POST',
+	 		url: ns.url("shop/diy/modifySort"),
+	 		data: {
+	 			sort: data,
+	 			id: id
+	 		},
+	 		dataType: 'JSON',
+	 		success: function(res) {
+	 			layer.msg(res.message);
+	 			if(res.code==0){
+	 				table.reload();
+	 			}
+	 		}
+	 	});
+ 	}
+</script>
+{/block}

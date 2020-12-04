@@ -35,7 +35,7 @@ NIUSHOP开源商城B2C单商户V4,功能强大，安全便捷，框架成熟稳�
 4. &nbsp;<img src="https://images.gitee.com/uploads/images/2020/0724/121645_df103f55_6569472.png"/>&nbsp;&nbsp;标准API接口，前后端分离，二次开发更方便<br/>
 5. &nbsp;<img src="https://images.gitee.com/uploads/images/2020/0724/121708_74c55984_6569472.png"/>&nbsp;&nbsp;代码全部开源，方便企业扩展自身业务需求
 
-### :Niushop官方群
+### Niushop官方群
  Niushop商城qq开发群1:<a href="https://jq.qq.com/?_wv=1027&k=VrVzi1FI" target="_blank"></a>| qq开发群2:<a href="https://jq.qq.com/?_wv=1027&k=MCtjz6B9" target="_blank"> </a>| qq开发群3:<a href="https://jq.qq.com/?_wv=1027&k=H9FLIfTP" target="_blank"></a>
 
 ###  体验演示二维码
@@ -44,7 +44,7 @@ NIUSHOP开源商城B2C单商户V4,功能强大，安全便捷，框架成熟稳�
 ####   :fire:  体验演示站后台:[<a href='https://uniapp.v4.niuteam.cn/' target="_blank"> 查看 </a>]       
 <a href='https://uniapp.v4.niuteam.cn/' target="_blank">https://uniapp.v4.niuteam.cn/</a>  账号：test  密码：123456
 
-### :tw-1f50a: 开源版使用须知
+### 开源版使用须知
 
 1.仅允许用于个人学习研究使用;
 

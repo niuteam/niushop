@@ -1,6 +1,6 @@
 ！[输入图片说明] （https://images.gitee.com/uploads/images/2020/1130/170320_60fa7937_6569472.png“ gitee.png”）
 
-###产品介
+###产品介绍
 
 ### Niushop开源商城单商户V4 
  **快速搭建专属店铺，迅速展开线上业务** <br/>
